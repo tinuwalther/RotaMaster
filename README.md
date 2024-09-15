@@ -1,16 +1,16 @@
 # RotaMaster
 
-Absence and Duty Planer for Teams built on Pode.web, based on Prompting ChatGPT. Maybee some features does not exists or does not work.
+Absence and Duty Planer for Teams built on Pode, based on Prompting ChatGPT. Maybee some features does not exists or does not work. I changed from Pode.web to Pode, because it's easier to implement JavaScript-code.
 
-- [Folders](#folders)
-    - [bin](#bin)
-    - [db](#db)
-    - [errors](#errors)
-    - [logs](#logs)
-    - [pages](#pages)
-    - [public](#public)
-    - [upload](#upload)
-    - [views](#views)
+![PSRotaMasterIndex](./public/img/PSRotaMasterIndex.png)
+
+## Full calendar view
+
+![PSRotaMasterIndex](./public/img/PSRotaMasterFull.png)
+
+## Year calendar view
+
+![PSRotaMasterIndex](./public/img/PSRotaMasterYear.png)
 
 ## Folders
 
@@ -51,9 +51,3 @@ For uploaded files.
 [Bootstrap Year calendar](https://github.com/year-calendar/js-year-calendar?tab=readme-ov-file)
 
 [Full Calendar](https://fullcalendar.io/docs)
-
-## Execute
-
-````powershell
-pwsh /Users/Tinu/git/RotaMaster/bin/start-webservice.ps1
-`````
