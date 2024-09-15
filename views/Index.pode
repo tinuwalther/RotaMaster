@@ -1,0 +1,133 @@
+<html >
+
+    <!-- Begin Head -->
+    <head >
+        <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"  />
+        <meta name="keywords" content="Pode, PSHTML, PowerShell, Mermaid Diagram"  />
+        <meta name="description" content="Builds beatuifull HTML-Files with PSHTML from native PowerShell-Scripts"  />
+        
+        <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"  />
+        <link rel="stylesheet" href="\assets\style\style.css"  />
+
+        <script src="\assets\BootStrap\bootstrap.bundle.min.js"  ></script>       
+
+        <title >#PSRotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
+
+    </head>
+    <!-- End Head -->
+
+    <!-- Begin Body -->
+    <Body >
+        <header >
+            <div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
+                <p ><h1 >#PSRotaMaster - Index</h1></p>
+            </div>
+        </header>
+    
+        <Section Id="section"  >
+        <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
+            <div Class="container-fluid"  >
+                <a Class="navbar-brand" href="/" Target="_self"  >»HOME</a>
+                <button Class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
+                    <span Class="navbar-toggler-icon"  ></span>
+                </button>
+                <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
+                <ul Class="navbar-nav"  >
+                    <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/tinuwalther/" Target="_blank"  >GitLab</a></li>
+                    <li Class="nav-item"  ><a Class="nav-link" href="https://pshtml.readthedocs.io/en/latest/" Target="_blank"  >PSHTML</a></li>
+                    <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
+                    <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
+                </ul>
+                </div>
+            </div>
+        </nav>
+        
+            <div Class="container"  >
+                <article Id="Boxes"  >
+                    <p > </p>
+                    <div Class="row row-cols-md-4 mb-4 text-center"  >
+                        <div Class="col"  >
+                            <div Class="card bg-secondary mb-4 rounded-3 shadow-sm"  >
+                                <div Class="card-header py-3 text-bg-danger border-danger" Style="color:#fff"  >
+                                    <h4 Class="my-0 fw-normal"  >Home</h4>
+                                </div>
+                                <div Class="card-body"  >
+                                    <h1 Class="card-title" Style="color:#fff"  >Empty</h1>
+                                    <p >Shows nothing.</p>
+                                    <a Target="_self" Class="w-100 btn btn-lg btn-danger" Style="color:#fff" href="/"  >Home</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div Class="col"  >
+                            <div Class="card bg-secondary mb-4 rounded-3 shadow-sm"  >
+                                <div Class="card-header py-3 text-bg-success border-success" Style="color:#fff"  >
+                                    <h4 Class="my-0 fw-normal"  >Full calendar</h4>
+                                </div>
+                                <div Class="card-body"  >
+                                    <h1 Class="card-title" Style="color:#fff"  >Full</h1>
+                                    <p >Shows the Full calendar.</p>
+                                    <a Target="_self" Class="w-100 btn btn-lg btn-success" Style="color:#fff" href="/full-calendar"  >Open</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div Class="col"  >
+                            <div Class="card bg-secondary mb-4 rounded-3 shadow-sm"  >
+                                <div Class="card-header py-3 text-bg-primary border-primary" Style="color:#fff"  >
+                                    <h4 Class="my-0 fw-normal"  >Year calendar</h4>
+                                </div>
+                                <div Class="card-body"  >
+                                    <h1 Class="card-title" Style="color:#fff"  >Year</h1>
+                                    <p >Shows the Year calendar.</p>
+                                    <a Target="_self" Class="w-100 btn btn-lg btn-primary" Style="color:#fff" href="/year-calendar"  >Open</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div Class="col"  >
+                            <div Class="card bg-secondary mb-4 rounded-3 shadow-sm"  >
+                                <div Class="card-header py-3 text-bg-danger border-danger" Style="color:#fff"  >
+                                    <h4 Class="my-0 fw-normal"  >Home</h4>
+                                </div>
+                                <div Class="card-body"  >
+                                    <h1 Class="card-title" Style="color:#fff"  >Empty</h1>
+                                    <p >Shows nothing.</p>
+                                    <a Target="_self" Class="w-100 btn btn-lg btn-danger" Style="color:#fff" href="/"  >Home</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </Section>
+    
+    </Body>
+    <!-- End Body -->
+ 
+    <!-- Begin Footer -->
+    <footer>
+        <div Class="container-fluid"  >
+
+            <div Class="row align-items-center"  >
+
+                <div Class="col-md"  >
+                    <p >
+                        <a Class="btn-sm btn btn-outline-success" href="#" Target="_self"  >I ♥ PS ></a>
+                    </p>
+                </div>
+                    
+                <div Class="col-md"  >
+                    <p >
+                        <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >pode</a> and <a href="https://www.powershellgallery.com/packages/PSHTML" Target="_blank"  >PSHTML</a>
+                    </p>
+                </div>
+
+                <div Class="col-md" Style="color:#000"  >
+                    <p >Created at 2024-09-15 10:57:33</p>
+                </div>
+
+            </div>
+
+        </div>
+    </footer>
+    <!--End Footer -->
+
+</html>

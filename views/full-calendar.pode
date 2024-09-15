@@ -1,0 +1,152 @@
+<html >
+
+    <!-- Begin Head -->
+    <head >
+        <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"  />
+        <meta name="keywords" content="Pode, PSHTML, PowerShell, Mermaid Diagram"  />
+        <meta name="description" content="Builds beatuifull HTML-Files with PSHTML from native PowerShell-Scripts"  />
+        
+        <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"  />
+        <link rel="stylesheet" href="\assets\style\style.css"  />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css"  />
+        <link rel="stylesheet" href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css' '>
+
+        <script src="\assets\BootStrap\bootstrap.bundle.min.js"  ></script>
+        <script src="\assets\Chartjs\Chart.bundle.min.js"  >
+        </script><script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"  >
+        </script>
+        
+        <title >#PSRotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
+
+        <style>
+            #calendar {
+                max-width: 900px;
+                margin: 30px auto;
+            }
+        </style>
+
+    </head>
+    <!-- End Head -->
+
+    <!-- Begin Body -->
+    <Body >
+        <header >
+            <div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
+                <p ><h1 >#PSRotaMaster - Full calendar</h1></p>
+            </div>
+        </header>
+    
+        <Section Id="section"  >
+            <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
+                <div Class="container-fluid"  >
+                    <a Class="navbar-brand" href="/" Target="_self"  >»HOME</a>
+                    <button Class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
+                        <span Class="navbar-toggler-icon"  ></span>
+                    </button>
+                    <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
+                    <ul Class="navbar-nav"  >
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/tinuwalther/" Target="_blank"  >GitLab</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://pshtml.readthedocs.io/en/latest/" Target="_blank"  >PSHTML</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
+                    </ul>
+                    </div>
+                </div>
+            </nav>
+        
+            <div Class="container"  >
+                <article Id="CalendarBox">
+
+                    <div id="events-log">
+                        <h3>Events</h3>
+                        <form action="/api/submit" method="POST">
+                            <label for="name">Name</label><br>
+                            <input type="text" id="name" name="name"><br><br>
+
+                            <label for="type">Typ der Abwesenheit</label><br>
+                            <select id="type" name="type">
+                                <option value="ferien">Ferien</option>
+                                <option value="militaer">Militärdienst</option>
+                                <option value="zivildienst">Zivildienst</option>
+                                <option value="pikett">Pikettdienst</option>
+                            </select><br><br>
+
+                            <label for="start">Startdatum</label><br>
+                            <input type="date" id="start" name="start"><br><br>
+
+                            <label for="end">Enddatum</label><br>
+                            <input type="date" id="end" name="end"><br><br>
+
+                            <label for="submit">Action</label><br>
+                            <input type="submit" value="Absenden">
+                        </form>
+                    </div>
+
+                    <div id="calendar"></div>
+                    <script src='fullcalendar/dist/index.global.js'></script>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var calendarEl = document.getElementById('calendar');
+
+                            var calendar = new FullCalendar.Calendar(calendarEl, {
+                                timeZone: 'UTC',
+                                themeSystem: 'bootstrap5',
+                                headerToolbar: {
+                                    left: 'prev,next today',
+                                    center: 'title',
+                                    right: 'dayGridMonth,listMonth'
+                                },
+                                weekNumbers: true,
+                                dayMaxEvents: true, // allow "more" link when too many events
+
+                                editable: true,
+
+                                events: '/api/events', // Holt Events vom PowerShell-Server
+                                selectable: true,  // Ermöglicht das Auswählen von Terminen
+                                dateClick: function(info) {
+                                    alert('Datum angeklickt: ' + info.dateStr);
+                                    // Hier könntest du ein Formular oder eine Event-Erstellungsfunktion einbauen
+                                }
+                            });
+
+                            calendar.render();
+                        });
+                    </script>
+
+                </article>
+            </div>
+        </Section>
+    
+    </Body>
+    <!-- End Body -->
+ 
+    <!-- Begin Footer -->
+    <footer>
+        <div Class="container-fluid"  >
+
+            <div Class="row align-items-center"  >
+
+                <div Class="col-md"  >
+                    <p >
+                        <a Class="btn-sm btn btn-outline-success" href="#" Target="_self"  >I ♥ PS ></a>
+                    </p>
+                </div>
+                    
+                <div Class="col-md"  >
+                    <p >
+                        <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >pode</a> and <a href="https://www.powershellgallery.com/packages/PSHTML" Target="_blank"  >PSHTML</a>
+                    </p>
+                </div>
+
+                <div Class="col-md" Style="color:#000"  >
+                    <p >Created at 2024-09-15 10:57:33</p>
+                </div>
+
+            </div>
+
+        </div>
+    </footer>
+    <!--End Footer -->
+
+</html>
