@@ -8,12 +8,12 @@
         
         <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"  />
         <link rel="stylesheet" href="\assets\style\style.css"  />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css"  />
-        <link rel="stylesheet" href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css' '>
+        <link rel="stylesheet" href="\assets\calendar\fullcalendar.main.min.css"  />
+        <link rel="stylesheet" href='\assets\BootStrap\bootstrap-icons.css' '>
 
         <script src="\assets\BootStrap\bootstrap.bundle.min.js"  ></script>
         <script src="\assets\Chartjs\Chart.bundle.min.js"  >
-        </script><script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"  >
+        </script><script src="\assets\calendar\fullcalendar.main.min.js"  >
         </script>
         
         <title >#PSRotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
@@ -60,7 +60,7 @@
 
                     <div id="events-log">
                         <h3>Events</h3>
-                        <form action="/api/submit" method="POST">
+                        <form action="/api/new-events" method="POST">
                             <label for="name">Name</label><br>
                             <input type="text" id="name" name="name"><br><br>
 
@@ -102,7 +102,7 @@
 
                                 editable: true,
 
-                                events: '/api/events', // Holt Events vom PowerShell-Server
+                                events: '/api/get-events', // Holt Events vom PowerShell-Server
                                 selectable: true,  // Ermöglicht das Auswählen von Terminen
                                 dateClick: function(info) {
                                     alert('Datum angeklickt: ' + info.dateStr);

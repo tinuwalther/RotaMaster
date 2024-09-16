@@ -116,11 +116,11 @@ function Initialize-ApiEndpoints {
     }
 
     process{
-        $BinPath    = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
-        $UploadPath = $($BinPath).Replace('bin','upload')
+        $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
+        $DbPath  = $($BinPath).Replace('bin','db')
     
-        Add-PodeRoute -Method Post -Path '/api/submit' -ContentType 'application/json' -ArgumentList @($UploadPath) -ScriptBlock {
-            param($UploadPath)
+        Add-PodeRoute -Method Post -Path '/api/new-events' -ContentType 'application/json' -ArgumentList @($DbPath) -ScriptBlock {
+            param($DbPath)
             
             # Lese die Formulardaten
             $name  = $WebEvent.Data['name']
@@ -136,29 +136,17 @@ function Initialize-ApiEndpoints {
                 Start = $start
                 End   = $end
             }
-            $data | Export-Csv -Path (Join-Path -Path $UploadPath -ChildPath "calendar.csv") -Append -NoTypeInformation
+            $data | Export-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
     
             # Gib eine Bestätigung an den Benutzer zurück
             Write-PodeJsonResponse -Value @{ message = "Abwesenheit eingetragen!" }
         }
 
         # Route zum Abrufen der Events als JSON
-        Add-PodeRoute -Method Get -Path '/api/events' -ScriptBlock {
-            # Beispieldaten (in einem realen Szenario könntest du diese aus einer Datenbank laden)
-            $events = @(
-                @{
-                    title = 'Ferien - Max Mustermann'
-                    start = '2024-09-20'
-                    end = '2024-09-25'
-                },
-                @{
-                    title = 'Militärdienst - John Doe'
-                    start = '2024-10-01'
-                    end = '2024-10-10'
-                }
-            )
-
-            # Gebe die Events als JSON aus
+        Add-PodeRoute -Method Get -Path '/api/get-events' -ArgumentList @($DbPath) -ScriptBlock {
+            param($DbPath)
+            $events = Import-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8
+            # Gebe die Events als JSON aus, damit sie im Calendar angezeigt werden
             Write-PodeJsonResponse -Value $events
         }
     
