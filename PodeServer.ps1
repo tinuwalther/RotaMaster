@@ -123,19 +123,18 @@ function Initialize-ApiEndpoints {
             param($DbPath)
             
             # Lese die Formulardaten
-            $name  = $WebEvent.Data['name']
-            $type  = $WebEvent.Data['type']
+            $title  = $WebEvent.Data['name'], $WebEvent.Data['type'] -join " - "
             $start = $WebEvent.Data['start']
             $end   = $WebEvent.Data['end']
             
             # Daten verarbeiten (z.B. in eine Datenbank oder eine Datei schreiben)
             # Hier speicherst du die Daten in eine einfache CSV-Datei
-            $data = @{
-                Name  = $name
-                Type  = $type
+            $data = [PSCustomObject]@{
+                Title = $title
                 Start = $start
                 End   = $end
             }
+
             $data | Export-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
     
             # Gib eine Bestätigung an den Benutzer zurück
@@ -149,74 +148,7 @@ function Initialize-ApiEndpoints {
             # Gebe die Events als JSON aus, damit sie im Calendar angezeigt werden
             Write-PodeJsonResponse -Value $events
         }
-    
-        # Add-PodeRoute -Method Post -Path '/api/index' -ArgumentList @($BinPath) -ScriptBlock {
-        #     param($BinPath)
-        #     if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
-        #     $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlIndexPage.ps1') -Title 'Index' -Request 'API'
-        #     Write-PodeJsonResponse -Value $Response
-        # }
-    
-        # Add-PodeRoute -Method Post -Path '/api/pode' -ArgumentList @($BinPath) -ScriptBlock {
-        #     param($BinPath)
-        #     if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
-        #     $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlPodeServerPage.ps1') -Title 'Pode Server' -Request 'API'
-        #     Write-PodeJsonResponse -Value $Response
-        # }
-    
-        # Add-PodeRoute -Method Post -Path '/api/asset' -ArgumentList @($BinPath) -ScriptBlock {
-        #     param($BinPath)
-        #     if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
-        #     $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlUpdateAssetPage.ps1') -Title 'Update Assets' -Request 'API'
-        #     Write-PodeJsonResponse -Value $Response
-        # }
-    
-        # Add-PodeRoute -Method Post -Path '/api/sqlite' -ContentType 'application/text' -ArgumentList @($BinPath) -ScriptBlock {
-        #     param($BinPath)
-        #     if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
-        #     $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlSQLitePage.ps1') -Title 'SQLite Data' -Request 'API' -TsqlQuery $WebEvent.Data
-        #     Write-PodeJsonResponse -Value $Response
-        # }
-    
-        # Add-PodeRoute -Method Post -Path '/api/pester' -ContentType 'application/json' -ArgumentList @($BinPath) -ScriptBlock {
-        #     param($BinPath)
-        #     if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
-        #     Import-Module Pester
-        #     if($WebEvent.Data -is [system.array]){
-        #         $data = $WebEvent.Data
-        #     }else{
-        #         $data = @('example.ch')
-        #     }
-        #     # In a container it's possible to pass variables
-        #     $ContainerSplat = @{
-        #         Path   = $(Join-Path $BinPath -ChildPath 'Invoke-PesterResult.Tests.ps1')
-        #         Data   = @{ Destination = $data}
-        #     }
-        #     $container  = New-PesterContainer @ContainerSplat
-        #     # Exclude Tests with the Tag NotRun
-        #     $PesterData = Invoke-Pester -Container $container -PassThru -Output None -ExcludeTagFilter NotRun
-        #     $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlPesterPage.ps1') -Title 'Pester Result' -Request 'API' -PesterData $PesterData
-        #     if([String]::IsNullOrEmpty($Response)){
-        #         Write-PodeJsonResponse -Value 'Could not read pester results' -StatusCode 400
-        #     }else{
-        #         Write-PodeJsonResponse -Value $Response
-        #     }
-        # }
-    
-        # Add-PodeRoute -Method Post -Path '/api/mermaid' -ContentType 'application/text' -ArgumentList @($BinPath) -ScriptBlock {
-        #     param($BinPath)
-        #     if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
-        #     $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlMermaidPage.ps1') -Title 'Mermaid Diagram' -Request 'API' -TsqlQuery $WebEvent.Data
-        #     Write-PodeJsonResponse -Value $Response
-        # }
-    
-        # Add-PodeRoute -Method Post -Path '/api/help' -ArgumentList @($BinPath) -ScriptBlock {
-        #     param($BinPath)
-        #     if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
-        #     $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlHelpPage.ps1') -Title 'Help' -Request 'API'
-        #     Write-PodeJsonResponse -Value $Response
-        # }
-    }
+        }
 
     end{
         Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', "$($MyInvocation.MyCommand.Name)" -Join ' ')

@@ -8,11 +8,11 @@
         
         <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"  />
         <link rel="stylesheet" href="\assets\style\style.css"  />
-        <link rel="stylesheet" href="https://unpkg.com/js-year-calendar@latest/dist/js-year-calendar.min.css" />
+        <link rel="stylesheet" href="\assets\calendar\js-year-calendar.min.css" />
 
         <script src="\assets\BootStrap\bootstrap.bundle.min.js"  ></script>
         <script src="\assets\Chartjs\Chart.bundle.min.js"  ></script>
-        <script src="https://unpkg.com/js-year-calendar@latest/dist/js-year-calendar.min.js"  ></script>
+        <script src="\assets\calendar\js-year-calendar.min.js"  ></script>
         
         <title >#PSRotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
 
@@ -156,6 +156,7 @@
 
                         // Initialize calendar
                         new Calendar('#calendar', {
+                            style: 'background',
                             dataSource: [
                                 { startDate: new Date(currentYear, 2, 1), endDate: new Date(currentYear, 2, 10) },
                                 { startDate: new Date(currentYear, 2, 5), endDate: new Date(currentYear, 2, 15) }

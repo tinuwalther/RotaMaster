@@ -97,13 +97,16 @@
                                     center: 'title',
                                     right: 'dayGridMonth,listMonth'
                                 },
+
                                 weekNumbers: true,
                                 dayMaxEvents: true, // allow "more" link when too many events
-
+                                showNonCurrentDates: false,
+                                fixedWeekCount: false,
+                                selectable: true,  // Ermöglicht das Auswählen von Terminen
                                 editable: true,
 
                                 events: '/api/get-events', // Holt Events vom PowerShell-Server
-                                selectable: true,  // Ermöglicht das Auswählen von Terminen
+
                                 dateClick: function(info) {
                                     alert('Datum angeklickt: ' + info.dateStr);
                                     // Hier könntest du ein Formular oder eine Event-Erstellungsfunktion einbauen
