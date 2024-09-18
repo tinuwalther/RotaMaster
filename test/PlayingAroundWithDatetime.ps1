@@ -45,7 +45,9 @@ for($i = $firstDayOfMonth.DayOfWeek.value__; $i -lt 7; $i++){
 }
 
 # The whole month
-0..($lastDayOfMonth.DayOfYear -$firstDayOfMonth.DayOfYear) | ForEach-Object {
+$fullMonth = 0..($lastDayOfMonth.DayOfYear -$firstDayOfMonth.DayOfYear) | ForEach-Object {
     # '{0:d2}. {1} {2}' -f $($_+1), $MonthName, $Year
-    [datetime]::new($Year, $NumberOfMonth, $($_+1)).DateTime
+    [datetime]::new($Year, $NumberOfMonth, $($_+1))
 }
+
+$fullMonth | Select-Object @{N='DayOfMonth';E={$_.Day}} | Format-List
