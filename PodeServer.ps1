@@ -90,6 +90,10 @@ function Initialize-WebEndpoints {
         Add-PodeRoute -Method Get -Path '/' -ScriptBlock {
             Write-PodeViewResponse -Path 'Index.pode'
         }
+        # PS Calendar
+        Add-PodeRoute -Method Get -Path '/ps-calendar' -ScriptBlock {
+            Write-PodeViewResponse -Path 'ps-calendar.pode'
+        }
         # Full Calendar
         Add-PodeRoute -Method Get -Path '/full-calendar' -ScriptBlock {
             Write-PodeViewResponse -Path 'full-calendar.pode'
