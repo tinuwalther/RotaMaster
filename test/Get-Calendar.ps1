@@ -90,7 +90,7 @@ function Get-MonthCalendar{
     # Create rows for calendar weeks
     $week = @()    
     for ($i = 0; $i -lt $currentDayOfWeek; $i++) {
-        $week += 0  # Empty days before the 1st of the month
+        $week += $null  # Empty days before the 1st of the month
     }
 
      # Insert days of the month into the calendar
@@ -119,7 +119,7 @@ function Get-MonthCalendar{
     # Fill up the remaining days of the last week
     if ($week.Count -gt 0) {
         while ($week.Count -lt 7) {
-            $week += 0  # Empty days after the end of the month
+            $week += $null  # Empty days after the end of the month
         }
 
         # Calendar week for the last day of the last week
