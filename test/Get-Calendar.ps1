@@ -84,6 +84,9 @@ function Get-MonthCalendar{
     $calendarWeekRule = [System.Globalization.CultureInfo]::CurrentCulture.DateTimeFormat.CalendarWeekRule
     $firstDayOfWeek   = [System.Globalization.CultureInfo]::CurrentCulture.DateTimeFormat.FirstDayOfWeek
 
+    # Determine the actual day of the week for the first day of the month (0 = Sunday, 6 = Saturday)
+    $currentDayOfWeek = ($firstDayOfMonth.DayOfWeek + 7 - [int]$firstDayOfWeek) % 7
+
     # Initialize Calendar as empty structure
     $calendarRows = @()
 
