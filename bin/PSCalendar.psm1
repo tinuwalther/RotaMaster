@@ -1,34 +1,10 @@
-<#
-.SYNOPSIS
-    Generates a calendar for each month of a given year, displaying abbreviated month names and corresponding calendar weeks.
-
-.DESCRIPTION
-    This script generates a calendar for each month in a given year. It utilizes two helper functions:
-    - `Get-MonthAbbreviation`: Converts the full name of a month to its abbreviated form based on the system's culture settings.
-    - `Get-MonthCalendar`: Creates a table that represents the days of a specified month along with their corresponding calendar week numbers.
-
-    The script loops through all months of the year, generating and displaying each month's calendar with the year and abbreviated month name.
-    The calendar displays the days of the week from Sunday to Saturday.
-
-.PARAMETER Year
-    The year for which the calendars should be generated. This parameter is mandatory and must be an integer between 1970 and 2999.
-
-.EXAMPLE
-    .\Generate-YearlyCalendar.ps1 -Year 2023
-    This will generate calendars for all months in the year 2023 with abbreviated month names and calendar week numbers.
-
-.NOTES
-    - The script relies on the system's current culture settings to determine month names and abbreviations.
-    - It automatically adjusts for leap years and handles months of varying lengths.
-    - The days are arranged from Sunday to Saturday, with the calendar weeks calculated based on the current regional settings.
-#>
-
-[CmdletBinding()]
-param(
-    [ValidateRange(1970, 2999)]
-    [Parameter(Mandatory=$true)]
-    [Int] $Year
-)
+#region main
+# $Month = @('Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember')
+# foreach($item in $Month) {
+#     $monthAbbreviation = Get-MonthAbbreviation -MonthName $item
+#     Get-MonthCalendar -MonthName $item -Year $Year | Select-Object @{N='Jahr';E={$Year}}, @{N='Monat';E={$monthAbbreviation}}, * | Format-Table -AutoSize
+# }
+#endregion
 
 #region functions
 function Get-MonthCalendar{
@@ -85,12 +61,7 @@ function Get-MonthCalendar{
     $firstDayOfWeek   = [System.Globalization.CultureInfo]::CurrentCulture.DateTimeFormat.FirstDayOfWeek
 
     # Determine the actual day of the week for the first day of the month (0 = Sunday, 6 = Saturday)
-    if ($firstDayOfWeek -eq [System.DayOfWeek]::Monday) {
-        $firstDayOfWeek = 1
-    } elseif ($firstDayOfWeek -eq [System.DayOfWeek]::Sunday) {
-        $firstDayOfWeek = 0
-    }
-    $currentDayOfWeek = (($firstDayOfMonth.DayOfWeek - $firstDayOfWeek + 7) % 7)
+    $currentDayOfWeek = 1 + (($firstDayOfMonth.DayOfWeek + 7 - [int]$firstDayOfWeek) % 7)
 
     # Initialize Calendar as empty structure
     $calendarRows = @()
@@ -98,7 +69,7 @@ function Get-MonthCalendar{
     # Create rows for calendar weeks
     $week = @()    
     for ($i = 0; $i -lt $currentDayOfWeek; $i++) {
-        $week += 0  # Empty days before the 1st of the month
+        $week += $null  # Empty days before the 1st of the month
     }
 
      # Insert days of the month into the calendar
@@ -127,7 +98,7 @@ function Get-MonthCalendar{
     # Fill up the remaining days of the last week
     if ($week.Count -gt 0) {
         while ($week.Count -lt 7) {
-            $week += 0  # Empty days after the end of the month
+            $week += $null  # Empty days after the end of the month
         }
 
         # Calendar week for the last day of the last week
@@ -191,10 +162,4 @@ function Get-MonthAbbreviation {
 }
 #endregion
 
-#region main
-$Month = @('Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember')
-foreach($item in $Month) {
-    $monthAbbreviation = Get-MonthAbbreviation -MonthName $item
-    Get-MonthCalendar -MonthName $item -Year $Year | Select-Object @{N='Jahr';E={$Year}}, @{N='Monat';E={$monthAbbreviation}}, * | Format-Table -AutoSize
-}
-#endregion
+Export-ModuleMember -Function Get-MonthCalendar, Get-MonthAbbreviation

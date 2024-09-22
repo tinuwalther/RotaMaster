@@ -122,7 +122,19 @@ function Initialize-ApiEndpoints {
     process{
         $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
         $DbPath  = $($BinPath).Replace('bin','db')
-    
+
+        Add-PodeRoute -Method Post -Path '/api/month/next' -ContentType 'application/json' -ArgumentList @($BinPath) -ScriptBlock {
+            param($BinPath)
+            
+            $body = $WebEvent.Data
+            ($body.Year  | Out-String).Trim() | Out-Default
+            ($body.Month | Out-String).Trim() | Out-Default
+
+            if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
+            $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlCalendar.ps1') -Title 'PS calendar' -Year $body.Year -Month $body.Month
+            Write-PodeJsonResponse -Value $Response
+        }
+
         Add-PodeRoute -Method Post -Path '/api/new-events' -ContentType 'application/json' -ArgumentList @($DbPath) -ScriptBlock {
             param($DbPath)
             
@@ -152,7 +164,7 @@ function Initialize-ApiEndpoints {
             # Gebe die Events als JSON aus, damit sie im Calendar angezeigt werden
             Write-PodeJsonResponse -Value $events
         }
-        }
+    }
 
     end{
         Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', "$($MyInvocation.MyCommand.Name)" -Join ' ')
@@ -212,6 +224,9 @@ Start-PodeServer -Browse -Threads 2 {
 
     # Set Pode endpoints for the api
     Initialize-ApiEndpoints
+
+    $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
+    Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'PSCalendar.psd1')
 
 } -Verbose 
 

@@ -1,42 +1,57 @@
 function Get-MonthCalendar {
-    param (
-        [int]$Year,
-        [string]$MonthName
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$MonthName,
+        
+        [Parameter(Mandatory=$true)]
+        [Int] $Year
     )
 
-    # Attempts to convert the month name into a valid month number
-    $currCulture   = [system.globalization.cultureinfo]::CurrentCulture
-    $MonthAsNumber = [datetime]::ParseExact($MonthName, 'MMMM', $currCulture).Month
+    # Get the current culture information (make sure to use de-CH)
+    $currCulture = [system.globalization.cultureinfo]::GetCultureInfo("de-CH")
     
-    # Calculate the first- and the last day of the given year
+    # Convert the month name into a valid month number
+    $MonthAsNumber = [datetime]::ParseExact($MonthName, 'MMMM', $currCulture).Month
+
+    # Calculate the first and last day of the given month and year
     $firstDayOfMonth = [datetime]::new($Year, $MonthAsNumber, 1)
     $lastDayOfMonth = $firstDayOfMonth.AddMonths(1).AddDays(-1)
 
-    # Create a calendar object for the calculation of the calendar week
-    $calendar         = [System.Globalization.CultureInfo]::CurrentCulture.Calendar
-    $calendarWeekRule = [System.Globalization.CultureInfo]::CurrentCulture.DateTimeFormat.CalendarWeekRule
-    $firstDayOfWeek   = [System.Globalization.CultureInfo]::CurrentCulture.DateTimeFormat.FirstDayOfWeek
+    # Define the first day of the week as Monday explicitly
+    $firstDayOfWeek = [System.DayOfWeek]::Monday
 
-    # Initialize Calendar as empty structure
+    # Calculate the day of the week for the first day of the month
+    $dayOfWeekOffset = [int]$firstDayOfMonth.DayOfWeek
+    $startOffset = ($dayOfWeekOffset - 1 + 7) % 7  # Calculate offset relative to Monday
+
+    Write-Host "First day of $MonthName $Year is: $($firstDayOfMonth.DayOfWeek)"
+    Write-Host "First day of the week (configured): $firstDayOfWeek"
+    Write-Host "Calculated startOffset: $startOffset"
+
+    # Initialize Calendar as an empty structure
     $calendarRows = @()
 
     # Create rows for calendar weeks
     $week = @()    
-    for ($i = 0; $i -lt $currentDayOfWeek; $i++) {
-        $week += 0  # Empty days before the 1st of the month
+
+    # Fill empty slots for days before the 1st of the month
+    for ($i = 0; $i -lt $startOffset; $i++) {
+        $week += $null  # Use $null for empty days
     }
 
-     # Insert days of the month into the calendar
+    # Insert days of the month into the calendar
     for ($day = 1; $day -le $lastDayOfMonth.Day; $day++) {
         $currentDate = [datetime]::new($Year, $MonthAsNumber, $day)
         $week += $day
-        if ($week.Count -eq 7) {
-            # Calculate calendar week
-            $currentWeekNumber = $calendar.GetWeekOfYear($currentDate, $calendarWeekRule, $firstDayOfWeek)
 
-            # Add row when week full
+        if ($week.Count -eq 7) {
+            # Calculate the calendar week
+            # $currentWeekNumber = $calendar.GetWeekOfYear($currentDate, $currCulture.DateTimeFormat.CalendarWeekRule, $firstDayOfWeek)
+
+            # Add row when week is full
             $calendarRows += [pscustomobject]@{
-                Kalenderwoche = $currentWeekNumber
+                Woche      = $currentWeekNumber
                 Sonntag    = $week[0]
                 Montag     = $week[1]
                 Dienstag   = $week[2]
@@ -44,23 +59,22 @@ function Get-MonthCalendar {
                 Donnerstag = $week[4]
                 Freitag    = $week[5]
                 Samstag    = $week[6]
-                }
+            }
             $week = @()  # Start a new week
         }
     }
 
-    # Fill up the remaining days of the last week
+    # Fill up the remaining days of the last week if any
     if ($week.Count -gt 0) {
         while ($week.Count -lt 7) {
-            $week += 0  # Empty days after the end of the month
+            $week += $null  # Fill with $null for empty slots after the month's end
         }
 
-        # Calendar week for the last day of the last week
-        $currentDate = [datetime]::new($Year, $MonthAsNumber, $lastDayOfMonth.Day)
-        $currentWeekNumber = $calendar.GetWeekOfYear($currentDate, $calendarWeekRule, $firstDayOfWeek)
+        # Calculate the calendar week for the last row
+        # $currentWeekNumber = $calendar.GetWeekOfYear($currentDate, $currCulture.DateTimeFormat.CalendarWeekRule, $firstDayOfWeek)
 
         $calendarRows += [pscustomobject]@{
-            Kalenderwoche = $currentWeekNumber
+            Woche      = $currentWeekNumber
             Sonntag    = $week[0]
             Montag     = $week[1]
             Dienstag   = $week[2]
@@ -71,14 +85,57 @@ function Get-MonthCalendar {
         }
     }
 
-    # Return Calendar
+    # Return the calendar
     return $calendarRows
 }
 
-# Beispiel: Kalender für September 2023
-$year = 2024
-$MonthAsNumber = 'September'
-$calendar = Get-MonthCalendar -Year $year -MonthName $MonthAsNumber
 
-# Kalender anzeigen
-$calendar | Format-Table -AutoSize
+function Get-MonthAbbreviation {
+    <#
+    .SYNOPSIS
+        Returns the abbreviated month name for a given full month name.
+
+    .DESCRIPTION
+        The `Get-MonthAbbreviation` function takes a full month name (e.g., "January" or "Januar") as input and returns the corresponding abbreviated month name (e.g., "Jan").
+        It uses the current culture settings of the system to interpret the month name and retrieve the abbreviated form.
+        The function works for any valid month name in the system's current language and culture.
+
+    .PARAMETER MonthName
+        The full name of the month as a string (e.g., "January", "Februar"). This parameter is mandatory.
+        The month name must match the system's current culture setting (e.g., "English (United States)" or "German (Germany)").
+
+    .EXAMPLE
+        Get-MonthAbbreviation -MonthName "March"
+        This will return "Mar" if the current culture is English.
+
+    .EXAMPLE
+        Get-MonthAbbreviation -MonthName "März"
+        This will return "Mär" if the current culture is German.
+
+    .NOTES
+        The function depends on the system's current culture settings, so the input and output month names are localized accordingly.
+    #>
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$MonthName
+    )
+
+    # Attempts to convert the month name into a valid month number
+    $currCulture   = [system.globalization.cultureinfo]::CurrentCulture
+    $MonthAsNumber = [datetime]::ParseExact($MonthName, 'MMMM', $currCulture).Month
+
+    # Retrieve monthly abbreviations
+    $monthAbbreviation = $currCulture.DateTimeFormat.AbbreviatedMonthNames[$MonthAsNumber - 1]
+
+    return $monthAbbreviation
+}
+#endregion
+
+#region main
+$Year = 2024
+$Month = @('Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember')
+# foreach($item in $Month) {
+    $monthAbbreviation = Get-MonthAbbreviation -MonthName 'November'
+    Get-MonthCalendar -MonthName 'November' -Year $Year | Select-Object @{N='Jahr';E={$Year}}, @{N='Monat';E={$monthAbbreviation}}, * | Format-Table -AutoSize
+# }
+#endregion
