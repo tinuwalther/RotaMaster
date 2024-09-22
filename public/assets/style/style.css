@@ -81,7 +81,6 @@ body {
 }
 
 #calendar {
-  background-color: #212529;
   display: inline-block;
   vertical-align: top;
   width: calc(100% - 380px);

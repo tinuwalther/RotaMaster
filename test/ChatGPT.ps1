@@ -1,93 +1,86 @@
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)]
+    [int]$Year
+)
+
 function Get-MonthCalendar {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$MonthName,
-        
-        [Parameter(Mandatory=$true)]
-        [Int] $Year
+
+        [Parameter(Mandatory = $true)]
+        [int]$Year
     )
 
-    # Get the current culture information (make sure to use de-CH)
-    $currCulture = [system.globalization.cultureinfo]::GetCultureInfo("de-CH")
-    
-    # Convert the month name into a valid month number
+    # Use de-CH Culture
+    # $currCulture = [system.globalization.cultureinfo]::GetCultureInfo("de-CH")
+    $currCulture   = [system.globalization.cultureinfo]::CurrentCulture
     $MonthAsNumber = [datetime]::ParseExact($MonthName, 'MMMM', $currCulture).Month
 
-    # Calculate the first and last day of the given month and year
     $firstDayOfMonth = [datetime]::new($Year, $MonthAsNumber, 1)
     $lastDayOfMonth = $firstDayOfMonth.AddMonths(1).AddDays(-1)
 
-    # Define the first day of the week as Monday explicitly
+    # Monday is start day in German Swiss culture
     $firstDayOfWeek = [System.DayOfWeek]::Monday
 
-    # Calculate the day of the week for the first day of the month
-    $dayOfWeekOffset = [int]$firstDayOfMonth.DayOfWeek
-    $startOffset = ($dayOfWeekOffset - 1 + 7) % 7  # Calculate offset relative to Monday
+    # Calculate offset correctly
+    $startOffset = ($firstDayOfMonth.DayOfWeek - $firstDayOfWeek + 7) % 7
 
-    Write-Host "First day of $MonthName $Year is: $($firstDayOfMonth.DayOfWeek)"
-    Write-Host "First day of the week (configured): $firstDayOfWeek"
-    Write-Host "Calculated startOffset: $startOffset"
-
-    # Initialize Calendar as an empty structure
+    # Calendar structure building
     $calendarRows = @()
+    $week = @()
 
-    # Create rows for calendar weeks
-    $week = @()    
-
-    # Fill empty slots for days before the 1st of the month
+    # Fill initial offset
     for ($i = 0; $i -lt $startOffset; $i++) {
-        $week += $null  # Use $null for empty days
+        $week += $null  
     }
 
-    # Insert days of the month into the calendar
+    # Insert days of month
     for ($day = 1; $day -le $lastDayOfMonth.Day; $day++) {
-        $currentDate = [datetime]::new($Year, $MonthAsNumber, $day)
         $week += $day
 
         if ($week.Count -eq 7) {
-            # Calculate the calendar week
-            # $currentWeekNumber = $calendar.GetWeekOfYear($currentDate, $currCulture.DateTimeFormat.CalendarWeekRule, $firstDayOfWeek)
-
-            # Add row when week is full
             $calendarRows += [pscustomobject]@{
-                Woche      = $currentWeekNumber
-                Sonntag    = $week[0]
-                Montag     = $week[1]
-                Dienstag   = $week[2]
-                Mittwoch   = $week[3]
-                Donnerstag = $week[4]
-                Freitag    = $week[5]
-                Samstag    = $week[6]
+                Woche      = $currCulture.Calendar.GetWeekOfYear($firstDayOfMonth.AddDays($day - 1), $currCulture.DateTimeFormat.CalendarWeekRule, $firstDayOfWeek)
+                Montag     = $week[0]
+                Dienstag   = $week[1]
+                Mittwoch   = $week[2]
+                Donnerstag = $week[3]
+                Freitag    = $week[4]
+                Samstag    = $week[5]
+                Sonntag    = $week[6]
             }
-            $week = @()  # Start a new week
+            $week = @()
         }
     }
 
-    # Fill up the remaining days of the last week if any
+    # Finalize remaining days
     if ($week.Count -gt 0) {
         while ($week.Count -lt 7) {
-            $week += $null  # Fill with $null for empty slots after the month's end
+            $week += $null  
         }
 
-        # Calculate the calendar week for the last row
-        # $currentWeekNumber = $calendar.GetWeekOfYear($currentDate, $currCulture.DateTimeFormat.CalendarWeekRule, $firstDayOfWeek)
-
         $calendarRows += [pscustomobject]@{
-            Woche      = $currentWeekNumber
-            Sonntag    = $week[0]
-            Montag     = $week[1]
-            Dienstag   = $week[2]
-            Mittwoch   = $week[3]
-            Donnerstag = $week[4]
-            Freitag    = $week[5]
-            Samstag    = $week[6]
+            Woche = $currCulture.Calendar.GetWeekOfYear($lastDayOfMonth, $currCulture.DateTimeFormat.CalendarWeekRule, $firstDayOfWeek)
+            Montag     = $week[0]
+            Dienstag   = $week[1]
+            Mittwoch   = $week[2]
+            Donnerstag = $week[3]
+            Freitag    = $week[4]
+            Samstag    = $week[5]
+            Sonntag    = $week[6]
         }
     }
 
-    # Return the calendar
+    # Return corrected calendar
     return $calendarRows
 }
+# Test November 2024
+# Get-MonthCalendar -MonthName $MonthName -Year $Year | Format-Table -AutoSize
+
+
 
 
 function Get-MonthAbbreviation {
@@ -132,10 +125,10 @@ function Get-MonthAbbreviation {
 #endregion
 
 #region main
-$Year = 2024
+# $Year = 2024
 $Month = @('Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember')
-# foreach($item in $Month) {
-    $monthAbbreviation = Get-MonthAbbreviation -MonthName 'November'
-    Get-MonthCalendar -MonthName 'November' -Year $Year | Select-Object @{N='Jahr';E={$Year}}, @{N='Monat';E={$monthAbbreviation}}, * | Format-Table -AutoSize
-# }
+foreach($item in $Month) {
+    $monthAbbreviation = Get-MonthAbbreviation -MonthName $item
+    Get-MonthCalendar -MonthName $item -Year $Year | Select-Object @{N='Jahr';E={$Year}}, @{N='Monat';E={$monthAbbreviation}}, * | Format-Table -AutoSize
+}
 #endregion

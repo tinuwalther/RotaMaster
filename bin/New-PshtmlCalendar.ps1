@@ -71,6 +71,7 @@ process{
     $ContainerStyleFluid  = 'container-fluid'
     $HeaderColor          = '#212529'
     $PsHeaderColor        = '#012456'
+    $BodyColor            = '#212529'
     $TextColor            = '#000'
     $HeaderTitle          = $($Title)
     $BodyDescription      = "I ♥ PS Pode > This is an example for using pode and PSHTML."
@@ -141,10 +142,10 @@ process{
                 Invoke-Command -ScriptBlock $navbar
 
                 #region <!-- content -->
-                div -id "Content" -Class "$($ContainerStyleFluid)" {
+                # div -id "calendar" -Class "$($ContainerStyleFluid)" {
                     article -Id "CalendarBox" -Content {
                         div -id 'events' -class $ContainerStyleFluid {
-
+                            
                         }
 
                         div -id 'calendar' -class $ContainerStyleFluid {
@@ -155,14 +156,14 @@ process{
 `$(`$SplatProperties = @{
         TableClass = 'table table-dark table-striped-columns table-responsive table-striped table-hover'
         TheadClass = 'thead-dark'
-        Properties = @('Woche','Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag')
+        Properties = @('Woche','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag')
     }
 )
 `$(`$MonthlyCalendar | ConvertTo-PSHtmlTable @SplatProperties)
 "
                         }
                     }
-                }
+                # }
                 #endregion content
                 
             }

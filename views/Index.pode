@@ -54,6 +54,11 @@
                                 <div Class="card-body"  >
                                     <h1 Class="card-title" Style="color:#fff"  >PS</h1>
                                     <p >Shows the PS calendar.</p>
+                                    $($body = [PSCustomObject]@{
+                                        Year  = Get-Date -f 'yyyy'
+                                        Month = Get-Date -f 'MMMM'
+                                    })
+                                    $($null = Invoke-WebRequest -Uri http://localhost:8080/api/month/next -Method Post -Body ($body | ConvertTo-Json -compress))
                                     <a Target="_self" Class="w-100 btn btn-lg btn-danger" Style="color:#fff" href="/ps-calendar"  >Open</a>
                                 </div>
                             </div>

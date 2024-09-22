@@ -48,76 +48,66 @@ function Get-MonthCalendar{
     )
 
     # Attempts to convert the month name into a valid month number
+    # $currCulture   = [system.globalization.cultureinfo]::CurrentCulture = 'en-US'
     $currCulture   = [system.globalization.cultureinfo]::CurrentCulture
     $MonthAsNumber = [datetime]::ParseExact($MonthName, 'MMMM', $currCulture).Month
-    
-    # Calculate the first- and the last day of the given year
+
     $firstDayOfMonth = [datetime]::new($Year, $MonthAsNumber, 1)
     $lastDayOfMonth = $firstDayOfMonth.AddMonths(1).AddDays(-1)
 
-    # Create a calendar object for the calculation of the calendar week
-    $calendar         = [System.Globalization.CultureInfo]::CurrentCulture.Calendar
-    $calendarWeekRule = [System.Globalization.CultureInfo]::CurrentCulture.DateTimeFormat.CalendarWeekRule
-    $firstDayOfWeek   = [System.Globalization.CultureInfo]::CurrentCulture.DateTimeFormat.FirstDayOfWeek
+    # Monday is start day in German Swiss culture
+    $firstDayOfWeek = [System.DayOfWeek]::Monday
 
-    # Determine the actual day of the week for the first day of the month (0 = Sunday, 6 = Saturday)
-    $currentDayOfWeek = 1 + (($firstDayOfMonth.DayOfWeek + 7 - [int]$firstDayOfWeek) % 7)
+    # Calculate offset correctly
+    $startOffset = ($firstDayOfMonth.DayOfWeek - $firstDayOfWeek + 7) % 7
 
-    # Initialize Calendar as empty structure
+    # Calendar structure building
     $calendarRows = @()
+    $week = @()
 
-    # Create rows for calendar weeks
-    $week = @()    
-    for ($i = 0; $i -lt $currentDayOfWeek; $i++) {
-        $week += $null  # Empty days before the 1st of the month
+    # Fill initial offset
+    for ($i = 0; $i -lt $startOffset; $i++) {
+        $week += $null  
     }
 
-     # Insert days of the month into the calendar
+    # Insert days of month
     for ($day = 1; $day -le $lastDayOfMonth.Day; $day++) {
-        $currentDate = [datetime]::new($Year, $MonthAsNumber, $day)
         $week += $day
-        if ($week.Count -eq 7) {
-            # Calculate calendar week
-            $currentWeekNumber = $calendar.GetWeekOfYear($currentDate, $calendarWeekRule, $firstDayOfWeek)
 
-            # Add row when week full
+        if ($week.Count -eq 7) {
             $calendarRows += [pscustomobject]@{
-                Woche      = $currentWeekNumber
-                Sonntag    = $week[0]
-                Montag     = $week[1]
-                Dienstag   = $week[2]
-                Mittwoch   = $week[3]
-                Donnerstag = $week[4]
-                Freitag    = $week[5]
-                Samstag    = $week[6]
-                }
-            $week = @()  # Start a new week
+                Woche      = $currCulture.Calendar.GetWeekOfYear($firstDayOfMonth.AddDays($day - 1), $currCulture.DateTimeFormat.CalendarWeekRule, $firstDayOfWeek)
+                Montag     = $week[0]
+                Dienstag   = $week[1]
+                Mittwoch   = $week[2]
+                Donnerstag = $week[3]
+                Freitag    = $week[4]
+                Samstag    = $week[5]
+                Sonntag    = $week[6]
+            }
+            $week = @()
         }
     }
 
-    # Fill up the remaining days of the last week
+    # Finalize remaining days
     if ($week.Count -gt 0) {
         while ($week.Count -lt 7) {
-            $week += $null  # Empty days after the end of the month
+            $week += $null  
         }
 
-        # Calendar week for the last day of the last week
-        $currentDate = [datetime]::new($Year, $MonthAsNumber, $lastDayOfMonth.Day)
-        $currentWeekNumber = $calendar.GetWeekOfYear($currentDate, $calendarWeekRule, $firstDayOfWeek)
-
         $calendarRows += [pscustomobject]@{
-            Woche      = $currentWeekNumber
-            Sonntag    = $week[0]
-            Montag     = $week[1]
-            Dienstag   = $week[2]
-            Mittwoch   = $week[3]
-            Donnerstag = $week[4]
-            Freitag    = $week[5]
-            Samstag    = $week[6]
+            Woche = $currCulture.Calendar.GetWeekOfYear($lastDayOfMonth, $currCulture.DateTimeFormat.CalendarWeekRule, $firstDayOfWeek)
+            Montag     = $week[0]
+            Dienstag   = $week[1]
+            Mittwoch   = $week[2]
+            Donnerstag = $week[3]
+            Freitag    = $week[4]
+            Samstag    = $week[5]
+            Sonntag    = $week[6]
         }
     }
 
-    # Return Calendar
+    # Return corrected calendar
     return $calendarRows
 }
 
