@@ -35,7 +35,7 @@ param (
 
 
 begin{    
-    $StartTime = Get-Date
+    $StartTime = [datetime]::now
     $function = $($MyInvocation.MyCommand.Name)
     foreach($item in $PSBoundParameters.keys){
         $params = "$($params) -$($item) $($PSBoundParameters[$item])"
@@ -64,8 +64,8 @@ process{
     $PodeView = (("$($Title).pode") -replace '\s', '-')
     $OutFile  = Join-Path -Path $($PodePath) -ChildPath $($PodeView).ToLower()
 
-    Write-Verbose "OutFile: $($OutFile)"
-    Write-Verbose "AssetsPath: $($AssetsPath)"
+    # Write-Verbose "OutFile: $($OutFile)"
+    # Write-Verbose "AssetsPath: $($AssetsPath)"
 
     $ContainerStyle       = 'Container'
     $ContainerStyleFluid  = 'container-fluid'
@@ -144,12 +144,28 @@ process{
                 #region <!-- content -->
                 # div -id "calendar" -Class "$($ContainerStyleFluid)" {
                     article -Id "CalendarBox" -Content {
-                        div -id 'events' -class $ContainerStyleFluid {
-                            
-                        }
 
-                        div -id 'calendar' -class $ContainerStyleFluid {
-                            h1 {"$($Month) $($Year)"}
+                        div -class "row" {
+
+                            div -class "col-3" {
+                                div -id 'events' -class $ContainerStyleFluid {
+                                    h3 { 'Events' }
+                                }
+                            }
+                            div -class "col-9" {
+                                div -id 'calendar' -class $ContainerStyleFluid {
+
+                                    h3 {"$($Month) $($Year)"}
+        
+                                    div -id 'button-group' -class "btn-group" {
+                                        button -class "btn btn-primary" -Attributes @{
+                                            type="button"
+                                        } -Content { '<' }
+                                        button -class "btn btn-primary" -Attributes @{
+                                            type="button"
+                                        } -Content { '>' }
+                                    }
+        
 "
 `$(`$monthAbbreviation = Get-MonthAbbreviation -MonthName $Month)
 `$(`$MonthlyCalendar = Get-MonthCalendar -MonthName $Month -Year $Year | Select-Object @{N='Jahr';E={$Year}}, @{N='Monat';E={`$monthAbbreviation}}, *)
@@ -161,7 +177,11 @@ process{
 )
 `$(`$MonthlyCalendar | ConvertTo-PSHtmlTable @SplatProperties)
 "
+                                }
+                                    }
+
                         }
+
                     }
                 # }
                 #endregion content
@@ -181,7 +201,8 @@ process{
     $HTML = html {
         . (Join-Path -Path $PSScriptRoot -ChildPath 'includes/head.ps1')
         Invoke-Command -ScriptBlock $body
-        . (Join-Path -Path $PSScriptRoot -ChildPath 'includes/footer.ps1')
+        $TimeSpan = New-TimeSpan -Start $StartTime -End ([datetime]::now)
+        . (Join-Path -Path $PSScriptRoot -ChildPath 'includes/footer.ps1') -TimeSpan $TimeSpan
     }
     #endregion html
 

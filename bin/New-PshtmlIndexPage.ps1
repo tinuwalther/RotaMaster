@@ -83,6 +83,37 @@ process{
     $CardStyle = 'card bg-secondary mb-4 rounded-3 shadow-sm'
     #endregion variables
 
+    #region header
+    head {
+        meta -charset 'UTF-8'
+        meta -name 'author'      -content "Martin Walther - @tinuwalther"  
+        meta -name "keywords"    -content_tag "Pode, PSHTML, PowerShell, Mermaid Diagram"
+        meta -name "description" -content_tag "Builds beatuifull HTML-Files with PSHTML from native PowerShell-Scripts"
+
+        # CSS
+        Link -rel stylesheet -href $(Join-Path -Path $AssetsPath -ChildPath 'BootStrap/bootstrap.min.css')
+        Link -rel stylesheet -href $(Join-Path -Path $AssetsPath -ChildPath 'style/style.css')
+
+        # Scripts
+        Script -src $(Join-Path -Path $AssetsPath -ChildPath 'BootStrap/bootstrap.bundle.min.js')
+        Script -src $(Join-Path -Path $AssetsPath -ChildPath 'Chartjs\Chart.bundle.min.js')
+
+        title "#PSRotaMaster"
+        Link -rel icon -type "image/x-icon" -href "/assets/img/favicon.ico"
+
+"
+`$($currCulture  = [system.globalization.cultureinfo]::CurrentCulture)
+`$($StartTime    = [datetime]::now)
+`$($MonthAsName  = [datetime]::new($StartTime.Year, $StartTime.Month, 1).ToString('MMMM', $currCulture))
+`$($body = [PSCustomObject]@{
+    Year  = $StartTime.Year
+    Month = $MonthAsName
+})
+`$(`$null = Invoke-WebRequest -Uri http://localhost:8080/api/month/next -Method Post -Body ($body | ConvertTo-Json -compress))
+"
+    } 
+    #endregion header
+
     #region navbar
     $navbar = {
 
@@ -164,12 +195,10 @@ process{
     #region HTML
     $HTML = html {
         # includes code from external script for --> head
-        . (Join-Path -Path $PSScriptRoot -ChildPath 'includes/head.ps1')
-
+        # . (Join-Path -Path $PSScriptRoot -ChildPath 'includes/head.ps1')
         Invoke-Command -ScriptBlock $body
-
         # includes code from external script for --> footer
-        . (Join-Path -Path $PSScriptRoot -ChildPath 'includes/footer.ps1')
+        . (Join-Path -Path $PSScriptRoot -ChildPath 'includes/footer.ps1') -TimeSpan $TimeSpan
     }
     #endregion html
 

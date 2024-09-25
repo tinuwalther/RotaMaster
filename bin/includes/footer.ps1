@@ -1,6 +1,6 @@
 # To includes code from external script for --> footer:
 # . (Join-Path -Path $PSScriptRoot -ChildPath 'includes/footer.ps1')
-
+param($TimeSpan)
 #region footer
 div -Class $ContainerStyleFluid -Style "background-color:#343a40" {
     Footer {
@@ -27,7 +27,8 @@ div -Class $ContainerStyleFluid -Style "background-color:#343a40" {
 
                 # <!-- Column right -->
                 div -Class "col-md" {
-                    p {"Created at $(Get-Date -f 'yyyy-MM-dd HH:mm:ss')"}
+                    $Formatted = $TimeSpan | ForEach-Object {'{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds}                
+                    p {"Created at $(Get-Date -f 'yyyy-MM-dd HH:mm:ss') in $($Formatted)"}
                 } -Style "color:$TextColor"
             }
         }

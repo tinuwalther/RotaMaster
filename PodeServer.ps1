@@ -127,12 +127,10 @@ function Initialize-ApiEndpoints {
             param($BinPath)
             
             $body = $WebEvent.Data
-            ($body.Year  | Out-String).Trim() | Out-Default
-            ($body.Month | Out-String).Trim() | Out-Default
-
             if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
             $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlCalendar.ps1') -Title 'PS calendar' -Year $body.Year -Month $body.Month
             Write-PodeJsonResponse -Value $Response
+
         }
 
         Add-PodeRoute -Method Post -Path '/api/new-events' -ContentType 'application/json' -ArgumentList @($DbPath) -ScriptBlock {
@@ -202,9 +200,12 @@ $Protocol = 'http'
 Start-PodeServer -Browse -Threads 2 {
     Write-Host "Press Ctrl. + C to terminate the Pode server" -ForegroundColor Yellow
 
-    if($CurrentOS -eq [OSType]::Mac){
-        Write-Host "Re-builds of pages not supportet on $($CurrentOS), because mySQLite support only Windows and Linux" -ForegroundColor Red
-    }
+    # if($CurrentOS -eq [OSType]::Mac){
+    #     Write-Host "Re-builds of pages not supportet on $($CurrentOS), because mySQLite support only Windows and Linux" -ForegroundColor Red
+    # }
+
+    $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
+    Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'PSCalendar.psd1')
 
     # Enables Error Logging
     New-PodeLoggingMethod -Terminal | Enable-PodeErrorLogging
@@ -224,9 +225,6 @@ Start-PodeServer -Browse -Threads 2 {
 
     # Set Pode endpoints for the api
     Initialize-ApiEndpoints
-
-    $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
-    Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'PSCalendar.psd1')
 
 } -Verbose 
 

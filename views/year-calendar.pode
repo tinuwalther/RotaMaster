@@ -21,6 +21,7 @@
 
     <!-- Begin Body -->
     <Body >
+        $($StartTime = [datetime]::now)
         <header >
             <div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
                 <p ><h1 >#PSRotaMaster - Year calendar</h1></p>
@@ -219,7 +220,11 @@
                 </div>
 
                 <div Class="col-md" Style="color:#000"  >
-                    <p >Created at 2024-09-15 10:57:33</p>
+                    <p >
+                    $($TimeSpan = New-TimeSpan -Start $StartTime -End ([datetime]::now))
+                    $($Formatted = $TimeSpan | ForEach-Object {'{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds})
+                    Created at $(Get-Date -f 'yyyy-MM-dd HH:mm:ss') in $($Formatted)
+                    </p>
                 </div>
 
             </div>
