@@ -15,11 +15,15 @@
         $($currCulture  = [system.globalization.cultureinfo]::CurrentCulture)
         $($StartTime    = [datetime]::now)
         $($MonthAsName  = [datetime]::new($StartTime.Year, $StartTime.Month, 1).ToString('MMMM', $currCulture))
+        $($count = Get-PodeCache -Key Count)
+        $($count  | Out-Default)
         $($body = [PSCustomObject]@{
             Year  = $StartTime.Year
             Month = $MonthAsName
         })
-        $($null = Invoke-WebRequest -Uri http://localhost:8080/api/month/next -Method Post -Body ($body | ConvertTo-Json -compress))
+        $(if($count -eq 0){
+            $null = Invoke-WebRequest -Uri http://localhost:8080/api/month/next -Method Post -Body ($body | ConvertTo-Json -compress)
+        })
 
     </head>
     <!-- End Head -->

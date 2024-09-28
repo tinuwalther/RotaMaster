@@ -127,9 +127,18 @@ function Initialize-ApiEndpoints {
             param($BinPath)
             
             $body = $WebEvent.Data
+
+            # 'Now' | Out-Default
+            # $CurrentMonth = ([System.DateTime]::Now).Month
+
+            # 'WebData' | Out-Default
+            # $MonthName     = [PSCustomObject]$WebEvent.Data.Month
+            # $currCulture   = [system.globalization.cultureinfo]::CurrentCulture
+            # $MonthAsNumber = [System.DateTime]::ParseExact($MonthName, 'MMMM', $currCulture).Month
+            
             if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
             $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlCalendar.ps1') -Title 'PS calendar' -Year $body.Year -Month $body.Month
-            Write-PodeJsonResponse -Value $Response
+            Write-PodeJsonResponse -Value $Response    
 
         }
 
@@ -203,6 +212,8 @@ Start-PodeServer -Browse -Threads 2 {
     # if($CurrentOS -eq [OSType]::Mac){
     #     Write-Host "Re-builds of pages not supportet on $($CurrentOS), because mySQLite support only Windows and Linux" -ForegroundColor Red
     # }
+
+    0 | Set-PodeCache -Key Count -Ttl 10
 
     $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
     Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'PSCalendar.psd1')

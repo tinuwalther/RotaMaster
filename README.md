@@ -4,6 +4,10 @@ Absence and Duty Planer for Teams built on Pode, based on Prompting ChatGPT. May
 
 ![PSRotaMasterIndex](./public/img/PSRotaMasterIndex.png)
 
+## PS calendar view
+
+![PSRotaMasterPSMonth](./public/img/PSRotaMasterPSMonth.png)
+
 ## Full calendar view
 
 ![PSRotaMasterIndex](./public/img/PSRotaMasterFull.png)
