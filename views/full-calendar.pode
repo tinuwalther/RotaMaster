@@ -14,6 +14,7 @@
         <script src="\assets\BootStrap\bootstrap.bundle.min.js"  ></script>
         <script src="\assets\Chartjs\Chart.bundle.min.js"  >
         </script><script src="\assets\calendar\fullcalendar.main.min.js"  >
+
         </script>
         
         <title >#PSRotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
@@ -61,16 +62,19 @@
 
                     <div id="events-log">
                         <h3>Events</h3>
-                        <form action="/api/new-events" method="POST">
+                        <form action="/api/event/new" method="POST">
                             <label for="name">Name</label><br>
                             <input type="text" id="name" name="name"><br><br>
 
                             <label for="type">Typ der Abwesenheit</label><br>
                             <select id="type" name="type">
-                                <option value="ferien">Ferien</option>
-                                <option value="militaer">Militärdienst</option>
-                                <option value="zivildienst">Zivildienst</option>
-                                <option value="pikett">Pikettdienst</option>
+                                <option value="Ferien">Ferien</option>
+                                <option value="Gleitzeit">Gleitzeit</option>
+                                <option value="Kurs">Kurs</option>
+                                <option value="Militärdienst">Militärdienst</option>
+                                <option value="Zivildienst">Zivildienst</option>
+                                <option value="Pikett">Pikettdienst</option>
+                                <option value="Pikett Pier">Pikett Pier</option>
                             </select><br><br>
 
                             <label for="start">Startdatum</label><br>
@@ -106,7 +110,8 @@
                                 selectable: true,  // Ermöglicht das Auswählen von Terminen
                                 editable: true,
 
-                                events: '/api/get-events', // Holt Events vom PowerShell-Server
+                                // A URL of a JSON feed that the calendar will fetch Event Objects from.
+                                events: '/api/event/get',
 
                                 dateClick: function(info) {
                                     alert('Datum angeklickt: ' + info.dateStr);
