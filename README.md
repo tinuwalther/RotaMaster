@@ -1,4 +1,4 @@
-# RotaMaster
+# PSRotaMaster
 
 Absence and Duty Planer for Teams built on Pode, based on Prompting ChatGPT. Maybee some features does not exists or does not work. I changed from Pode.web to Pode, because it's easier to implement JavaScript-code.
 
