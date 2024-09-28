@@ -142,32 +142,51 @@ function Initialize-ApiEndpoints {
 
         }
 
-        Add-PodeRoute -Method Post -Path '/api/new-events' -ContentType 'application/json' -ArgumentList @($DbPath) -ScriptBlock {
+        Add-PodeRoute -Method Post -Path '/api/event/new' -ArgumentList @($DbPath) -ScriptBlock {
             param($DbPath)
+
+            # Read the data of the formular
+            $title  = $WebEvent.Data['name']
+            # $descr  = $WebEvent.Data['description']
+            $type   = $WebEvent.Data['type']
+            $start  = $WebEvent.Data['start']
+            $end    = $WebEvent.Data['end']
             
-            # Lese die Formulardaten
-            $title  = $WebEvent.Data['name'], $WebEvent.Data['type'] -join " - "
-            $start = $WebEvent.Data['start']
-            $end   = $WebEvent.Data['end']
-            
-            # Daten verarbeiten (z.B. in eine Datenbank oder eine Datei schreiben)
-            # Hier speicherst du die Daten in eine einfache CSV-Datei
+            # "new-events: $($title), $($start), $($end)"| Out-Default
             $data = [PSCustomObject]@{
                 Title = $title
+                # Description = $descr
+                Type  = $type
                 Start = $start
                 End   = $end
             }
 
             $data | Export-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
-    
-            # Gib eine Bestätigung an den Benutzer zurück
-            Write-PodeJsonResponse -Value @{ message = "Abwesenheit eingetragen!" }
+            # How can I reload the full-calendar page?
+            
         }
 
         # Route zum Abrufen der Events als JSON
-        Add-PodeRoute -Method Get -Path '/api/get-events' -ArgumentList @($DbPath) -ScriptBlock {
+        Add-PodeRoute -Method Get -Path '/api/event/get' -ArgumentList @($DbPath) -ScriptBlock {
             param($DbPath)
-            $events = Import-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8
+            $data = Import-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8
+            $events = foreach($item in $data){
+                switch -RegEx ($item.type){
+                    'Pikett'                    { $color = '#cd00cd'} # purple
+                    'Pikett Pier'               { $color = '#ffa500'} # orange
+                    'Kurs'                      { $color = '#3498db'} # blue
+                    'Militär|Zivil'             { $color = '#006400'} # dark green
+                    'Ferien|Feiertag|Gleitzeit' { $color = '#05c27c'} # green
+                    default                     { $color = '#378006'}
+                }
+                [PSCustomObject]@{
+                    title = if($item.type -ne 'Feiertag'){$item.title, $item.type -join " - "}else{$item.title}
+                    # description = $item.description
+                    start = $item.start
+                    end   = $item.end
+                    color = $color
+                } 
+            }
             # Gebe die Events als JSON aus, damit sie im Calendar angezeigt werden
             Write-PodeJsonResponse -Value $events
         }
