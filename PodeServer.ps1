@@ -90,6 +90,10 @@ function Initialize-WebEndpoints {
         Add-PodeRoute -Method Get -Path '/' -ScriptBlock {
             Write-PodeViewResponse -Path 'Index.pode'
         }
+        # Test
+        Add-PodeRoute -Method Get -Path '/test' -ScriptBlock {
+            Write-PodeViewResponse -Path 'test.html'
+        }
         # PS Calendar
         Add-PodeRoute -Method Get -Path '/ps-calendar' -ScriptBlock {
             Write-PodeViewResponse -Path 'ps-calendar.pode'
@@ -146,22 +150,27 @@ function Initialize-ApiEndpoints {
             param($DbPath)
 
             # Read the data of the formular
-            $title  = $WebEvent.Data['name']
-            # $descr  = $WebEvent.Data['description']
-            $type   = $WebEvent.Data['type']
-            $start  = $WebEvent.Data['start']
-            $end    = $WebEvent.Data['end']
-            
-            # "new-events: $($title), $($start), $($end)"| Out-Default
-            $data = [PSCustomObject]@{
-                Title = $title
-                # Description = $descr
-                Type  = $type
-                Start = $start
-                End   = $end
-            }
+            if(-not([String]::IsNullOrEmpty($WebEvent.Data['name']))){
+                $title  = $WebEvent.Data['name']
+                # $descr  = $WebEvent.Data['description']
+                $type   = $WebEvent.Data['type']
+                $start  = $WebEvent.Data['start']
+                $end    = $WebEvent.Data['end']
+                
+                # "new-events: $($title), $($start), $($end)"| Out-Default
+                $data = [PSCustomObject]@{
+                    Title = $title
+                    # Description = $descr
+                    Type  = $type
+                    Start = $start
+                    End   = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
+                }
 
-            $data | Export-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
+                $data | Export-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
+
+                Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
+
+            }
             # How can I reload the full-calendar page?
             
         }
