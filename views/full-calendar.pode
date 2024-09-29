@@ -6,17 +6,51 @@
         <meta name="keywords" content="Pode, PSHTML, PowerShell, Mermaid Diagram"  />
         <meta name="description" content="Builds beatuifull HTML-Files with PSHTML from native PowerShell-Scripts"  />
         
-        <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"  />
-        <link rel="stylesheet" href="\assets\style\style.css"  />
-        <link rel="stylesheet" href="\assets\calendar\fullcalendar.main.min.css"  />
-        <link rel="stylesheet" href='\assets\BootStrap\bootstrap-icons.css' '>
+        <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"/>
+        <link rel="stylesheet" href='\assets\BootStrap\bootstrap-icons.css'>
+        <link rel="stylesheet" href="\assets\style\style.css"/>
+        <link rel="stylesheet" href="\assets\calendar\fullcalendar.main.min.css"/>
 
-        <script src="\assets\BootStrap\bootstrap.bundle.min.js"  ></script>
-        <script src="\assets\Chartjs\Chart.bundle.min.js"  >
-        </script><script src="\assets\calendar\fullcalendar.main.min.js"  >
+        <script src="\assets\BootStrap\bootstrap.bundle.min.js"></script>
+        <script src="\assets\Chartjs\Chart.bundle.min.js"></script>
+        <script src="\assets\calendar\fullcalendar.main.min.js"></script>
+        <script src='\assets\calendar\index.global.min.js'></script>
+        <script src='fullcalendar/dist/index.global.js'></script>
 
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+
+                var calendarEl = document.getElementById('calendar');
+
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    timeZone: 'UTC',
+                    headerToolbar: {
+                        left: 'prevYear,prev,today,next,nextYear',
+                        center: 'title',
+                        right: 'dayGridMonth,listMonth'
+                    },
+
+                    weekNumbers: true,
+                    dayMaxEvents: true, // allow "more" link when too many events
+                    showNonCurrentDates: false,
+                    fixedWeekCount: false,
+                    selectable: true,  // Ermöglicht das Auswählen von Terminen
+                    editable: true,
+
+                    // A URL of a JSON feed that the calendar will fetch Event Objects from.
+                    events: '/api/event/get',
+
+                    dateClick: function(info) {
+                        alert('Datum angeklickt: ' + info.dateStr);
+                        // Hier könntest du ein Formular oder eine Event-Erstellungsfunktion einbauen
+                    }
+                });
+
+                calendar.render();
+
+            });
         </script>
-        
+
         <title >#PSRotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
 
         <style>
@@ -34,7 +68,7 @@
         $($StartTime = [datetime]::now)
         <header >
             <div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
-                <p ><h1 >#PSRotaMaster - Full calendar</h1></p>
+                <p ><h1 >#PSRotaMaster - JS Full calendar</h1></p>
             </div>
         </header>
     
@@ -57,73 +91,46 @@
                 </div>
             </nav>
         
-            <div Class="container"  >
-                <article Id="CalendarBox">
+            <div Class="Container">
 
-                    <div id="events-log">
-                        <h3>Events</h3>
-                        <form action="/api/event/new" method="POST">
-                            <label for="name">Name</label><br>
-                            <input type="text" id="name" name="name"><br><br>
+                <div class="row align-items-center">
 
-                            <label for="type">Typ der Abwesenheit</label><br>
-                            <select id="type" name="type">
-                                <option value="Ferien">Ferien</option>
-                                <option value="Gleitzeit">Gleitzeit</option>
-                                <option value="Kurs">Kurs</option>
-                                <option value="Militärdienst">Militärdienst</option>
-                                <option value="Zivildienst">Zivildienst</option>
-                                <option value="Pikett">Pikettdienst</option>
-                                <option value="Pikett Pier">Pikett Pier</option>
-                            </select><br><br>
+                    <article Id="CalendarBox">
 
-                            <label for="start">Startdatum</label><br>
-                            <input type="date" id="start" name="start"><br><br>
+                        <div id="events-log">
+                            <h3>Events</h3>
+                            <form action="/api/event/new" method="POST">
+                                <label for="name">Name</label><br>
+                                <input type="text" id="name" name="name"><br><br>
 
-                            <label for="end">Enddatum</label><br>
-                            <input type="date" id="end" name="end"><br><br>
+                                <label for="type">Typ der Abwesenheit</label><br>
+                                <select id="type" name="type">
+                                    <option value="Ferien">Ferien</option>
+                                    <option value="Gleitzeit">Gleitzeit</option>
+                                    <option value="Kurs">Kurs</option>
+                                    <option value="Militärdienst">Militärdienst</option>
+                                    <option value="Zivildienst">Zivildienst</option>
+                                    <option value="Pikett">Pikettdienst</option>
+                                    <option value="Pikett Pier">Pikett Pier</option>
+                                </select><br><br>
 
-                            <label for="submit">Action</label><br>
-                            <input type="submit" value="Absenden">
-                        </form>
-                    </div>
+                                <label for="start">Startdatum</label><br>
+                                <input type="date" id="start" name="start"><br><br>
 
-                    <div id="calendar"></div>
-                    <script src='fullcalendar/dist/index.global.js'></script>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            var calendarEl = document.getElementById('calendar');
+                                <label for="end">Enddatum</label><br>
+                                <input type="date" id="end" name="end"><br><br>
 
-                            var calendar = new FullCalendar.Calendar(calendarEl, {
-                                timeZone: 'UTC',
-                                themeSystem: 'bootstrap5',
-                                headerToolbar: {
-                                    left: 'prev,next today',
-                                    center: 'title',
-                                    right: 'dayGridMonth,listMonth'
-                                },
+                                <label for="submit">Action</label><br>
+                                <input type="submit" value="Absenden">
+                            </form>
+                        </div>
 
-                                weekNumbers: true,
-                                dayMaxEvents: true, // allow "more" link when too many events
-                                showNonCurrentDates: false,
-                                fixedWeekCount: false,
-                                selectable: true,  // Ermöglicht das Auswählen von Terminen
-                                editable: true,
+                        <div id="calendar"></div>
 
-                                // A URL of a JSON feed that the calendar will fetch Event Objects from.
-                                events: '/api/event/get',
+                    </article>
 
-                                dateClick: function(info) {
-                                    alert('Datum angeklickt: ' + info.dateStr);
-                                    // Hier könntest du ein Formular oder eine Event-Erstellungsfunktion einbauen
-                                }
-                            });
+                </div>
 
-                            calendar.render();
-                        });
-                    </script>
-
-                </article>
             </div>
         </Section>
     
