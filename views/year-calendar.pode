@@ -13,7 +13,7 @@
         <script src="\assets\BootStrap\bootstrap.bundle.min.js"  ></script>
         <script src="\assets\Chartjs\Chart.bundle.min.js"  ></script>
         <script src="\assets\calendar\js-year-calendar.min.js"  ></script>
-        
+
         <title >#PSRotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
 
     </head>
@@ -42,6 +42,8 @@
                         <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://year-calendar.github.io/" Target="_blank"  >Year calendar</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/ps-calendar">PS calendar</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/full-calendar">JS Full calendar</a></li>
                     </ul>
                     </div>
                 </div>
@@ -191,7 +193,6 @@
                             logElt.textContent = log;
                             document.querySelector('#events-log').appendChild(logElt);
                         }
-
                     </script>
 
                 </article>

@@ -162,13 +162,13 @@ function Initialize-ApiEndpoints {
                     Title = $title
                     # Description = $descr
                     Type  = $type
-                    Start = $start
+                    Start = Get-Date ([datetime]$start) -f 'yyyy-MM-dd'
                     End   = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
                 }
 
                 $data | Export-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
 
-                Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
+                Write-PodeJsonResponse -Value $($WebEvent.Data | ConvertTo-Json)
 
             }
             # How can I reload the full-calendar page?

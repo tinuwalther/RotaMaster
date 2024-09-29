@@ -86,6 +86,8 @@
                         <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/ps-calendar">PS calendar</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/year-calendar">JS Year calendar</a></li>
                     </ul>
                     </div>
                 </div>
@@ -99,29 +101,71 @@
 
                         <div id="events-log">
                             <h3>Events</h3>
+
+                            <!--form class="row g-3" action="/api/event/new" method="POST">
+                                <div class="col-auto">
+                                    <input type="text" class="form-control" id="name" placeholder="Name">
+                                </div>
+
+                                <div class="col-auto">
+                                    <select class="form-select" aria-label="Default select example" id="type" name="type">
+                                        <option selected>Typ der Abwesenheit</option>
+                                        <option value="Ferien">Ferien</option>
+                                        <option value="Gleitzeit">Gleitzeit</option>
+                                        <option value="Kurs">Kurs</option>
+                                        <option value="Militärdienst">Militärdienst</option>
+                                        <option value="Zivildienst">Zivildienst</option>
+                                        <option value="Pikett">Pikettdienst</option>
+                                        <option value="Pikett Pier">Pikett Pier</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-auto">
+                                    <label for="start">Startdatum</label><br>
+                                    <input type="date" id="start" name="start">
+                                </div>
+
+                                <div class="col-auto">
+                                    <label for="end">Enddatum</label><br>
+                                    <input type="date" id="end" name="end">
+                                </div>
+
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-primary mb-3">Eintragen</button>
+                                </div>
+                            </form-->
+
                             <form action="/api/event/new" method="POST">
-                                <label for="name">Name</label><br>
-                                <input type="text" id="name" name="name"><br><br>
+                                <div class="col-auto">
+                                    <!--label for="name">Name</label><br-->
+                                    <input type="text" class="form-control" id="name" name="name" placeholder="Name"><br>
+                                </div>
 
-                                <label for="type">Typ der Abwesenheit</label><br>
-                                <select id="type" name="type">
-                                    <option value="Ferien">Ferien</option>
-                                    <option value="Gleitzeit">Gleitzeit</option>
-                                    <option value="Kurs">Kurs</option>
-                                    <option value="Militärdienst">Militärdienst</option>
-                                    <option value="Zivildienst">Zivildienst</option>
-                                    <option value="Pikett">Pikettdienst</option>
-                                    <option value="Pikett Pier">Pikett Pier</option>
-                                </select><br><br>
+                                <div class="col-auto">
+                                    <!--label for="type">Typ der Abwesenheit</label><br-->
+                                    <select class="form-select" aria-label="Default select example" id="type" name="type">
+                                        <option selected>Typ der Abwesenheit</option>
+                                        <option value="Ferien">Ferien</option>
+                                        <option value="Gleitzeit">Gleitzeit</option>
+                                        <option value="Kurs">Kurs</option>
+                                        <option value="Militärdienst">Militärdienst</option>
+                                        <option value="Zivildienst">Zivildienst</option>
+                                        <option value="Pikett">Pikettdienst</option>
+                                        <option value="Pikett Pier">Pikett Pier</option>
+                                    </select><br>
+                                </div>
 
-                                <label for="start">Startdatum</label><br>
-                                <input type="date" id="start" name="start"><br><br>
+                                <div class="col-auto">
+                                    <label for="start">Startdatum</label><br>
+                                    <input type="date" class="form-control" id="start" name="start"><br>
+                                </div>
 
-                                <label for="end">Enddatum</label><br>
-                                <input type="date" id="end" name="end"><br><br>
+                                <div class="col-auto">
+                                    <label for="end">Enddatum</label><br>
+                                    <input type="date" class="form-control" id="end" name="end"><br>
+                                </div>
 
-                                <label for="submit">Action</label><br>
-                                <input type="submit" value="Absenden">
+                                <input type="submit" value="Eintragen" class="btn btn-primary mb-3">
                             </form>
                         </div>
 

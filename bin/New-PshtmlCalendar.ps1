@@ -83,6 +83,8 @@ process{
         'https://pshtml.readthedocs.io/en/latest/'                  = 'PSHTML'
         'https://www.w3schools.com/html/'                           = 'HTML'
         'https://getbootstrap.com/'                                 = 'Bootstrap'
+        "/full-calendar"                                            = 'JS Full calendar'
+        "/year-calendar"                                            = 'JS Year calendar'
     }
     #endregion variables
 

@@ -49,6 +49,9 @@
                     <li Class="nav-item"  ><a Class="nav-link" href="https://pshtml.readthedocs.io/en/latest/" Target="_blank"  >PSHTML</a></li>
                     <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
                     <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
+                    <li Class="nav-item"  ><a Class="nav-link" href="/ps-calendar">PS calendar</a></li>
+                    <li Class="nav-item"  ><a Class="nav-link" href="/full-calendar">JS Full calendar</a></li>
+                    <li Class="nav-item"  ><a Class="nav-link" href="/year-calendar">JS Year calendar</a></li>
                 </ul>
                 </div>
             </div>

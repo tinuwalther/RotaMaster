@@ -126,14 +126,14 @@ body {
 }
 
 header {
-  /*background: #033b63;*/
+  /*background: #033b63;
   padding: 20;
+  background: var(--ps-powershell-color);  
+  overflow: auto;
+  overflow-y: hidden;*/
   color: var(--bs-gray-200);
-  /*background: var(--ps-powershell-color);  */
   font-size: medium;
   display: block;
-  overflow: auto;
-  overflow-y: hidden;
 }
 
 #Content {

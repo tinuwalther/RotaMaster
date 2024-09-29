@@ -78,6 +78,9 @@ process{
         'https://getbootstrap.com/'                                 = 'Bootstrap'
         'https://www.cdnpkg.com/jquery/file/jquery.min.js/'         = 'JQuery'
         'https://www.cdnpkg.com/Chart.js/file/Chart.bundle.min.js/' = 'Chart'
+        "/ps-calendar"                                              = 'PS calendar'
+        "/full-calendar"                                            = 'JS Full calendar'
+        "/year-calendar"                                            = 'JS Year calendar'
     }
 
     $CardStyle = 'card bg-secondary mb-4 rounded-3 shadow-sm'
