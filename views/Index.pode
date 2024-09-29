@@ -60,13 +60,13 @@
                     <div Class="row row-cols-md-4 mb-4 text-center"  >
                         <div Class="col"  >
                             <div Class="card bg-secondary mb-4 rounded-3 shadow-sm"  >
-                                <div Class="card-header py-3 text-bg-danger border-danger" Style="color:#fff"  >
+                                <div Class="card-header py-3 text-bg-info border-info" Style="color:#fff"  >
                                     <h4 Class="my-0 fw-normal"  >PS calendar</h4>
                                 </div>
                                 <div Class="card-body"  >
                                     <h1 Class="card-title" Style="color:#fff"  >PS Month</h1>
                                     <p >Shows the PS calendar.</p>
-                                    <a Target="_self" Class="w-100 btn btn-lg btn-danger" Style="color:#fff" href="/ps-calendar"  >Open</a>
+                                    <a Target="_self" Class="w-100 btn btn-lg btn-info" Style="color:#fff" href="/ps-calendar"  >Open</a>
                                 </div>
                             </div>
                         </div>
@@ -97,12 +97,12 @@
                         <div Class="col"  >
                             <div Class="card bg-secondary mb-4 rounded-3 shadow-sm"  >
                                 <div Class="card-header py-3 text-bg-danger border-danger" Style="color:#fff"  >
-                                    <h4 Class="my-0 fw-normal"  >Home</h4>
+                                    <h4 Class="my-0 fw-normal"  >Test</h4>
                                 </div>
                                 <div Class="card-body"  >
-                                    <h1 Class="card-title" Style="color:#fff"  >Empty</h1>
-                                    <p >Shows nothing.</p>
-                                    <a Target="_self" Class="w-100 btn btn-lg btn-danger" Style="color:#fff" href="/"  >Home</a>
+                                    <h1 Class="card-title" Style="color:#fff"  >Test</h1>
+                                    <p >Shows a test page.</p>
+                                    <a Target="_self" Class="w-100 btn btn-lg btn-danger" Style="color:#fff" href="/test"  >Test</a>
                                 </div>
                             </div>
                         </div>
