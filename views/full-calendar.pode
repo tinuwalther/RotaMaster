@@ -14,7 +14,7 @@
             #calendar {
                 margin: 20px auto;
                 padding: 30px;
-                background: #343a40;
+                background: $((Get-PodeConfig).fullCalendar.backgroundColor);
             }
             #events-log {
                 margin: 20px auto;
@@ -41,15 +41,18 @@
                     headerToolbar: {
                         left: 'prevYear,prev,today,next,nextYear',
                         center: 'title',
-                        right: 'multiMonthYear,dayGridMonth,listMonth'
+                        right: '$((Get-PodeConfig).fullCalendar.headerToolbar)'
                     },
 
                     weekNumbers: false,
                     dayMaxEvents: true,
                     showNonCurrentDates: true,
                     fixedWeekCount: false,
+                    weekNumberCalculation: 'ISO', // "ISO" changes the default value of firstDay from 0 (Sunnday) to 1 (Monday).
+                    
                     selectable: true,
                     editable: true,
+                    navLinks: true,
 
                     // A URL of a JSON feed that the calendar will fetch Event Objects from.
                     events: '/api/event/get',
@@ -178,7 +181,7 @@
                     
                 <div Class="col-md"  >
                     <p >
-                        <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >pode</a> and <a href="https://www.powershellgallery.com/packages/PSHTML" Target="_blank"  >PSHTML</a>
+                        Based on <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >Pode</a> V$(Get-Module -Name Pode | Select-Object -Expandproperty Version) and <a href="https://www.powershellgallery.com/packages/PSHTML" Target="_blank"  >PSHTML</a>
                     </p>
                 </div>
 
