@@ -9,7 +9,18 @@
         <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"/>
         <link rel="stylesheet" href='\assets\BootStrap\bootstrap-icons.css'>
         <link rel="stylesheet" href="\assets\style\style.css"/>
-        <link rel="stylesheet" href="\assets\calendar\fullcalendar.main.min.css"/>
+
+        <style>
+            #calendar {
+                margin: 20px auto;
+                padding: 30px;
+                background: #343a40;
+            }
+            #events-log {
+                margin: 20px auto;
+                padding: 30px;
+            }
+        </style>
 
         <script src="\assets\BootStrap\bootstrap.bundle.min.js"></script>
         <script src="\assets\Chartjs\Chart.bundle.min.js"></script>
@@ -23,26 +34,33 @@
                 var calendarEl = document.getElementById('calendar');
 
                 var calendar = new FullCalendar.Calendar(calendarEl, {
-                    timeZone: 'UTC',
+                    timeZone: 'local',
+                    locale: 'de-CH',
+                    initialView: 'dayGridMonth',
+                    multiMonthMinWidth: 350,
                     headerToolbar: {
                         left: 'prevYear,prev,today,next,nextYear',
                         center: 'title',
-                        right: 'dayGridMonth,listMonth'
+                        right: 'multiMonthYear,dayGridMonth,listMonth'
                     },
 
-                    weekNumbers: true,
-                    dayMaxEvents: true, // allow "more" link when too many events
-                    showNonCurrentDates: false,
+                    weekNumbers: false,
+                    dayMaxEvents: true,
+                    showNonCurrentDates: true,
                     fixedWeekCount: false,
-                    selectable: true,  // Ermöglicht das Auswählen von Terminen
+                    selectable: true,
                     editable: true,
 
                     // A URL of a JSON feed that the calendar will fetch Event Objects from.
                     events: '/api/event/get',
 
                     dateClick: function(info) {
-                        alert('Datum angeklickt: ' + info.dateStr);
+                        // alert('Datum angeklickt: ' + info.dateStr);
                         // Hier könntest du ein Formular oder eine Event-Erstellungsfunktion einbauen
+                    },
+
+                    select: function(info) {
+                        // alert('selected ' + info.startStr + ' to ' + info.endStr);
                     }
                 });
 
@@ -52,13 +70,6 @@
         </script>
 
         <title >#PSRotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
-
-        <style>
-            #calendar {
-                max-width: 900px;
-                margin: 30px auto;
-            }
-        </style>
 
     </head>
     <!-- End Head -->
@@ -95,73 +106,45 @@
         
             <div Class="Container">
 
-                <div class="row align-items-center">
+                <!--div class="row align-items-center"-->
 
-                    <article Id="CalendarBox">
+                    <!--article Id="CalendarBox"-->
 
                         <div id="events-log">
                             <h3>Events</h3>
 
-                            <!--form class="row g-3" action="/api/event/new" method="POST">
-                                <div class="col-auto">
-                                    <input type="text" class="form-control" id="name" placeholder="Name">
-                                </div>
-
-                                <div class="col-auto">
-                                    <select class="form-select" aria-label="Default select example" id="type" name="type">
-                                        <option selected>Typ der Abwesenheit</option>
-                                        <option value="Ferien">Ferien</option>
-                                        <option value="Gleitzeit">Gleitzeit</option>
-                                        <option value="Kurs">Kurs</option>
-                                        <option value="Militärdienst">Militärdienst</option>
-                                        <option value="Zivildienst">Zivildienst</option>
-                                        <option value="Pikett">Pikettdienst</option>
-                                        <option value="Pikett Pier">Pikett Pier</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-auto">
-                                    <label for="start">Startdatum</label><br>
-                                    <input type="date" id="start" name="start">
-                                </div>
-
-                                <div class="col-auto">
-                                    <label for="end">Enddatum</label><br>
-                                    <input type="date" id="end" name="end">
-                                </div>
-
-                                <div class="col-auto">
-                                    <button type="submit" class="btn btn-primary mb-3">Eintragen</button>
-                                </div>
-                            </form-->
-
                             <form action="/api/event/new" method="POST">
                                 <div class="col-auto">
-                                    <!--label for="name">Name</label><br-->
-                                    <input type="text" class="form-control" id="name" name="name" placeholder="Name"><br>
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text" id="basic-addon1">Name</span>
+                                        <input class="form-control" list="datalistOptions" id="name" name="name" placeholder="Type to search...">
+                                        <datalist id="datalistOptions">
+                                        $($person = (Get-PodeConfig).person)
+                                        $(foreach($i in $person){
+                                            "<option value='$($i)'>"
+                                        })
+                                        </datalist><br>
+                                    </div>
                                 </div>
 
                                 <div class="col-auto">
-                                    <!--label for="type">Typ der Abwesenheit</label><br-->
-                                    <select class="form-select" aria-label="Default select example" id="type" name="type">
-                                        <option selected>Typ der Abwesenheit</option>
-                                        <option value="Ferien">Ferien</option>
-                                        <option value="Gleitzeit">Gleitzeit</option>
-                                        <option value="Kurs">Kurs</option>
-                                        <option value="Militärdienst">Militärdienst</option>
-                                        <option value="Zivildienst">Zivildienst</option>
-                                        <option value="Pikett">Pikettdienst</option>
-                                        <option value="Pikett Pier">Pikett Pier</option>
+                                    <label for="start" class="form-label">Typ der Abwesenheit</label><br>
+                                    <select class="form-select" size="5" aria-label="Default select example" id="type" name="type">
+                                        <!--option selected>Typ der Abwesenheit</option-->
+                                        $($absence = (Get-PodeConfig).absenceType)
+                                        $(foreach($i in $absence.keys){
+                                            "<option value='$($i)'>$($absence[$i])</option>"
+                                        })
                                     </select><br>
                                 </div>
 
                                 <div class="col-auto">
-                                    <label for="start">Startdatum</label><br>
+                                    <label for="start" class="form-label">Startdatum</label><br>
                                     <input type="date" class="form-control" id="start" name="start"><br>
                                 </div>
 
                                 <div class="col-auto">
-                                    <label for="end">Enddatum</label><br>
+                                    <label for="end" class="form-label">Enddatum</label><br>
                                     <input type="date" class="form-control" id="end" name="end"><br>
                                 </div>
 
@@ -171,9 +154,9 @@
 
                         <div id="calendar"></div>
 
-                    </article>
+                    <!--/article-->
 
-                </div>
+                <!--/div-->
 
             </div>
         </Section>
