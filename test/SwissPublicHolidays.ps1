@@ -1,3 +1,10 @@
+[CmdletBinding()]
+param(
+    [ValidateRange(1970, 2999)]
+    [Parameter(Mandatory=$true)]
+    [Int] $Year
+)
+
 function Get-EasterSunday {
     param (
         [int]$year
@@ -23,30 +30,29 @@ function Get-EasterSunday {
     return Get-Date -Year $year -Month $month -Day $day
 }
 
-# Beispiel: Ostersonntag für das Jahr 2024 berechnen
-$easterSunday2024 = Get-EasterSunday -year 2024
-$easterSunday2024
-
 # Berechnung der beweglichen Feiertage für 2024
-$karfreitag_2024 = (Get-EasterSunday -year 2024).AddDays(-2).ToString("yyyy-MM-dd")
-$ostermontag_2024 = (Get-EasterSunday -year 2024).AddDays(1).ToString("yyyy-MM-dd")
-$auffahrt_2024 = (Get-EasterSunday -year 2024).AddDays(39).ToString("yyyy-MM-dd")
-$pfingstmontag_2024 = (Get-EasterSunday -year 2024).AddDays(50).ToString("yyyy-MM-dd")
+$easterSunday  = (Get-EasterSunday -year $Year).ToString("yyyy-MM-dd")
+$karfreitag    = (Get-EasterSunday -year $Year).AddDays(-2).ToString("yyyy-MM-dd")
+$ostermontag   = (Get-EasterSunday -year $Year).AddDays(1).ToString("yyyy-MM-dd")
+$auffahrt      = (Get-EasterSunday -year $Year).AddDays(39).ToString("yyyy-MM-dd")
+$pfingstmontag = (Get-EasterSunday -year $Year).AddDays(50).ToString("yyyy-MM-dd")
 
 # Liste von Feiertagen als PSCustomObject
+#"id";"title";"type";"start";"end";"created"
 $feiertage_spezial = @(
-    [PSCustomObject]@{ Datum = "2024-01-01"; Feiertag = "Neujahrstag"; Kanton = "ALLE" }
-    [PSCustomObject]@{ Datum = "2024-01-02"; Feiertag = "Berchtoldstag"; Kanton = "ALLE" }
-    [PSCustomObject]@{ Datum = $karfreitag_2024; Feiertag = "Karfreitag"; Kanton = "ALLE" }
-    [PSCustomObject]@{ Datum = $ostermontag_2024; Feiertag = "Ostermontag"; Kanton = "ALLE" }
-    [PSCustomObject]@{ Datum = "2024-05-01"; Feiertag = "Tag der Arbeit"; Kanton = "ZH, GR" }
-    [PSCustomObject]@{ Datum = $auffahrt_2024; Feiertag = "Auffahrt"; Kanton = "ALLE" }
-    [PSCustomObject]@{ Datum = $pfingstmontag_2024; Feiertag = "Pfingstmontag"; Kanton = "ALLE" }
-    [PSCustomObject]@{ Datum = "2024-08-01"; Feiertag = "Bundesfeier"; Kanton = "ALLE" }
-    [PSCustomObject]@{ Datum = "2024-11-01"; Feiertag = "Allerheiligen"; Kanton = "SG, BE" }
-    [PSCustomObject]@{ Datum = "2024-12-25"; Feiertag = "Weihnachtstag"; Kanton = "ALLE" }
-    [PSCustomObject]@{ Datum = "2024-12-26"; Feiertag = "Stephanstag"; Kanton = "ALLE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = "$($Year)-01-01"; title = "Neujahrstag"; Kanton = "ALLE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = "$($Year)-01-02"; title = "Berchtoldstag"; Kanton = "ALLE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = $karfreitag; title = "Karfreitag"; Kanton = "ALLE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = $easterSunday; title = "Ostersonntag"; Kanton = "ALLE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = $ostermontag; title = "Ostermontag"; Kanton = "ALLE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = "$($Year)-05-01"; title = "Tag der Arbeit (ZH, GR)"; Kanton = "ZH, GR" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = $auffahrt; title = "Auffahrt"; Kanton = "ALLE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = $pfingstmontag; title = "Pfingstmontag"; Kanton = "ALLE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = "$($Year)-08-01"; title = "Bundesfeier"; Kanton = "ALLE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = "$($Year)-11-01"; title = "Allerheiligen (SG, BE)"; Kanton = "SG, BE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = "$($Year)-12-25"; title = "Weihnachtstag"; Kanton = "ALLE" }
+    [PSCustomObject]@{ id = ([GUID]::NewGuid()); Datum = "$($Year)-12-26"; title = "Stephanstag"; Kanton = "ALLE" }
 )
 
 # Ausgabe der Feiertage
-$feiertage_spezial | Select-Object Feiertag,@{N='start';E={$_.Datum}},@{N='end';E={$_.Datum}} | ConvertTo-Csv -Delimiter ';'
+$feiertage_spezial | Select-Object id,title,@{N='type';E={'Feiertag'}},@{N='start';E={$_.Datum}},@{N='end';E={$_.Datum}},@{N='created';E={(Get-Date -f 'yyyy-MM-dd')}} #| ConvertTo-Csv -Delimiter ';'
