@@ -150,6 +150,90 @@ function Get-MonthAbbreviation {
 
     return $monthAbbreviation
 }
+
+function Get-SwissHolidays {
+    <#
+    .SYNOPSIS
+        Calculates movable holidays based on the Easter Sunday for a given year and returns a list of holidays.
+
+    .DESCRIPTION
+        This function uses Carl Friedrich Gauss's algorithm to calculate the date of Easter Sunday and derives other holidays such as Good Friday, Easter Monday, Ascension Day, and Pentecost Monday. 
+        Additionally, it generates general holidays such as New Year's Day, Labor Day, and Christmas for all Swiss cantons, as well as specific holidays for certain cantons.
+
+    .PARAMETER Year
+        The year for which the holidays should be calculated. The value must be between 1970 and 2999.
+
+    .OUTPUTS
+        PSCustomObject
+        Returns a list of holidays as PSCustomObject, including the date, title, canton, and other information.
+
+    .EXAMPLE
+        Get-SwissHolidays -Year 2024
+        Calculates holidays for the year 2024 and returns them as a list of objects.
+
+    .NOTES
+        The algorithm to calculate Easter Sunday was devised by Carl Friedrich Gauss.
+    #>
+    [CmdletBinding()]
+    param(
+        [ValidateRange(1970, 2999)]
+        [Parameter(Mandatory = $true)]
+        [Int] $Year
+    )
+
+    function Get-EasterSunday {
+        param (
+            [int]$year
+        )
+
+        # Algorithm by Carl Friedrich Gauss to calculate Easter Sunday
+        $a = $year % 19
+        $b = [math]::Floor($year / 100)
+        $c = $year % 100
+        $d = [math]::Floor($b / 4)
+        $e = $b % 4
+        $f = [math]::Floor(($b + 8) / 25)
+        $g = [math]::Floor(($b - $f + 1) / 3)
+        $h = (19 * $a + $b - $d - $g + 15) % 30
+        $i = [math]::Floor($c / 4)
+        $k = $c % 4
+        $l = (32 + 2 * $e + 2 * $i - $h - $k) % 7
+        $m = [math]::Floor(($a + 11 * $h + 22 * $l) / 451)
+        $month = [math]::Floor(($h + $l - 7 * $m + 114) / 31)
+        $day = (($h + $l - 7 * $m + 114) % 31) + 1
+
+        # Return Easter Sunday as a DateTime object
+        return Get-Date -Year $year -Month $month -Day $day
+    }
+
+    # Calculate movable holidays based on Easter Sunday
+    $easterSunday    = (Get-EasterSunday -year $Year).ToString("yyyy-MM-dd")
+    $goodFriday      = (Get-EasterSunday -year $Year).AddDays(-2).ToString("yyyy-MM-dd")
+    $easterMonday    = (Get-EasterSunday -year $Year).AddDays(1).ToString("yyyy-MM-dd")
+    $ascensionDay    = (Get-EasterSunday -year $Year).AddDays(39).ToString("yyyy-MM-dd")
+    $pentecostSunday = (Get-EasterSunday -year $Year).AddDays(49).ToString("yyyy-MM-dd")
+    $pentecostMonday = (Get-EasterSunday -year $Year).AddDays(50).ToString("yyyy-MM-dd")
+
+    # List of holidays as PSCustomObject
+    $holidays_special = @(
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = "$($Year)-01-01"; title = "Neujahrstag"; Canton = "ALL" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = "$($Year)-01-02"; title = "Berchtoldstag"; Canton = "ALL" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = $goodFriday; title = "Karfreitag"; Canton = "ALL" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = $easterSunday; title = "Ostern"; Canton = "ALL" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = $easterMonday; title = "Ostermontag"; Canton = "ALL" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = "$($Year)-05-01"; title = "Tag der Arbeit (ZH, GR)"; Canton = "ZH, GR" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = $ascensionDay; title = "Auffahrt"; Canton = "ALL" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = $pentecostSunday; title = "Pfingsten"; Canton = "ALL" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = $pentecostMonday; title = "Pfingstmontag"; Canton = "ALL" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = "$($Year)-08-01"; title = "Bundesfeier"; Canton = "ALL" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = "$($Year)-11-01"; title = "Allerheiligen (SG, BE)"; Canton = "SG, BE" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = "$($Year)-12-25"; title = "Weihnachtstag"; Canton = "ALL" }
+        [PSCustomObject]@{ id = ([GUID]::NewGuid()); Date = "$($Year)-12-26"; title = "Stephanstag"; Canton = "ALL" }
+    )
+
+    # Output the list of holidays
+    return $holidays_special | Select-Object id,title,@{N='type';E={'Feiertag'}},@{N='start';E={$_.Date}},@{N='end';E={$_.Date}},@{N='created';E={(Get-Date -f 'yyyy-MM-dd')}}
+}
 #endregion
 
 # Export-ModuleMember -Function Get-MonthCalendar, Get-MonthAbbreviation
