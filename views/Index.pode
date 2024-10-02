@@ -131,7 +131,7 @@
                     
                 <div Class="col-md"  >
                     <p >
-                        <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >pode</a> and <a href="https://www.powershellgallery.com/packages/PSHTML" Target="_blank"  >PSHTML</a>
+                        Based on <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >Pode</a> V$(Get-Module -Name Pode | Select-Object -Expandproperty Version) and <a href="https://www.powershellgallery.com/packages/PSHTML" Target="_blank"  >PSHTML</a>
                     </p>
                 </div>
 
