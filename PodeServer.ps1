@@ -146,10 +146,10 @@ function Initialize-ApiEndpoints {
 
         }
 
-        Add-PodeRoute -Method Get -Path '/api/year/new' -ArgumentList @($DbPath) -ScriptBlock {
+        Add-PodeRoute -Method Post -Path '/api/year/new' -ContentType 'application/text' -ArgumentList @($DbPath) -ScriptBlock {
             param($DbPath)
             
-            $Year    = [int](Get-date -f 'yyyy')
+            $Year    = [int]$WebEvent.Data
             $NewFile = (Join-Path -Path $DbPath -ChildPath "$($Year).csv")
 
             if(-not(Test-Path $NewFile)){            
