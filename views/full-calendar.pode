@@ -163,7 +163,9 @@
 
             </div>
         </Section>
-    
+
+        <pre Style="color:#000"  >Creates the swiss-public holidays for the given year: I ♥ PS > Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025</pre>
+
     </Body>
     <!-- End Body -->
  
