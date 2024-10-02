@@ -66,15 +66,10 @@ body {
 #events-log {
   display: inline-block;
   vertical-align: top;
-  width: 340px;
-  background-color: #212529;
-  padding: 10px;
   min-height: 200px;
-  border-radius: 10px;
 }
 
 #events-log div {
-  background-color: #212529;
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
   font-size: 14px;
   line-height: 1.4;
@@ -84,6 +79,8 @@ body {
   display: inline-block;
   vertical-align: top;
   width: calc(100% - 380px);
+  padding: 30px;
+  border-radius: 10px;
 }
 
 .tooltip {
