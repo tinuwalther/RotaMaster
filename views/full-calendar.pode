@@ -104,7 +104,7 @@
                 </div>
             </nav>
         
-            <div Class="Container">
+            <div Class="Container-fluid">
 
                 <!--div class="row align-items-center"-->
 
