@@ -146,6 +146,19 @@ function Initialize-ApiEndpoints {
 
         }
 
+        Add-PodeRoute -Method Get -Path '/api/year/new' -ArgumentList @($DbPath) -ScriptBlock {
+            param($DbPath)
+            
+            $Year    = [int](Get-date -f 'yyyy')
+            $NewFile = (Join-Path -Path $DbPath -ChildPath "$($Year).csv")
+
+            if(-not(Test-Path $NewFile)){            
+                $data = Get-SwissHolidays -Year $Year
+                $data | Export-Csv -Path $NewFile -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
+                Write-PodeJsonResponse -Value ($data | ConvertTo-Json)
+            }
+        }
+
         Add-PodeRoute -Method Post -Path '/api/event/new' -ArgumentList @($DbPath) -ScriptBlock {
             param($DbPath)
 
