@@ -159,11 +159,13 @@ function Initialize-ApiEndpoints {
                 
                 # "new-events: $($title), $($start), $($end)"| Out-Default
                 $data = [PSCustomObject]@{
+                    Id    = [guid]::NewGuid()
                     Title = $title
                     # Description = $descr
-                    Type  = $type
-                    Start = Get-Date ([datetime]$start) -f 'yyyy-MM-dd'
-                    End   = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
+                    Type    = $type
+                    Start   = Get-Date ([datetime]$start) -f 'yyyy-MM-dd'
+                    End     = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
+                    Created = Get-Date -f 'yyyy-MM-dd'
                 }
 
                 $data | Export-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
@@ -178,7 +180,10 @@ function Initialize-ApiEndpoints {
         # Route zum Abrufen der Events als JSON
         Add-PodeRoute -Method Get -Path '/api/event/get' -ArgumentList @($DbPath) -ScriptBlock {
             param($DbPath)
-            $data = Import-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8
+            $data = Get-ChildItem -Path $DbPath -Filter '*.csv' | ForEach-Object {
+                Import-Csv -Path $PSItem.Fullname -Delimiter ';' -Encoding utf8
+            }
+
             $events = foreach($item in $data){
                 switch -RegEx ($item.type){
                     'Pikett'                    { $color = '#cd00cd'} # purple
