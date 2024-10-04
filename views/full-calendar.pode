@@ -1,3 +1,4 @@
+<!doctype html>
 <html >
 
     <!-- Begin Head -->
@@ -30,10 +31,29 @@
 
         <script>
 
-            // Function for making the API POST request
-            async function callApi() {
+            /**
+             * Sends the next year as plain text to the provided API URL and logs the response.
+            * 
+            * This asynchronous function calculates the next year dynamically,
+            * converts it to a string, and sends it to a specified API endpoint using
+            * a POST request. The function handles any potential errors and logs the
+            * result or any failures to the console.
+            * 
+            * @param {string} url - The API endpoint to which the next year will be sent.
+            * 
+            * - Pass the desired API endpoint as the 'url' parameter.
+            * - It sends the next year (e.g., 2025 if the current year is 2024) as a plain text string to the API.
+            * - Logs the success or failure of the request to the console.
+            *
+            * @async
+            * @param {string} url - The URL of the API endpoint where the year is sent.
+            * @returns {Promise<void>} - No return value, but logs results or errors to the console.
+            * 
+            * @example
+            * await getNextYear('/api/year/new'); // Sends the next year to the given API URL and logs the response.
+            */
+            async function getNexYear(url) {
                 const nextYear = new Date().getFullYear() + 1; // Calculate the next year dynamically
-                const url = '/api/year/new'; // Relative URL to the API
                 const data = nextYear.toString(); // Convert the year to string to send as plain text
 
                 try {
@@ -49,7 +69,7 @@
                     // Check if the request was successful
                     if (response.ok) {
                         const result = await response.text(); // Read the response as text
-                        console.log('Success:', result); // Log the response
+                        //console.log('Success:', result); // Log the response
                     } else {
                         console.error('Request failed with status:', response.status);
                     }
@@ -58,14 +78,71 @@
                 }
             }
 
-            // Trigger the API call when the page loads
+            /**
+            * Fetches calendar event data from the provided API URL.
+            * 
+            * This asynchronous function sends a GET request to the specified API endpoint 
+            * to retrieve calendar event data. It returns the parsed JSON data if the request
+            * is successful, or an empty array if an error occurs.
+            * 
+            * @async
+            * @param {string} url - The API endpoint from which to fetch the calendar data.
+            * @returns {Promise<Array>} A promise that resolves to an array of event data. 
+            * If the request fails, the function returns an empty array.
+            * 
+            * @example
+            * const events = await loadApiData('/api/event/get'); 
+            * console.log(events); // Logs the calendar event data or an empty array if an error occurs.
+            */
+            async function loadApiData(url) {
+                //console.log('Starting to fetch calendar data from:', url); 
+
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const calendarData = await response.json();
+                        return calendarData;
+                    } else {
+                        console.error('Error fetching calendarData:', response.status);
+                        return [];
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    return [];
+                }
+            }
+
+            // Trigger the API call for getNexYear() when the page loads
             window.addEventListener('load', () => {
-                callApi(); // Call the API once the page is fully loaded
+                getNexYear('/api/year/new'); // Call the API once the page is fully loaded
             });
 
-            document.addEventListener('DOMContentLoaded', function() {
+
+            /**
+            * Initializes the FullCalendar instance with events from the API and sets up form submission handling.
+            * 
+            * This function listens for the `DOMContentLoaded` event to ensure the DOM is fully loaded before
+            * initializing the FullCalendar component. It asynchronously fetches event data from the provided API,
+            * configures the calendar with this data, and renders the calendar. Additionally, the form handling logic
+            * for creating new events is included, where form submissions are intercepted, and data is sent to the API.
+            *
+            * Main features:
+            * - Loads calendar events from the API endpoint '/api/event/get'.
+            * - Initializes a FullCalendar instance with various configuration options (locale, views, toolbars, etc.).
+            * - Handles 'dateClick' and 'select' interactions in the calendar.
+            * - Intercepts form submissions to create new events by sending form data to the API endpoint '/api/event/new'.
+            *
+            * @listens DOMContentLoaded
+            * 
+            * @example
+            * The calendar is initialized and rendered once the page is fully loaded.
+            */
+            document.addEventListener('DOMContentLoaded', async function() {
 
                 var calendarEl = document.getElementById('calendar');
+
+                const calendarEvents = await loadApiData('/api/event/get');
+                console.log('Loaded calendar events:', calendarEvents);
 
                 var calendar = new FullCalendar.Calendar(calendarEl, {
                     timeZone: 'local',
@@ -89,7 +166,7 @@
                     navLinks: true,
 
                     // A URL of a JSON feed that the calendar will fetch Event Objects from.
-                    events: '/api/event/get',
+                    events: calendarEvents, //'/api/event/get',
 
                     dateClick: function(info) {
                         // alert('Datum angeklickt: ' + info.dateStr);
@@ -140,6 +217,7 @@
                 });
 
             });
+
         </script>
 
         <title >#PSRotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
@@ -184,6 +262,7 @@
                     <!--article Id="CalendarBox"-->
 
                         <div id="events-log">
+
                             <h3>Events</h3>
 
                             <form action="/api/event/new" method="POST">
@@ -223,6 +302,13 @@
 
                                 <input type="submit" value="Eintragen" class="btn btn-primary mb-3">
                             </form>
+
+                            <div id="pikett-summe">
+                                <h3>Summary</h3>
+                                <!-- hier soll die Summe der Pikett Records jeder einzelnen Person stehen -->
+                                <!-- hier soll die Summe der Pikett Pier Records jeder einzelnen Person stehen -->
+                                <!-- hier soll die Summe der Ferien Records jeder einzelnen Person stehen -->
+                            </div>
                         </div>
 
                         <div id="calendar"></div>
