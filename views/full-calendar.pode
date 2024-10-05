@@ -26,7 +26,6 @@
         <script src="\assets\Chartjs\Chart.bundle.min.js"></script>
         <script src="\assets\calendar\fullcalendar.main.min.js"></script>
         <script src='\assets\calendar\index.global.min.js'></script>
-        <script src='fullcalendar/dist/index.global.js'></script>
 
         <script>
 
