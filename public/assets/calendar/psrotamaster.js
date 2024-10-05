@@ -1,0 +1,79 @@
+/**
+* Sends the next year as plain text to the provided API URL and logs the response.
+* 
+* This asynchronous function calculates the next year dynamically,
+* converts it to a string, and sends it to a specified API endpoint using
+* a POST request. The function handles any potential errors and logs the
+* result or any failures to the console.
+* 
+* @param {string} url - The API endpoint to which the next year will be sent.
+* 
+* - Pass the desired API endpoint as the 'url' parameter.
+* - It sends the next year (e.g., 2025 if the current year is 2024) as a plain text string to the API.
+* - Logs the success or failure of the request to the console.
+*
+* @async
+* @param {string} url - The URL of the API endpoint where the year is sent.
+* @returns {Promise<void>} - No return value, but logs results or errors to the console.
+* 
+* @example
+* await getNextYear('/api/year/new'); // Sends the next year to the given API URL and logs the response.
+*/
+async function getNexYear(url) {
+    const nextYear = new Date().getFullYear() + 1; // Calculate the next year dynamically
+    const data = nextYear.toString(); // Convert the year to string to send as plain text
+
+    try {
+        // Send a POST request using fetch
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain' // Header to send plain text
+            },
+            body: data // Sending the data as plain text in the body
+        });
+
+        // Check if the request was successful
+        if (response.ok) {
+            const result = await response.text(); // Read the response as text
+            //console.log('Success:', result); // Log the response
+        } else {
+            console.error('Request failed with status:', response.status);
+        }
+    } catch (error) {
+        console.error('Error occurred:', error); // Log any errors
+    }
+}
+
+/**
+* Fetches calendar event data from the provided API URL.
+* 
+* This asynchronous function sends a GET request to the specified API endpoint 
+* to retrieve calendar event data. It returns the parsed JSON data if the request
+* is successful, or an empty array if an error occurs.
+* 
+* @async
+* @param {string} url - The API endpoint from which to fetch the calendar data.
+* @returns {Promise<Array>} A promise that resolves to an array of event data. 
+* If the request fails, the function returns an empty array.
+* 
+* @example
+* const events = await loadApiData('/api/event/get'); 
+* console.log(events); // Logs the calendar event data or an empty array if an error occurs.
+*/
+async function loadApiData(url) {
+    var calendarData = [];
+    console.log('Starting to fetch calendar data from:', url); 
+
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            calendarData = await response.json();
+        } else {
+            console.error('Error fetching calendarData:', response.status);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+    return calendarData;
+}
