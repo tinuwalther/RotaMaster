@@ -77,3 +77,69 @@ async function loadApiData(url) {
     }
     return calendarData;
 }
+
+
+async function getEventSummary(calendarData, regex) {
+    var result = null;
+    try {
+        const filteredEvents = calendarData.filter(event => {
+            return regex.test(event.title);
+        });
+
+        console.log('Filtered Events:', filteredEvents.length);
+        result = filteredEvents;
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+    return result;
+}
+
+async function getEventSummarySplit(calendarData, regex) {
+    const result = {};
+    try {
+        // Filtere und zähle die Events basierend auf der RegEx
+        calendarData.forEach(event => {
+            // Teile den Titel am Bindestrich, um den Namen der Person und den Event-Typ zu extrahieren
+            const [personName, eventType] = event.title.split(' - ');
+
+            // Prüfe, ob der Event-Typ mit der RegEx übereinstimmt
+            if (eventType && regex.test(eventType)) {
+                // Wenn die Person noch nicht im result-Objekt existiert, füge sie hinzu
+                if (!result[personName]) {
+                    result[personName] = 0; // Initialisiere den Zähler
+                }
+                
+                // Inkrementiere den Zähler für diese Person
+                result[personName]++;
+            }
+        });
+
+        return result; // Gib das Zählerobjekt zurück
+
+    } catch (error) {
+        console.error('Error:', error);
+        return {}; // Rückgabe eines leeren Objekts bei Fehler
+    }
+}
+
+// Funktion zum Einfügen der Daten in die HTML-Tabelle
+function renderTable(data) {
+    const tableBody = document.querySelector('#pikettTable tbody');
+    tableBody.innerHTML = ''; // Tabelle zurücksetzen
+
+    // Schleife durch die Daten und füge sie in die Tabelle ein
+    Object.keys(data).forEach(person => {
+        const row = document.createElement('tr'); // Erstelle eine Tabellenreihe
+
+        const nameCell = document.createElement('td'); // Zelle für den Namen
+        nameCell.textContent = person; // Füge den Namen ein
+        row.appendChild(nameCell);
+
+        const countCell = document.createElement('td'); // Zelle für die Anzahl
+        countCell.textContent = data[person]; // Füge die Anzahl ein
+        row.appendChild(countCell);
+
+        tableBody.appendChild(row); // Füge die Reihe zum Tabellenkörper hinzu
+    });
+}
