@@ -99,8 +99,9 @@
                     },
 
                     select: function(info) {
-                        // alert('selected ' + info.startStr + ' to ' + info.endStr);
+                        alert('Selected ' + info.startStr + ' to ' + info.endStr);
                     }
+
                 });
 
                 calendar.render();
@@ -182,78 +183,78 @@
         
             <div Class="Container-fluid">
 
-                <!--div class="row align-items-center"-->
+                <!--article Id="CalendarBox"-->
 
-                    <!--article Id="CalendarBox"-->
+                    <div id="events-log">
 
-                        <div id="events-log">
+                        <h3>Events</h3>
 
-                            <h3>Events</h3>
-
-                            <form action="/api/event/new" method="POST">
-                                <div class="col-auto">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text" id="basic-addon1">Name</span>
-                                        <input class="form-control" list="datalistOptions" id="name" name="name" placeholder="Type to search...">
-                                        <datalist id="datalistOptions">
-                                        $($person = (Get-PodeConfig).person)
-                                        $(foreach($i in $person){
-                                            "<option value='$($i)'>"
-                                        })
-                                        </datalist><br>
-                                    </div>
-                                </div>
-
-                                <div class="col-auto">
-                                    <label for="start" class="form-label">Typ der Abwesenheit</label><br>
-                                    <select class="form-select" size="5" aria-label="Default select example" id="type" name="type">
-                                        <!--option selected>Typ der Abwesenheit</option-->
-                                        $($absence = (Get-PodeConfig).absenceType)
-                                        $(foreach($i in $absence.keys){
-                                            "<option value='$($i)'>$($absence[$i])</option>"
-                                        })
-                                    </select><br>
-                                </div>
-
-                                <div class="col-auto">
-                                    <label for="start" class="form-label">Startdatum</label><br>
-                                    <input type="date" class="form-control" id="start" name="start"><br>
-                                </div>
-
-                                <div class="col-auto">
-                                    <label for="end" class="form-label">Enddatum</label><br>
-                                    <input type="date" class="form-control" id="end" name="end"><br>
-                                </div>
-
-                                <input type="submit" value="Eintragen" class="btn btn-primary mb-3">
-                            </form>
-
-                            <div id="summary">
-                                <h3>Summary</h3>
-                                <p>Ferien = Tage, Pikett und Pier = Wochen</p>
-                                <!-- Tabelle zur Anzeige der Pikett-Daten -->
-                                    <table id="pikettTable" border="1">
-                                        <thead>
-                                            <tr>
-                                                <th>Person</th>
-                                                <th>Pikett</th>
-                                                <th>Pier</th>
-                                                <th>Ferien</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Hier werden die Daten eingefügt -->
-                                        </tbody>
-                                    </table>
+                        <form action="/api/event/new" method="POST">
+                            <div class="col-auto">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" id="basic-addon1">Name</span>
+                                    <input class="form-control" list="datalistOptions" id="name" name="name" placeholder="Type to search...">
+                                    <datalist id="datalistOptions">
+                                    $($person = (Get-PodeConfig).person)
+                                    $(foreach($i in $person){
+                                        "<option value='$($i)'>"
+                                    })
+                                    </datalist><br>
                                 </div>
                             </div>
-                        <div id="calendar"></div>
 
-                    <!--/article-->
+                            <div class="col-auto">
+                                <label for="start" class="form-label">Typ der Abwesenheit</label><br>
+                                <select class="form-select" size="5" aria-label="Default select example" id="type" name="type">
+                                    <!--option selected>Typ der Abwesenheit</option-->
+                                    $($absence = (Get-PodeConfig).absenceType)
+                                    $(foreach($i in $absence.keys){
+                                        "<option value='$($i)'>$($absence[$i])</option>"
+                                    })
+                                </select><br>
+                            </div>
 
-                <!--/div-->
+                            <div class="col-auto">
+                                <label for="start" class="form-label">Startdatum</label><br>
+                                <input type="date" class="form-control" id="start" name="start"><br>
+                            </div>
+
+                            <div class="col-auto">
+                                <label for="end" class="form-label">Enddatum</label><br>
+                                <input type="date" class="form-control" id="end" name="end"><br>
+                            </div>
+
+                            <div class="col-auto">
+                                <input type="submit" value="Eintragen" class="btn btn-primary mb-3">
+                            </div>
+                        </form>
+
+                        <div id="summary">
+                            <h3>Summary</h3>
+                            <p>Ferien = Tage, Pikett und Pier = Wochen</p>
+                            <!-- Tabelle zur Anzeige der Pikett-Daten -->
+                                <table id="pikettTable" border="1">
+                                    <thead>
+                                        <tr>
+                                            <th>Person</th>
+                                            <th>Pikett</th>
+                                            <th>Pier</th>
+                                            <th>Ferien</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Hier werden die Daten eingefügt -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                                            
+                    <div id="calendar"></div>
+
+                <!--/article-->
 
             </div>
+
         </Section>
 
         <pre Style="text-align:center;color:#000"  >Creates the swiss-public holidays for the given year: I ♥ PS > Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025</pre>
