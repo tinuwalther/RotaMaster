@@ -98,20 +98,29 @@ async function getEventSummary(calendarData, regex) {
 async function getEventSummarySplit(calendarData, regex) {
     const result = {};
     try {
-        // Filtere und zähle die Events basierend auf der RegEx
+        // Iteriere durch alle Events im Kalender
         calendarData.forEach(event => {
-            // Teile den Titel am Bindestrich, um den Namen der Person und den Event-Typ zu extrahieren
-            const [personName, eventType] = event.title.split(' - ');
+            if (event.title.includes(' - ')) {
+                // Teile den Titel am Bindestrich, um den Namen der Person und den Event-Typ zu extrahieren
+                const [personName, eventType] = event.title.split(' - ');
 
-            // Prüfe, ob der Event-Typ mit der RegEx übereinstimmt
-            if (eventType && regex.test(eventType)) {
                 // Wenn die Person noch nicht im result-Objekt existiert, füge sie hinzu
                 if (!result[personName]) {
-                    result[personName] = 0; // Initialisiere den Zähler
+                    result[personName] = {
+                        pikett: 0,       // Zähler für Pikett-Events
+                        pikettPier: 0,   // Zähler für Pikett Pier-Events
+                        ferien: 0        // Zähler für Ferien-Events
+                    };
                 }
-                
-                // Inkrementiere den Zähler für diese Person
-                result[personName]++;
+
+                // Zähle die Event-Typen entsprechend
+                if (eventType === 'Pikett') {
+                    result[personName].pikett++;
+                } else if (eventType === 'Pikett Pier') {
+                    result[personName].pikettPier++;
+                } else if (eventType === 'Ferien') {
+                    result[personName].ferien++;
+                }
             }
         });
 
@@ -123,8 +132,10 @@ async function getEventSummarySplit(calendarData, regex) {
     }
 }
 
+
 // Funktion zum Einfügen der Daten in die HTML-Tabelle
 function renderTable(data) {
+    console.log('renderTable:', data);
     const tableBody = document.querySelector('#pikettTable tbody');
     tableBody.innerHTML = ''; // Tabelle zurücksetzen
 
@@ -136,9 +147,17 @@ function renderTable(data) {
         nameCell.textContent = person; // Füge den Namen ein
         row.appendChild(nameCell);
 
-        const countCell = document.createElement('td'); // Zelle für die Anzahl
-        countCell.textContent = data[person]; // Füge die Anzahl ein
-        row.appendChild(countCell);
+        const pikettCell = document.createElement('td'); // Zelle für die Anzahl Pikett
+        pikettCell.textContent = data[person].pikett; // Füge die Pikett-Anzahl ein
+        row.appendChild(pikettCell);
+
+        const pikettPierCell = document.createElement('td'); // Zelle für die Anzahl Pikett Pier
+        pikettPierCell.textContent = data[person].pikettPier; // Füge die Pikett Pier-Anzahl ein
+        row.appendChild(pikettPierCell);
+
+        const ferienCell = document.createElement('td'); // Zelle für die Anzahl Ferien
+        ferienCell.textContent = data[person].ferien; // Füge die Ferien-Anzahl ein
+        row.appendChild(ferienCell);
 
         tableBody.appendChild(row); // Füge die Reihe zum Tabellenkörper hinzu
     });
