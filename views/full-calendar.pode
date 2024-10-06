@@ -75,6 +75,10 @@
                 });
 
                 // Aufruf der Funktion und Rendern der Tabelle nach dem Laden der Seite
+                const summary = await getEventSummarySplit(calendarEvents, regexPikett);
+                renderTable(summary); // Zeige die Daten in der Tabelle an
+
+                // Aufruf der Funktion und Rendern der Tabelle nach dem Laden der Seite
                 document.addEventListener('DOMContentLoaded', async () => {
                     const summary = await getEventSummarySplit(calendarEvents, regexPikett); // Hole die Daten
                     renderTable(summary); // Zeige die Daten in der Tabelle an
@@ -246,7 +250,9 @@
                                         <thead>
                                             <tr>
                                                 <th>Person</th>
-                                                <th>Anzahl Pikett</th>
+                                                <th>Pikett</th>
+                                                <th>Pier</th>
+                                                <th>Ferien</th>
                                             </tr>
                                         </thead>
                                         <tbody>
