@@ -190,10 +190,15 @@ table {
   border-collapse: collapse;
 }
 
+thead {
+  background-color: var(--bs-gray-200);
+  color: black;
+}
+
 th, td {
-  border: 1px solid var(--bs-gray-200); /* Rand für jede Zelle */
-  padding: 8px; /* Polsterung für bessere Lesbarkeit */
-  text-align: left; /* Linksbündige Ausrichtung */
+  border: 1px solid var(--bs-gray-200);
+  padding: 8px; 
+  text-align: left;
 }
 
 pre {
