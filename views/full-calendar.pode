@@ -246,7 +246,7 @@
                             <div id="summary">
                                 <h3>Summary</h3>
                                 <!-- Tabelle zur Anzeige der Pikett-Daten -->
-                                    <table id="pikettTable" border="0">
+                                    <table id="pikettTable" border="1">
                                         <thead>
                                             <tr>
                                                 <th>Person</th>
