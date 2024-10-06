@@ -61,27 +61,12 @@
                 const calendarEvents = await loadApiData('/api/event/get');
                 console.log('Loaded calendar events:', calendarEvents);
 
-                //const pikett = getEventSummary(calendarEvents, /- Pikett$/);
-                //console.log('Pikett Only:', pikett);
-
-                const regexPikett = /^Pikett$/;
-                getEventSummarySplit(calendarEvents, regexPikett).then(result => {
-                    console.log('Pikett Summary:', result);
-                });
-
-                const regexPikettPier = /^Pikett Pier$/;
-                getEventSummarySplit(calendarEvents, regexPikettPier).then(result => {
-                    console.log('Pikett Pier Summary:', result);
-                });
-
                 // Aufruf der Funktion und Rendern der Tabelle nach dem Laden der Seite
-                const summary = await getEventSummarySplit(calendarEvents, regexPikett);
-                renderTable(summary); // Zeige die Daten in der Tabelle an
+                const currentDate = new Date();
+                const selectedYear = currentDate.getFullYear();
 
-                // Aufruf der Funktion und Rendern der Tabelle nach dem Laden der Seite
-                document.addEventListener('DOMContentLoaded', async () => {
-                    const summary = await getEventSummarySplit(calendarEvents, regexPikett); // Hole die Daten
-                    renderTable(summary); // Zeige die Daten in der Tabelle an
+                getEventSummary(calendarEvents, selectedYear).then(summary => {
+                    renderTable(summary); 
                 });
 
                 var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -245,6 +230,7 @@
 
                             <div id="summary">
                                 <h3>Summary</h3>
+                                <p>Ferien = Tage, Pikett und Pier = Wochen</p>
                                 <!-- Tabelle zur Anzeige der Pikett-Daten -->
                                     <table id="pikettTable" border="1">
                                         <thead>
