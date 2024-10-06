@@ -78,61 +78,6 @@ async function loadApiData(url) {
     return calendarData;
 }
 
-
-async function getEventSummary(calendarData, regex) {
-    var result = null;
-    try {
-        const filteredEvents = calendarData.filter(event => {
-            return regex.test(event.title);
-        });
-
-        console.log('Filtered Events:', filteredEvents.length);
-        result = filteredEvents;
-
-    } catch (error) {
-        console.error('Error:', error);
-    }
-    return result;
-}
-
-async function getEventSummarySplit(calendarData, regex) {
-    const result = {};
-    try {
-        // Iteriere durch alle Events im Kalender
-        calendarData.forEach(event => {
-            if (event.title.includes(' - ')) {
-                // Teile den Titel am Bindestrich, um den Namen der Person und den Event-Typ zu extrahieren
-                const [personName, eventType] = event.title.split(' - ');
-
-                // Wenn die Person noch nicht im result-Objekt existiert, füge sie hinzu
-                if (!result[personName]) {
-                    result[personName] = {
-                        pikett: 0,       // Zähler für Pikett-Events
-                        pikettPier: 0,   // Zähler für Pikett Pier-Events
-                        ferien: 0        // Zähler für Ferien-Events
-                    };
-                }
-
-                // Zähle die Event-Typen entsprechend
-                if (eventType === 'Pikett') {
-                    result[personName].pikett++;
-                } else if (eventType === 'Pikett Pier') {
-                    result[personName].pikettPier++;
-                } else if (eventType === 'Ferien') {
-                    result[personName].ferien++;
-                }
-            }
-        });
-
-        return result; // Gib das Zählerobjekt zurück
-
-    } catch (error) {
-        console.error('Error:', error);
-        return {}; // Rückgabe eines leeren Objekts bei Fehler
-    }
-}
-
-
 // Funktion zum Einfügen der Daten in die HTML-Tabelle
 function renderTable(data) {
     console.log('renderTable:', data);
@@ -161,4 +106,82 @@ function renderTable(data) {
 
         tableBody.appendChild(row); // Füge die Reihe zum Tabellenkörper hinzu
     });
+}
+
+
+/**
+ * Berechnet die Events im ausgewählten Jahr und gibt die Zusammenfassung zurück.
+ * @param {Array} calendarData - Die Kalenderdaten.
+ * @param {number} selectedYear - Das ausgewählte Jahr.
+ * @returns {Object} - Die Zusammenfassung der Events pro Person.
+ */
+async function getEventSummary(calendarData, selectedYear) {
+    const result = {};
+
+    calendarData.forEach(event => {
+        const [personName, eventType] = event.title.split(' - ');
+        if (!personName || !eventType) return;
+
+        const eventStartDate = new Date(event.start + 'T00:00:00');
+        const eventEndDate = new Date(event.end + 'T00:00:00');
+
+        // Nur Events verarbeiten, die im ausgewählten Jahr liegen
+        if (eventStartDate.getFullYear() !== selectedYear && eventEndDate.getFullYear() !== selectedYear) return;
+
+        // Initialisierung der Person im Ergebnis-Objekt
+        result[personName] = result[personName] || { pikett: 0, pikettPier: 0, ferien: 0, ferienStart: null, ferienEnd: null };
+
+        // Zähle die Events und aktualisiere die Ferien-Daten
+        switch (eventType.trim()) {
+            case 'Pikett':
+                result[personName].pikett++;
+                break;
+            case 'Pikett Pier':
+                result[personName].pikettPier++;
+                break;
+            case 'Ferien':
+                if (!result[personName].ferienStart || eventStartDate < result[personName].ferienStart) {
+                    result[personName].ferienStart = eventStartDate;
+                }
+                if (!result[personName].ferienEnd || eventEndDate > result[personName].ferienEnd) {
+                    result[personName].ferienEnd = eventEndDate;
+                }
+                break;
+        }
+    });
+
+    // Berechne die Anzahl der Ferientage (ohne Wochenenden)
+    for (const person in result) {
+        const { ferienStart, ferienEnd } = result[person];
+        result[person].ferien = (ferienStart && ferienEnd) ? calculateWorkdays(ferienStart, ferienEnd) : 0;
+    }
+
+    return result;
+}
+
+/**
+ * Berechnet die Anzahl der Ferientage ohne Wochenenden.
+ * 
+ * @param {Date} startDate - Das Startdatum der Ferien.
+ * @param {Date} endDate - Das Enddatum der Ferien.
+ * @returns {number} - Die Anzahl der Ferientage ohne Wochenenden.
+ */
+function calculateWorkdays(startDate, endDate) {
+    let count = 0; // Zähler für die Wochentage
+    let currentDate = new Date(startDate); // Startdatum
+
+    // Iteriere über jeden Tag im Zeitraum
+    while (currentDate <= endDate) {
+        const dayOfWeek = currentDate.getDay();
+
+        // Prüfe, ob der aktuelle Tag ein Wochentag ist (kein Samstag oder Sonntag)
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            count++; // Zähle nur die Wochentage
+        }
+
+        // Gehe zum nächsten Tag
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return count;
 }
