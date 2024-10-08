@@ -7,10 +7,10 @@
         }
     }
     fullCalendar = @{
-        backgroundColor = '#343a40' # '#343a40' = dark-mode
-        #backgroundColor = '#f8f9fa' # '#f8f9fa' = light-mode
-        #headerToolbar = 'multiMonthYear,dayGridMonth,dayGridWeek,dayGridDay,listMonth'
-        #headerToolbar = 'multiMonthYear,dayGridMonth,dayGridWeek,listMonth'
+        # backgroundColor = '#343a40' # '#343a40' = dark-mode
+        # backgroundColor = '#f8f9fa' # '#f8f9fa' = light-mode
+        # headerToolbar = 'multiMonthYear,dayGridMonth,dayGridWeek,dayGridDay,listMonth'
+        # headerToolbar = 'multiMonthYear,dayGridMonth,dayGridWeek,listMonth'
         headerToolbar = 'multiMonthYear,dayGridMonth,listMonth'
     }
     absenceType = @{
@@ -28,5 +28,7 @@
         'Hausi'
         'Aschi'
         'Peschä'
+        'Ändu'
+        'Fredu'
     )
 }
