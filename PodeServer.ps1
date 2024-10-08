@@ -88,23 +88,7 @@ function Initialize-WebEndpoints {
     process{
         # Index
         Add-PodeRoute -Method Get -Path '/' -ScriptBlock {
-            Write-PodeViewResponse -Path 'Index.pode'
-        }
-        # Test
-        Add-PodeRoute -Method Get -Path '/test' -ScriptBlock {
-            Write-PodeViewResponse -Path 'test.html'
-        }
-        # PS Calendar
-        Add-PodeRoute -Method Get -Path '/ps-calendar' -ScriptBlock {
-            Write-PodeViewResponse -Path 'ps-calendar.pode'
-        }
-        # Full Calendar
-        Add-PodeRoute -Method Get -Path '/full-calendar' -ScriptBlock {
             Write-PodeViewResponse -Path 'full-calendar.pode'
-        }
-        # Year Calendar
-        Add-PodeRoute -Method Get -Path '/year-calendar' -ScriptBlock {
-            Write-PodeViewResponse -Path 'year-calendar.pode'
         }
     }
 

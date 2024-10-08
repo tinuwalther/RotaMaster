@@ -8,24 +8,12 @@
         
         <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"/>
         <link rel="stylesheet" href='\assets\BootStrap\bootstrap-icons.css'>
-        <link rel="stylesheet" href="\assets\style\style.css"/>
-
-        <style>
-            #calendar {
-                margin: 20px auto;
-                padding: 30px;
-                background: $((Get-PodeConfig).fullCalendar.backgroundColor);
-            }
-            #events-log {
-                margin: 20px auto;
-                padding: 30px;
-            }
-        </style>
+        <link rel="stylesheet" href="\assets\psrotamaster\psrotamaster.main.css"/>
 
         <script src="\assets\BootStrap\bootstrap.bundle.min.js"></script>
-        <script src="\assets\calendar\fullcalendar.main.min.js"></script>
-        <script src='\assets\calendar\index.global.min.js'></script>
-        <script src='/assets/calendar/psrotamaster.js'></script>
+        <script src="\assets\psrotamaster\fullcalendar.main.min.js"></script>
+        <script src='\assets\psrotamaster\index.global.min.js'></script>
+        <script src='/assets/psrotamaster/psrotamaster.main.js'></script>
 
         <script>
 
@@ -155,27 +143,24 @@
     <Body >
         $($StartTime = [datetime]::now)
         <header >
-            <div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
-                <p ><h1 >#PSRotaMaster - JS Full calendar</h1></p>
-            </div>
+            <!--div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
+                <h1 >#PSRotaMaster - V2</h1>
+            </div-->
         </header>
     
         <Section Id="section"  >
             <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
                 <div Class="container-fluid"  >
-                    <a Class="navbar-brand" href="/" Target="_self"  >»HOME</a>
+                    <a Class="navbar-brand" href="/" Target="_self"  >»PSRotaMaster</a>
                     <button Class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
                         <span Class="navbar-toggler-icon"  ></span>
                     </button>
                     <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
                     <ul Class="navbar-nav"  >
                         <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/tinuwalther/" Target="_blank"  >GitLab</a></li>
-                        <li Class="nav-item"  ><a Class="nav-link" href="https://pshtml.readthedocs.io/en/latest/" Target="_blank"  >PSHTML</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
-                        <li Class="nav-item"  ><a Class="nav-link" href="/ps-calendar">PS calendar</a></li>
-                        <li Class="nav-item"  ><a Class="nav-link" href="/year-calendar">JS Year calendar</a></li>
                     </ul>
                     </div>
                 </div>
@@ -269,19 +254,19 @@
             <div Class="row align-items-center"  >
 
                 <div Class="col-md"  >
-                    <p >
+                    <p Style="color:#f8f9fa">
                         <a Class="btn-sm btn btn-outline-success" href="#" Target="_self"  >I ♥ PS ></a>
                     </p>
                 </div>
                     
                 <div Class="col-md"  >
-                    <p >
+                    <p Style="color:#f8f9fa">
                         Based on <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >Pode</a> V$(Get-Module -Name Pode | Select-Object -Expandproperty Version) and <a href="https://www.powershellgallery.com/packages/PSHTML" Target="_blank"  >PSHTML</a>
                     </p>
                 </div>
 
                 <div Class="col-md" Style="color:#000"  >
-                    <p >
+                    <p Style="color:#f8f9fa">
                     $($TimeSpan = New-TimeSpan -Start $StartTime -End ([datetime]::now))
                     $($Formatted = $TimeSpan | ForEach-Object {'{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds})
                     Created at $(Get-Date -f 'yyyy-MM-dd HH:mm:ss') in $($Formatted)
