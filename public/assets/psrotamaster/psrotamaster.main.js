@@ -63,7 +63,7 @@ async function getNexYear(url) {
 */
 async function loadApiData(url) {
     var calendarData = [];
-    console.log('Starting to fetch calendar data from:', url); 
+    // console.log('Starting to fetch calendar data from:', url); 
 
     try {
         const response = await fetch(url);
@@ -80,7 +80,7 @@ async function loadApiData(url) {
 
 // Funktion zum Einfügen der Daten in die HTML-Tabelle
 function renderTable(data) {
-    console.log('renderTable:', data);
+    // console.log('renderTable:', data);
     const tableBody = document.querySelector('#pikettTable tbody');
     tableBody.innerHTML = ''; // Tabelle zurücksetzen
 
@@ -184,4 +184,10 @@ function calculateWorkdays(startDate, endDate) {
     }
 
     return count;
+}
+
+function convertToISOFormat(dateString) {
+    // Angenommen das Datum kommt im Format "TT.MM.JJJJ"
+    const [day, month, year] = dateString.split('.');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 }
