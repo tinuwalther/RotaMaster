@@ -22,6 +22,14 @@ Or if you prefere a list of the events of the current month, click on the right 
 
 ![PSRotaMasterList](./public/img/PSRotaMasterList.png)
 
-If you want to create the holidays for a different year, you can call the API with the desired year. 
+### Add a range with form datas
+
+![PSRotaMasterForm](./public/img/PSRotaMasterForm.png)
+
+### Add a range with selecting dates
+
+![PSRotaMasterSelected](./public/img/PSRotaMasterSelected.png)
+
+If you want to create the holidays for a different year, you can call the API with the desired year.
 
 For example with PowerShell: ````Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025````
