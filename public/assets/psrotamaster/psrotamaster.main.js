@@ -187,7 +187,18 @@ function calculateWorkdays(startDate, endDate) {
 }
 
 function convertToISOFormat(dateString) {
-    // Angenommen das Datum kommt im Format "TT.MM.JJJJ"
-    const [day, month, year] = dateString.split('.');
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    // Wenn das Datum im Format "TT.MM.JJJJ" kommt, dann umformatieren in "yyyy-MM-dd"
+    if(dateString.includes('.')){
+        console.log('convertToISOFormat(.): ' + dateString);
+        const [day, month, year] = dateString.split('.');
+        console.log('day: ' + day + ', month: ' + month + ', year: ' + year)
+        return `${day.padStart(2, '0')}.${month.padStart(2, '0')}.${year}`;
+    }
+    // Wenn das Datum im Format "yyyy-MM-dd" kommt, dann umformatieren in "dd.mm.jjjj"
+    if(dateString.includes('-')){
+        console.log('convertToISOFormat(-): ' + dateString);
+        const [year, month, day] = dateString.split('-');
+        console.log('day: ' + day + ', month: ' + month + ', year: ' + year)
+        return `${day.padStart(2, '0')}.${month.padStart(2, '0')}.${year}`;
+    }
 }
