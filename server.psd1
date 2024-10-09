@@ -14,13 +14,14 @@
         headerToolbar = 'multiMonthYear,dayGridMonth,listMonth'
     }
     absenceType = @{
-        'Ferien'      = 'Ferien'
-        'Kurs'        = 'Kurs'
-        'Gleitzeit'   = 'Gleitzeit'
-        'Militär'     = 'Militärdienst'
-        'Zivildienst' = 'Zivildienst'
         'Pikett'      = 'Pikettdienst'
         'Pikett Pier' = 'Pikett Pier'
+        'Ferien'      = 'Ferien'
+        'Gleitzeit'   = 'Gleitzeit'
+        'Kurs'        = 'Kurs'
+        'Krankheit'   = 'Krankheit'
+        'Militär'     = 'Militärdienst'
+        'Zivildienst' = 'Zivildienst'
     }
     person = @(
         'Tinu'
