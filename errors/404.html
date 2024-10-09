@@ -1,65 +1,131 @@
-<html ><head ><meta charset="UTF-8"  /><meta name="author" content="Martin Walther"  /><meta name="keywords" content="PSHTML, PowerShell, Mermaid Diagram"  /><meta name="description" content="PsMmaDiagram builds Mermaid Diagrams as HTML-Files with PSHTML from native PowerShell-Scripts"  /><link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"  /><link rel="stylesheet" href="\assets\style\style.css"  /><script src="\assets\BootStrap\bootstrap.bundle.min.js"  ></script><script src="\assets\Jquery\jquery.min.js"  ></script><script src="\assets\mermaid\mermaid.min.js"  ></script><title >AllClassic-ESXiHostTable</title><link rel="icon" type="image/x-icon" href="/assets/img/favicon.ico"  /></head>
+<html >
+    <head >
+        <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
+        <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
+        <meta name="description" content="PSRotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
+        
+        <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"/>
+        <link rel="stylesheet" href='\assets\BootStrap\bootstrap-icons.css'>
+        <link rel="stylesheet" href="\assets\psrotamaster\psrotamaster.main.css"/>
 
-<Body ><header ><div Style="padding:15; background-color:#033b63" Class="jumbotron text-center" Id="j1"  ><p ><h1 >#PSXi 404</h1></p></div></header>
-    <Section Id="section"  >
-        <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
-            <div Class="container-fluid">
-                <a Target="_self" Class="navbar-brand" href="/"  >»HOME</a>
-                <button Class="navbar-toggler" data-toggle="collapse" type="button" data-target="#collapsibleNavbar"  >
-                    <span Class="navbar-toggler-icon"  ></span>
-                </button>
-                <div Class="collapse navbar-collapse" Id="collapsibleNavbar"  >
-                    <ul Class="navbar-nav"  >
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </Section>
-
-    <div Class="container-fluid" Style="background-color:#034f84">
+        <script src="\assets\BootStrap\bootstrap.bundle.min.js"></script>
+        <script src="\assets\psrotamaster\fullcalendar.main.min.js"></script>
+        <script src='\assets\psrotamaster\index.global.min.js'></script>
+        <script src='/assets/psrotamaster/psrotamaster.main.js'></script>
+        
+        <title >#PSRotaMaster - Page not found!</title><link rel="icon" type="image/x-icon" href="/assets/img/favicon.ico"  />
 
         <style>
-            .grid-container {
-              display: grid;
-              grid-template-columns: 30% 60%;
+            footer {
+              position: fixed;
+              left: 0;
+              bottom: 0;
+              width: 100%;
             }
         </style>
+    </head>
 
-        <div class="grid-container">
-            <div Style="background-color:#034f84" Id="Image"  >
-                <img height="80%" Class="img-fluid float-end" src="Assets/IMG/404.png"  />
-            </div>
-            <div Style="background-color:#034f84; text-align: left" Id="Content"  >
-                <h2>Hey you! </h2>
-                <p>We've tried really hard to find your requested page, but the page you are looking for does not exist. How you got here is a mystery. But you can cklick the Home-Button to go back to the homepage, 
-                or try to builds the pages, with the following commands in a PowerShell:</p>
-                <p>New-Item ./PodePSHTML/upload -Force -Name index.txt</p>
-                <p>New-Item ./PodePSHTML/upload -Force -Name pode.txt</p>
-                <p>New-Item ./PodePSHTML/upload -Force -Name asset.txt</p>
-                <p>New-Item ./PodePSHTML/upload -Force -Name mermaid.txt</p>
-                <p>'SELECT * FROM "classic_ESXiHosts" Limit 15' | Set-Content -Path ./PodePSHTML/upload/sqlite.txt -Force</p>
-                <p>Import-Module Pester;
-                    $config = [PesterConfiguration]@{
-                        Should = @{
-                            ErrorAction = 'Continue'
-                        };
-                        Run = @{
-                            Path = './PodePSHTML/bin/Invoke-PesterResult.Tests.ps1'
-                        };
-                        Output = @{
-                            Verbosity = 'None'
-                        };
-                        TestResult = @{
-                            Enabled      = $true;
-                            OutputFormat = 'NUnitXml';
-                            OutputPath   = './PodePSHTML/upload/pester.xml'
-                        }
-                    };
-                    Invoke-Pester -Configuration $config
+    <Body >
+        <header >
+            <!--div Style="padding:15; background-color:#033b63" Class="jumbotron text-center" Id="j1"  >
+                <p >
+                    <h1 >#PSRotaMaster 404</h1>
                 </p>
+            </div-->
+        </header>
+
+        <Section Id="section"  >
+
+            <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
+                <div Class="container-fluid"  >
+                    <a Class="navbar-brand" href="/" Target="_self"  >»PSRotaMaster</a>
+                    <button Class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
+                        <span Class="navbar-toggler-icon"  ></span>
+                    </button>
+                    <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
+                    <ul Class="navbar-nav"  >
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/tinuwalther/" Target="_blank"  >GitLab</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
+                    </ul>
+                    </div>
+                </div>
+            </nav>
+            
+        </Section>
+
+        <div Class="container-fluid">
+
+            <style>
+                .grid-container {
+                    display: grid;
+                    grid-template-columns: 50% 50%;
+                }
+            </style>
+
+            <div class="grid-container" id="center" Style="margin: auto; width: 50%; padding: 10px">
+
+                <div  Id="Image"  >
+                    <img height="100%" Class="img-fluid float-end" src="/assets/img/404.png"  />
+                </div>
+
+                <div Style="text-align: left" >
+                    
+                    <h2>Hey you! </h2>
+
+                    <p>
+                        We've tried really hard to find your requested page,
+                    </p>
+                    <p>
+                        but the page you are looking for does not exist.
+                    </p>
+
+                    <p>
+                        How you got here is a mystery.
+                    </p>
+                    <p>
+                        But you can cklick the Home-Button to go back to the homepage.
+                    </p>
+
+                </div>
+
             </div>
+
         </div>
+
+    </Body>
+
+    <div Style="background-color:#343a40" Class="container-fluid"  >
+
+        <footer>
+            <div Class="container-fluid"  >
+
+                <div Class="row align-items-center"  >
+
+                    <div Class="col-md"  >
+                        <p Style="color:#f8f9fa">
+                            <a Class="btn-sm btn btn-outline-success" href="#" Target="_self"  >I ♥ PS ></a>
+                        </p>
+                    </div>
+                        
+                    <div Class="col-md"  >
+                        <p Style="color:#f8f9fa">
+                            Based on <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >Pode</a>
+                        </p>
+                    </div>
+
+                    <div Class="col-md" Style="color:#000"  >
+                        <p Style="color:#f8f9fa">
+                            I was born at 2024-10-09 08:47:36
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+        </footer>
 
     </div>
 
-</Body><div Style="background-color:#343a40" Class="container-fluid"  ><footer ><div Class="container-fluid"  ><div Class="row align-items-center"  ><div Class="col-md"  ><p ><a Target="_self" href="#"  >I ♥ PS ></a></p></div><div Class="col-md"  ><p >I'm the HTML-Error page</p></div><div Class="col-md"  ><p >I was born at 13.02.2023 08:41:59</p></div></div></div></footer></div></html>
+</html>
