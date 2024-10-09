@@ -155,13 +155,18 @@ function Initialize-ApiEndpoints {
                 $end    = $WebEvent.Data['end']
                 
                 # "new-events: $($title), $($start), $($end)"| Out-Default
+                if($WebEvent.Data['request'] -eq 'select'){
+                    $EndSate = Get-Date ([datetime]$end) -f 'yyyy-MM-dd'
+                }else{
+                    $EndSate = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
+                }
                 $data = [PSCustomObject]@{
                     Id    = [guid]::NewGuid()
                     Title = $title
                     # Description = $descr
                     Type    = $type
                     Start   = Get-Date ([datetime]$start) -f 'yyyy-MM-dd'
-                    End     = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
+                    End     = $EndSate 
                     Created = Get-Date -f 'yyyy-MM-dd'
                 }
 
@@ -170,7 +175,6 @@ function Initialize-ApiEndpoints {
                 Write-PodeJsonResponse -Value $($WebEvent.Data | ConvertTo-Json)
 
             }
-            # How can I reload the full-calendar page?
             
         }
 

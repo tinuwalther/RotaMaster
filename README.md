@@ -22,6 +22,18 @@ Or if you prefere a list of the events of the current month, click on the right 
 
 ![PSRotaMasterList](./public/img/PSRotaMasterList.png)
 
-If you want to create the holidays for a different year, you can call the API with the desired year. 
+### Add a range with form datas
+
+Type the person and select absence-type, choose the start- and end date, and press the button to submit the new event.
+
+![PSRotaMasterForm](./public/img/PSRotaMasterForm.png)
+
+### Add a range with selecting dates
+
+Select a range fills the selected start- and end date into the formular. Type the person and select the absence-type and press the button to submit the new event.
+
+![PSRotaMasterSelected](./public/img/PSRotaMasterSelected.png)
+
+If you want to create the holidays for a different year, you can call the API with the desired year.
 
 For example with PowerShell: ````Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025````

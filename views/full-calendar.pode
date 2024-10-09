@@ -2,9 +2,9 @@
 
     <!-- Begin Head -->
     <head >
-        <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"  />
-        <meta name="keywords" content="Pode, PSHTML, PowerShell, Mermaid Diagram"  />
-        <meta name="description" content="Builds beatuifull HTML-Files with PSHTML from native PowerShell-Scripts"  />
+        <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
+        <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
+        <meta name="description" content="PSRotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
         
         <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"/>
         <link rel="stylesheet" href='\assets\BootStrap\bootstrap-icons.css'>
@@ -21,7 +21,6 @@
             window.addEventListener('load', () => {
                 getNexYear('/api/year/new'); // Call the API once the page is fully loaded
             });
-
 
             /**
             * Initializes the FullCalendar instance with events from the API and sets up form submission handling.
@@ -47,7 +46,7 @@
                 var calendarEl = document.getElementById('calendar');
 
                 const calendarEvents = await loadApiData('/api/event/get');
-                console.log('Loaded calendar events:', calendarEvents);
+                // console.log('Loaded calendar events:', calendarEvents);
 
                 // Aufruf der Funktion und Rendern der Tabelle nach dem Laden der Seite
                 const currentDate = new Date();
@@ -62,6 +61,7 @@
                     locale: 'de-CH',
                     initialView: 'dayGridMonth',
                     multiMonthMinWidth: 350,
+                    multiMonthMaxColumns: 2,
                     headerToolbar: {
                         left: 'prevYear,prev,today,next,nextYear',
                         center: 'title',
@@ -79,7 +79,7 @@
                     navLinks: true,
 
                     // A URL of a JSON feed that the calendar will fetch Event Objects from.
-                    events: calendarEvents, //'/api/event/get',
+                    events: calendarEvents,
 
                     dateClick: function(info) {
                         // alert('Datum angeklickt: ' + info.dateStr);
@@ -87,7 +87,28 @@
                     },
 
                     select: function(info) {
-                        alert('Selected ' + info.startStr + ' to ' + info.endStr);
+
+                        // Start- und Enddatum in Date-Objekte konvertieren
+                        const eventStartDate = new Date(info.startStr);
+                        const eventEndDate = new Date(info.endStr);
+                        console.log('eventStartDate: ' + eventStartDate);
+
+                        // Einen Tag von Enddatum abziehen, da endDate nicht korrekt vom calendar übergeben wird
+                        eventEndDate.setDate(eventEndDate.getDate() - 1);
+
+                        // Formatierte Daten im Format yyyy-MM-dd erstellen
+                        const formattedStartDate = eventStartDate.toISOString().split('T')[0];
+                        const formattedEndDate = eventEndDate.toISOString().split('T')[0];
+                        console.log('formattedStartDate: ' + formattedStartDate);
+
+                        // Formular anzeigen
+                        // const formElement = document.getElementById('eventForm');
+                        // formElement.style.display = 'block'; // Formular sichtbar machen
+
+                        // Werte in die Formularelemente setzen
+                        document.getElementById('start').value = formattedStartDate;
+                        document.getElementById('end').value = formattedEndDate;
+
                     }
 
                 });
@@ -172,10 +193,14 @@
 
                     <div id="events-log">
 
-                        <h3>Events</h3>
+                        <form action="/api/event/new" method="POST" id="eventForm">
 
-                        <form action="/api/event/new" method="POST">
+                            <h3>Events</h3>
+
                             <div class="col-auto">
+
+                                <input type="hidden" id="request" name="request" value="form"><br>
+
                                 <div class="input-group mb-3">
                                     <span class="input-group-text" id="basic-addon1">Name</span>
                                     <input class="form-control" list="datalistOptions" id="name" name="name" placeholder="Type to search...">
@@ -218,7 +243,7 @@
                             <h3>Summary</h3>
                             <p>Ferien = Tage, Pikett und Pier = Wochen</p>
                             <!-- Tabelle zur Anzeige der Pikett-Daten -->
-                                <table id="pikettTable" border="1">
+                                <table class="table table-striped table-hover table-sm" id="pikettTable" border="0">
                                     <thead>
                                         <tr>
                                             <th>Person</th>
@@ -261,7 +286,7 @@
                     
                 <div Class="col-md"  >
                     <p Style="color:#f8f9fa">
-                        Based on <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >Pode</a> V$(Get-Module -Name Pode | Select-Object -Expandproperty Version) and <a href="https://www.powershellgallery.com/packages/PSHTML" Target="_blank"  >PSHTML</a>
+                        Based on <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >Pode</a> V$(Get-Module -Name Pode | Select-Object -Expandproperty Version)</a>
                     </p>
                 </div>
 

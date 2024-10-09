@@ -72,7 +72,6 @@ body {
 }
 
 #events-log div {
-  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
   font-size: 14px;
   line-height: 1.4;
 }
@@ -104,8 +103,8 @@ header {
 
 
 footer {
-  background: #343a40;
   padding: 20;
+  background: #343a40;
   color: var(--bs-gray-200);
   text-align: center;
 }
@@ -148,22 +147,24 @@ img {
     margin: 10;
 }
 
+/*
 table {
   font-family: "QuickSand", sans-serif;
-  color: var(--bs-gray-900);
+  color: var(--bs-gray-700);
   border-collapse: collapse;
 }
 
 thead {
-  background-color: var(--bs-gray-900);
+  background-color: var(--bs-gray-700);
   color: var(--bs-gray-200);
 }
 
 th, td {
-  border: 1px solid var(--bs-gray-900);
+  border: 1px solid var(--bs-gray-400);
   padding: 8px; 
   text-align: left;
 }
+*/
 
 pre {
   width: 100%;
