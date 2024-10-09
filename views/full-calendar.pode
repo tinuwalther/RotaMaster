@@ -61,6 +61,7 @@
                     locale: 'de-CH',
                     initialView: 'dayGridMonth',
                     multiMonthMinWidth: 350,
+                    multiMonthMaxColumns: 2,
                     headerToolbar: {
                         left: 'prevYear,prev,today,next,nextYear',
                         center: 'title',
@@ -86,69 +87,28 @@
                     },
 
                     select: function(info) {
-                        const eventTitle = prompt('Gib die Person und das Event, siehe Events links, für die gewählte Zeit ein (Format: Person - Event):', 'Tinu - Ferien');
 
-                        if (eventTitle) {
+                        // Start- und Enddatum in Date-Objekte konvertieren
+                        const eventStartDate = new Date(info.startStr);
+                        const eventEndDate = new Date(info.endStr);
+                        console.log('eventStartDate: ' + eventStartDate);
 
-                            const eventStartDate = new Date(info.startStr);
-                            const eventEndDate = new Date(info.endStr);
-                            const [personName, eventType] = eventTitle.split(' - ');
+                        // Einen Tag von Enddatum abziehen, da endDate nicht korrekt vom calendar übergeben wird
+                        eventEndDate.setDate(eventEndDate.getDate() - 1);
 
-                            if (!personName || !eventType) {
-                                alert('Fehler: Bitte den Event-Titel im Format "Person - Event" eingeben.');
-                                return;
-                            }
+                        // Formatierte Daten im Format yyyy-MM-dd erstellen
+                        const formattedStartDate = eventStartDate.toISOString().split('T')[0];
+                        const formattedEndDate = eventEndDate.toISOString().split('T')[0];
+                        console.log('formattedStartDate: ' + formattedStartDate);
 
-                            document.getElementById('name').value = personName;
-                            document.getElementById('type').value = eventType;
-                            /*
-                            Funktioniert (noch) nicht
-                            document.getElementById('start').value = eventStartDate;
-                            document.getElementById('end').value = eventEndDate;
-                            */
+                        // Formular anzeigen
+                        // const formElement = document.getElementById('eventForm');
+                        // formElement.style.display = 'block'; // Formular sichtbar machen
 
-                            // Event-Daten erstellen
-                            const eventData = {
-                                request: 'select',
-                                name: personName,
-                                type: eventType,
-                                start: eventStartDate,
-                                end: eventEndDate
-                            };
-                            //console.log('Event-Data: ' + eventData.name + ', ' + eventData.type + ', ' + eventData.start + ', ' + eventData.end);
+                        // Werte in die Formularelemente setzen
+                        document.getElementById('start').value = formattedStartDate;
+                        document.getElementById('end').value = formattedEndDate;
 
-                            // API-Request senden
-                            fetch('/api/event/new', {
-                            method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(eventData)
-                            })
-                            .then(response => {
-                                // Prüfen, ob die Antwort erfolgreich war
-                                if (!response.ok) {
-                                    throw new Error('Fehler beim Erstellen des Events: ${response.status} ${response.statusText}');
-                                }
-                                // Versuche, die Antwort als JSON zu lesen, wenn Inhalt vorhanden ist
-                                return response.text().then(text => {
-                                    return text ? JSON.parse(text) : {};
-                                });
-                            })
-                            .then(data => {
-                                // Falls ein JSON-Objekt zurückgegeben wird, anzeigen
-                                if (data) {
-                                    //alert('Event erfolgreich erstellt.');
-                                    window.location.reload(); // Reload the page to show updated data
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Es gab ein Problem mit der Anfrage:', error);
-                                alert('Fehler beim Erstellen des Events');
-                            });
-                        } else {
-                            alert('Event-Erstellung wurde abgebrochen, kein Event erstellt.');
-                        }
                     }
 
                 });
@@ -233,9 +193,10 @@
 
                     <div id="events-log">
 
-                        <h3>Events</h3>
+                        <form action="/api/event/new" method="POST" id="eventForm">
 
-                        <form action="/api/event/new" method="POST">
+                            <h3>Events</h3>
+
                             <div class="col-auto">
 
                                 <input type="hidden" id="request" name="request" value="form"><br>
