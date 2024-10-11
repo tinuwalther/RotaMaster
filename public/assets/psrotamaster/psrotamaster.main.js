@@ -121,9 +121,11 @@ async function getEventSummary(calendarData, selectedYear) {
     calendarData.forEach(event => {
         const [personName, eventType] = event.title.split(' - ');
         if (!personName || !eventType) return;
+        console.log('getEventSummary1', event)
 
-        const eventStartDate = new Date(event.start + 'T00:00:00');
-        const eventEndDate = new Date(event.end + 'T00:00:00');
+        let eventStartDate = new Date(event.start + 'T00:00:00');
+        let eventEndDate = new Date(event.end + 'T00:00:00');
+        console.log('getEventSummary2', eventStartDate, eventEndDate)
 
         // Nur Events verarbeiten, die im ausgewählten Jahr liegen
         if (eventStartDate.getFullYear() !== selectedYear && eventEndDate.getFullYear() !== selectedYear) return;
@@ -140,21 +142,23 @@ async function getEventSummary(calendarData, selectedYear) {
                 result[personName].pikettPier++;
                 break;
             case 'Ferien':
-                if (!result[personName].ferienStart || eventStartDate < result[personName].ferienStart) {
+                if (!result[personName].ferienStart || eventStartDate != result[personName].ferienStart) {
                     result[personName].ferienStart = eventStartDate;
                 }
-                if (!result[personName].ferienEnd || eventEndDate > result[personName].ferienEnd) {
+                if (!result[personName].ferienEnd || eventEndDate != result[personName].ferienEnd) {
                     result[personName].ferienEnd = eventEndDate;
                 }
                 break;
         }
-    });
 
-    // Berechne die Anzahl der Ferientage (ohne Wochenenden)
-    for (const person in result) {
-        const { ferienStart, ferienEnd } = result[person];
-        result[person].ferien = (ferienStart && ferienEnd) ? calculateWorkdays(ferienStart, ferienEnd) : 0;
-    }
+        // Berechne die Anzahl der Ferientage (ohne Wochenenden)
+        for (const person in result) {
+            let { ferienStart, ferienEnd } = result[person];
+            console.log('getEventSummary3', ferienStart, ferienEnd)
+            result[person].ferien += (ferienStart && ferienEnd) ? calculateWorkdays(ferienStart, ferienEnd) : 0;
+        }
+
+    });
 
     return result;
 }
@@ -169,11 +173,12 @@ async function getEventSummary(calendarData, selectedYear) {
 function calculateWorkdays(startDate, endDate) {
     let count = 0; // Zähler für die Wochentage
     let currentDate = new Date(startDate); // Startdatum
+    // console.log('calculateWorkdays', startDate, endDate)
 
     // Iteriere über jeden Tag im Zeitraum
-    while (currentDate <= endDate) {
+    while (currentDate < endDate) {
         const dayOfWeek = currentDate.getDay();
-
+        // console.log('calculateWorkdays', count)
         // Prüfe, ob der aktuelle Tag ein Wochentag ist (kein Samstag oder Sonntag)
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
             count++; // Zähle nur die Wochentage
@@ -183,6 +188,7 @@ function calculateWorkdays(startDate, endDate) {
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
+    console.log('calculateWorkdays', count)
     return count;
 }
 
