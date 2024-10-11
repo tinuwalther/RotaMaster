@@ -155,17 +155,14 @@ function Initialize-ApiEndpoints {
                 $end    = $WebEvent.Data['end']
                 
                 # "new-events: $($title), $($start), $($end)"| Out-Default
-                if($WebEvent.Data['request'] -eq 'select'){
-                    $EndSate = Get-Date ([datetime]$end) -f 'yyyy-MM-dd'
-                }else{
-                    $EndSate = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
-                }
+                # $EndSate = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
+                $EndSate = "$(Get-Date ([datetime]$end) -f 'yyyy-MM-dd')"
                 $data = [PSCustomObject]@{
                     Id    = [guid]::NewGuid()
                     Title = $title
                     # Description = $descr
                     Type    = $type
-                    Start   = Get-Date ([datetime]$start) -f 'yyyy-MM-dd'
+                    Start   = "$(Get-Date ([datetime]$start) -f 'yyyy-MM-dd')"
                     End     = $EndSate 
                     Created = Get-Date -f 'yyyy-MM-dd'
                 }
@@ -199,8 +196,9 @@ function Initialize-ApiEndpoints {
                 [PSCustomObject]@{
                     title = if($item.type -ne 'Feiertag'){$item.title, $item.type -join " - "}else{$item.title}
                     # description = $item.description
-                    start = $item.start
-                    end   = $item.end
+                    start = Get-Date $item.start -f 'yyyy-MM-dd'
+                    end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
+                    # end   = Get-Date (Get-Date $item.end) -f 'yyyy-MM-dd'
                     color = $color
                 } 
             }
