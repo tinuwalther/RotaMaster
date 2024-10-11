@@ -51,7 +51,7 @@
                 var calendar = new FullCalendar.Calendar(calendarEl, {
                     timeZone: 'local',
                     locale: 'de-CH',
-                    initialView: 'dayGridMonth',
+                    initialView: 'multiMonthYear',
                     multiMonthMinWidth: 350,
                     multiMonthMaxColumns: 2,
                     headerToolbar: {
@@ -75,7 +75,7 @@
                         let displayedYear;
 
                         // Unterschiedliche Behandlung je nach Ansichtstyp
-                        if (info.view.type === 'dayGridMonth') {
+                        if (info.view.type === 'dayGridMonth' || info.view.type === 'listMonth') {
                             const centralDate = new Date(
                                 (info.start.getTime() + info.end.getTime()) / 2
                             );
