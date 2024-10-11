@@ -187,12 +187,14 @@ function Initialize-ApiEndpoints {
 
             $events = foreach($item in $data){
                 switch -RegEx ($item.type){
-                    'Pikett'                    { $color = '#cd00cd'} # purple
-                    'Pikett Pier'               { $color = '#ffa500'} # orange
-                    'Kurs'                      { $color = '#3498db'} # blue
-                    'Militär|Zivil'             { $color = '#006400'} # dark green
-                    'Ferien|Feiertag|Gleitzeit' { $color = '#05c27c'} # green
-                    default                     { $color = '#378006'}
+                    'Pikett' { $color = 'red'}
+                    'Pikett Pier' { $color = 'orange'} # orange
+                    'Kurs|Aus/Weiterbildung' { $color = '#3498db'} # blue
+                    'Militär/ZV/EO|Zivil' { $color = '#006400'} # dark green
+                    'Ferien|Feiertag' { $color = '#05c27c'} # green
+                    'GLZ Kompensation|Absenz|Urlaub' { $color = 'green'} # green
+                    'Krankheit|Unfall' { $color = 'blue'}
+                    default { $color = '#378006'}
                 }
                 [PSCustomObject]@{
                     title = if($item.type -ne 'Feiertag'){$item.title, $item.type -join " - "}else{$item.title}
