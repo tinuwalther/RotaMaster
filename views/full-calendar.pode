@@ -117,11 +117,12 @@
                         // Hier könntest du ein Formular oder eine Event-Erstellungsfunktion einbauen
                     },
 
+                    // Daten in Events Formular abfüllen, wenn selected
                     select: function(info) {
                         // Start- und Enddatum in Date-Objekte konvertieren
                         const eventStartDate = new Date(info.startStr);
                         const eventEndDate = new Date(info.endStr);
-                        console.log('eventStartDate: ' + eventStartDate);
+                        console.log('Daten in Events Formular abfüllen', eventStartDate, eventEndDate);
 
                         // Einen Tag von Enddatum abziehen, da endDate nicht korrekt vom calendar übergeben wird
                         eventEndDate.setDate(eventEndDate.getDate() - 1);
@@ -129,7 +130,7 @@
                         // Formatierte Daten im Format yyyy-MM-dd erstellen
                         const formattedStartDate = eventStartDate.toISOString().split('T')[0];
                         const formattedEndDate = eventEndDate.toISOString().split('T')[0];
-                        console.log('formattedStartDate: ' + formattedStartDate);
+                        console.log('formatted: ' + formattedStartDate, formattedEndDate);
 
                         // Formular anzeigen
                         // const formElement = document.getElementById('eventForm');
