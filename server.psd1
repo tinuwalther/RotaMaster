@@ -14,14 +14,16 @@
         headerToolbar = 'multiMonthYear,dayGridMonth,listMonth'
     }
     absenceType = @{
-        'Pikett'      = 'Pikettdienst'
+        'Ferien' = 'Ferien'
+        'bez. Absenz' = 'bez. Absenz'
+        'unbz. Urlaub' = 'unbz. Urlaub'
+        'GLZ Kompensation' = 'GLZ Kompensation'
+        'Aus/Weiterbildung' = 'Aus/Weiterbildung'
+        'Militär/ZV/EO' = 'Militär/ZV/EO'
+        'Krankheit' = 'Krankheit'
+        'Unfall' = 'Unfall'
+        'Pikett' = 'Pikettdienst'
         'Pikett Pier' = 'Pikett Pier'
-        'Ferien'      = 'Ferien'
-        'Gleitzeit'   = 'Gleitzeit'
-        'Kurs'        = 'Kurs'
-        'Krankheit'   = 'Krankheit'
-        'Militär'     = 'Militärdienst'
-        'Zivildienst' = 'Zivildienst'
     }
     person = @(
         'Tinu'
