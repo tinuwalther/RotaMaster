@@ -1,0 +1,41 @@
+# Jahresansicht - Angezeigtes Jahr: 2024 localhost:8080:93:37
+
+getEventSummary1
+Object { title: "Tinu - Ferien", start: "2024-10-14", end: "2024-10-15", color: "#05c27c" }
+getEventSummary2
+Date Mon Oct 14 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+Date Tue Oct 15 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+getEventSummary3
+Date Mon Oct 14 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+Date Tue Oct 15 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+calculateWorkdays 1 psrotamaster.main.js:191:13
+
+getEventSummary1
+Object { title: "Tinu - Ferien", start: "2024-10-15", end: "2024-10-16", color: "#05c27c" }
+getEventSummary2
+Date Tue Oct 15 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+Date Wed Oct 16 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+getEventSummary3
+Date Mon Oct 14 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit) -> WRONG!
+Date Wed Oct 16 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+calculateWorkdays 2 psrotamaster.main.js:191:13
+
+getEventSummary1
+Object { title: "Tinu - Ferien", start: "2024-10-16", end: "2024-10-17", color: "#05c27c" }
+getEventSummary2
+Date Wed Oct 16 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+Date Thu Oct 17 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+getEventSummary3
+Date Mon Oct 14 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit) -> WRONG!
+Date Thu Oct 17 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+calculateWorkdays 3 psrotamaster.main.js:191:13
+
+getEventSummary1
+Object { title: "Tinu - Ferien", start: "2024-10-18", end: "2024-10-19", color: "#05c27c" }
+getEventSummary2
+Date Fri Oct 18 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+Date Sat Oct 19 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+getEventSummary3
+Date Mon Oct 14 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit) -> WRONG!
+Date Sat Oct 19 2024 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+calculateWorkdays 5 psrotamaster.main.js:191:13
