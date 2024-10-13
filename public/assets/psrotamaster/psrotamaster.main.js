@@ -108,7 +108,6 @@ function renderTable(data) {
     });
 }
 
-
 /**
  * Berechnet die Events im ausgewählten Jahr und gibt die Zusammenfassung zurück.
  * @param {Array} calendarData - Die Kalenderdaten.
@@ -121,19 +120,19 @@ async function getEventSummary(calendarData, selectedYear) {
     calendarData.forEach(event => {
         const [personName, eventType] = event.title.split(' - ');
         if (!personName || !eventType) return;
-        console.log('getEventSummary1', event)
 
         let eventStartDate = new Date(event.start + 'T00:00:00');
         let eventEndDate = new Date(event.end + 'T00:00:00');
-        console.log('getEventSummary2', eventStartDate, eventEndDate)
 
         // Nur Events verarbeiten, die im ausgewählten Jahr liegen
         if (eventStartDate.getFullYear() !== selectedYear && eventEndDate.getFullYear() !== selectedYear) return;
 
         // Initialisierung der Person im Ergebnis-Objekt
-        result[personName] = result[personName] || { pikett: 0, pikettPier: 0, ferien: 0, ferienStart: null, ferienEnd: null };
+        if (!result[personName]) {
+            result[personName] = { pikett: 0, pikettPier: 0, ferien: 0, ferienIntervals: [] };
+        }
 
-        // Zähle die Events und aktualisiere die Ferien-Daten
+        // Zähle die Events und speichere die Ferienzeiträume
         switch (eventType.trim()) {
             case 'Pikett':
                 result[personName].pikett++;
@@ -142,26 +141,27 @@ async function getEventSummary(calendarData, selectedYear) {
                 result[personName].pikettPier++;
                 break;
             case 'Ferien':
-                if (!result[personName].ferienStart || eventStartDate != result[personName].ferienStart) {
-                    result[personName].ferienStart = eventStartDate;
-                }
-                if (!result[personName].ferienEnd || eventEndDate != result[personName].ferienEnd) {
-                    result[personName].ferienEnd = eventEndDate;
-                }
+                // Speichere den Zeitraum der Ferien
+                result[personName].ferienIntervals.push({ start: eventStartDate, end: eventEndDate });
                 break;
         }
-
-        // Berechne die Anzahl der Ferientage (ohne Wochenenden)
-        for (const person in result) {
-            let { ferienStart, ferienEnd } = result[person];
-            console.log('getEventSummary3', ferienStart, ferienEnd)
-            result[person].ferien += (ferienStart && ferienEnd) ? calculateWorkdays(ferienStart, ferienEnd) : 0;
-        }
-
     });
+
+    // Berechnung der Anzahl der Ferientage nach Durchlaufen aller Events
+    for (const person in result) {
+        let totalFerienTage = 0;
+
+        result[person].ferienIntervals.forEach(interval => {
+            totalFerienTage += calculateWorkdays(interval.start, interval.end);
+        });
+
+        result[person].ferien = totalFerienTage;
+        console.log(`Person: ${person}, FerienIntervalle: ${result[person].ferienIntervals}, TotalFerienTage: ${totalFerienTage}`);
+    }
 
     return result;
 }
+
 
 /**
  * Berechnet die Anzahl der Ferientage ohne Wochenenden.
@@ -172,25 +172,33 @@ async function getEventSummary(calendarData, selectedYear) {
  */
 function calculateWorkdays(startDate, endDate) {
     let count = 0; // Zähler für die Wochentage
-    let currentDate = new Date(startDate); // Startdatum
-    // console.log('calculateWorkdays', startDate, endDate)
+    let currentDate = new Date(startDate); // Kopie des Startdatums
 
-    // Iteriere über jeden Tag im Zeitraum
-    while (currentDate < endDate) {
+    // Sicherstellen, dass die Zeiten korrekt gesetzt sind
+    currentDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+
+    // Iteriere über jeden Tag im Zeitraum, einschließlich des Enddatums
+    while (currentDate.getTime() < endDate.getTime()) {
         const dayOfWeek = currentDate.getDay();
-        // console.log('calculateWorkdays', count)
+
         // Prüfe, ob der aktuelle Tag ein Wochentag ist (kein Samstag oder Sonntag)
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
             count++; // Zähle nur die Wochentage
+        } else {
+            console.log(`calculateWorkdays - Überspringe Wochenende: ${currentDate.toDateString()}`);
         }
+
+        console.log(`calculateWorkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
 
         // Gehe zum nächsten Tag
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    console.log('calculateWorkdays', count)
+    console.log('calculateWorkdays - Startdatum:', startDate.toDateString(), 'Enddatum:', endDate.toDateString(), 'Anzahl der Wochentage:', count);
     return count;
 }
+
 
 function convertToISOFormat(dateString) {
     // Wenn das Datum im Format "TT.MM.JJJJ" kommt, dann umformatieren in "yyyy-MM-dd"
