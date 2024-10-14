@@ -36,7 +36,7 @@ async function getNexYear(url) {
         // Check if the request was successful
         if (response.ok) {
             const result = await response.text(); // Read the response as text
-            //console.log('Success:', result); // Log the response
+            //// console.log('Success:', result); // Log the response
         } else {
             console.error('Request failed with status:', response.status);
         }
@@ -59,11 +59,11 @@ async function getNexYear(url) {
 * 
 * @example
 * const events = await loadApiData('/api/event/get'); 
-* console.log(events); // Logs the calendar event data or an empty array if an error occurs.
+* // console.log(events); // Logs the calendar event data or an empty array if an error occurs.
 */
 async function loadApiData(url) {
     var calendarData = [];
-    // console.log('Starting to fetch calendar data from:', url); 
+    // // console.log('Starting to fetch calendar data from:', url); 
 
     try {
         const response = await fetch(url);
@@ -80,7 +80,7 @@ async function loadApiData(url) {
 
 // Funktion zum Einfügen der Daten in die HTML-Tabelle
 function renderTable(data) {
-    // console.log('renderTable:', data);
+    // // console.log('renderTable:', data);
     const tableBody = document.querySelector('#pikettTable tbody');
     tableBody.innerHTML = ''; // Tabelle zurücksetzen
 
@@ -129,19 +129,19 @@ async function getEventSummary(calendarData, selectedYear) {
 
         // Initialisierung der Person im Ergebnis-Objekt
         if (!result[personName]) {
-            result[personName] = { pikett: 0, pikettPier: 0, ferien: 0, ferienIntervals: [] };
+            result[personName] = { pikett: 0, pikettIntervals: [], pikettPier: 0, pikettPierIntervals: [], ferien: 0, ferienIntervals: [] };
         }
 
         // Zähle die Events und speichere die Ferienzeiträume
         switch (eventType.trim()) {
             case 'Pikett':
-                result[personName].pikett++;
+                result[personName].pikettIntervals.push({ start: eventStartDate, end: eventEndDate });
+                // result[personName].pikett++;
                 break;
             case 'Pikett Pier':
-                result[personName].pikettPier++;
+                result[personName].pikettPierIntervals.push({ start: eventStartDate, end: eventEndDate });
                 break;
             case 'Ferien':
-                // Speichere den Zeitraum der Ferien
                 result[personName].ferienIntervals.push({ start: eventStartDate, end: eventEndDate });
                 break;
         }
@@ -150,13 +150,29 @@ async function getEventSummary(calendarData, selectedYear) {
     // Berechnung der Anzahl der Ferientage nach Durchlaufen aller Events
     for (const person in result) {
         let totalFerienTage = 0;
+        let totalPikettTage = 0;
+        let totalPikettPierTage = 0;
 
         result[person].ferienIntervals.forEach(interval => {
             totalFerienTage += calculateWorkdays(interval.start, interval.end);
         });
+        
+        result[person].pikettIntervals.forEach(interval => {
+            totalPikettTage += calculatePikettkdays(interval.start, interval.end);
+        });
+
+        result[person].pikettPierIntervals.forEach(interval => {
+            totalPikettPierTage += calculateWorkdays(interval.start, interval.end);
+        });
 
         result[person].ferien = totalFerienTage;
-        console.log(`Person: ${person}, FerienIntervalle: ${result[person].ferienIntervals}, TotalFerienTage: ${totalFerienTage}`);
+        // console.log(`Person: ${person}, FerienIntervalle: ${result[person].ferienIntervals}, TotalFerienTage: ${totalFerienTage}`);
+
+        result[person].pikett = totalPikettTage;
+        // console.log(`Person: ${person}, PikettIntervalle: ${result[person].pikettIntervals}, TotalPikettTage: ${totalPikettTage}`);
+
+        result[person].pikettPier = totalPikettPierTage;
+        // console.log(`Person: ${person}, PikettIntervalle: ${result[person].pikettIntervals}, totalPikettPierTage: ${totalPikettPierTage}`);
     }
 
     return result;
@@ -186,16 +202,40 @@ function calculateWorkdays(startDate, endDate) {
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
             count++; // Zähle nur die Wochentage
         } else {
-            console.log(`calculateWorkdays - Überspringe Wochenende: ${currentDate.toDateString()}`);
+            // console.log(`calculateWorkdays - Überspringe Wochenende: ${currentDate.toDateString()}`);
         }
-
-        console.log(`calculateWorkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
-
+        // console.log(`calculateWorkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
         // Gehe zum nächsten Tag
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    console.log('calculateWorkdays - Startdatum:', startDate.toDateString(), 'Enddatum:', endDate.toDateString(), 'Anzahl der Wochentage:', count);
+    // console.log('calculateWorkdays - Startdatum:', startDate.toDateString(), 'Enddatum:', endDate.toDateString(), 'Anzahl der Wochentage:', count);
+    return count;
+}
+
+/**
+ * Berechnet die Anzahl Pikettage inkl. Wochenenden
+ *
+ * @param {Date} startDate - Das Startdatum der Ferien.
+ * @param {Date} endDate - Das Enddatum der Ferien.
+ * @returns {number} - Die Anzahl der Pikettage inkl. Wochenenden.
+ */
+function calculatePikettkdays(startDate, endDate) {
+    let count = 0; // Zähler für die Wochentage
+    let currentDate = new Date(startDate); // Kopie des Startdatums
+
+    // Sicherstellen, dass die Zeiten korrekt gesetzt sind
+    currentDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+
+    // Iteriere über jeden Tag im Zeitraum, einschließlich des Enddatums
+    while (currentDate.getTime() < endDate.getTime()) {
+        count++;
+        // console.log(`calculatePikettkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // console.log('calculatePikettkdays - Startdatum:', startDate.toDateString(), 'Enddatum:', endDate.toDateString(), 'Anzahl der Tage:', count);
     return count;
 }
 
@@ -203,16 +243,16 @@ function calculateWorkdays(startDate, endDate) {
 function convertToISOFormat(dateString) {
     // Wenn das Datum im Format "TT.MM.JJJJ" kommt, dann umformatieren in "yyyy-MM-dd"
     if(dateString.includes('.')){
-        console.log('convertToISOFormat(.): ' + dateString);
+        // console.log('convertToISOFormat(.): ' + dateString);
         const [day, month, year] = dateString.split('.');
-        console.log('day: ' + day + ', month: ' + month + ', year: ' + year)
+        // console.log('day: ' + day + ', month: ' + month + ', year: ' + year)
         return `${day.padStart(2, '0')}.${month.padStart(2, '0')}.${year}`;
     }
     // Wenn das Datum im Format "yyyy-MM-dd" kommt, dann umformatieren in "dd.mm.jjjj"
     if(dateString.includes('-')){
-        console.log('convertToISOFormat(-): ' + dateString);
+        // console.log('convertToISOFormat(-): ' + dateString);
         const [year, month, day] = dateString.split('-');
-        console.log('day: ' + day + ', month: ' + month + ', year: ' + year)
+        // console.log('day: ' + day + ', month: ' + month + ', year: ' + year)
         return `${day.padStart(2, '0')}.${month.padStart(2, '0')}.${year}`;
     }
 }
