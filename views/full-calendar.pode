@@ -17,9 +17,12 @@
 
         <script>
 
-            // Page load
+            /**
+            * On page load
+            */
             window.addEventListener('load', () => {
                 getNexYear('/api/year/new'); // Call the API once the page is fully loaded
+                getPerson('api/events/person');
                 const d = new Date();
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
             });
@@ -182,7 +185,6 @@
                         alert('An error occurred while adding the event.');
                     }
                 });
-
             });
 
         </script>
@@ -274,7 +276,7 @@
                         <div>
                             <h3 id="eventSummary"><!-- Hier wird das Jahr eingefügt --></h3>
                             <p>Angaben in ganzen Tagen</p>
-                            <!-- Tabelle zur Anzeige der Pikett-Daten -->
+                            <!-- Tabelle zur Anzeige der Event-Daten -->
                                 <table class="table table-striped table-hover table-sm" id="pikettTable" border="0">
                                     <thead>
                                         <tr>
@@ -299,7 +301,8 @@
 
         </Section>
 
-        <pre Style="text-align:center;color:#000"  >Creates the swiss-public holidays for the given year: I ♥ PS > Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025</pre>
+        <!--pre Style="text-align:center;color:#000"  >Creates the swiss-public holidays for the given year: I ♥ PS > Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025</pre-->
+        <pre id="person" Style="text-align:center;color:#000"  ></pre>
 
     </Body>
     <!-- End Body -->

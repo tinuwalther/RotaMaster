@@ -45,6 +45,30 @@ async function getNexYear(url) {
     }
 }
 
+async function getPerson(url) {
+    var person = [];
+    // console.log('Starting to fetch person data from:', url); 
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            person = await response.json();
+        } else {
+            console.error('Error fetching person:', response.status);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+    let newArray = null;
+    person.forEach(item => {
+        console.log('getPerson', item);
+        newArray = newArray + " -> " + item
+        // "<option value=" + item + ">"
+    })
+    document.getElementById('person').textContent += newArray;
+
+    return person;
+}
+
 /**
 * Fetches calendar event data from the provided API URL.
 * 

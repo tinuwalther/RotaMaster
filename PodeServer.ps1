@@ -111,18 +111,17 @@ function Initialize-ApiEndpoints {
         $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
         $DbPath  = $($BinPath).Replace('bin','db')
 
+        Add-PodeRoute -Method Get -Path '/api/events/person' -ArgumentList @($DbPath) -ScriptBlock {
+            param($DbPath)
+            $person = Get-Content -Path (Join-Path -Path $DbPath -ChildPath 'person.json') | ConvertFrom-Json | Sort-Object
+            Write-PodeJsonResponse -Value $person  
+        }
+
+
         Add-PodeRoute -Method Post -Path '/api/month/next' -ContentType 'application/json' -ArgumentList @($BinPath) -ScriptBlock {
             param($BinPath)
             
             $body = $WebEvent.Data
-
-            # 'Now' | Out-Default
-            # $CurrentMonth = ([System.DateTime]::Now).Month
-
-            # 'WebData' | Out-Default
-            # $MonthName     = [PSCustomObject]$WebEvent.Data.Month
-            # $currCulture   = [system.globalization.cultureinfo]::CurrentCulture
-            # $MonthAsNumber = [System.DateTime]::ParseExact($MonthName, 'MMMM', $currCulture).Month
             
             if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
             $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlCalendar.ps1') -Title 'PS calendar' -Year $body.Year -Month $body.Month
