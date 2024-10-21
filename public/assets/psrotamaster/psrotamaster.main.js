@@ -58,15 +58,34 @@ async function getPerson(url) {
     } catch (error) {
         console.error('Error:', error);
     }
-    let newArray = null;
-    person.forEach(item => {
-        console.log('getPerson', item);
-        newArray = newArray + " -> " + item
-        // "<option value=" + item + ">"
-    })
-    document.getElementById('person').textContent += newArray;
-
     return person;
+}
+
+// Funktion zum Befüllen des datalist mit Optionen
+function fillDatalistOptions(datalistId, values) {
+    // Referenz auf das datalist-Element
+    const datalist = document.getElementById(datalistId);
+
+    if (!datalist) {
+        console.error(`Das datalist-Element mit der ID "${datalistId}" wurde nicht gefunden.`);
+        return;
+    }
+
+    // Prüfe, ob das Argument ein Array ist
+    if (!Array.isArray(values)) {
+        console.error('Das übergebene Argument ist kein Array:', values);
+        return;
+    }
+
+    // Leere das datalist zuerst, um sicherzustellen, dass keine alten Optionen existieren
+    datalist.innerHTML = '';
+
+    // Füge jede Option aus dem Array hinzu
+    values.forEach(value => {
+        const option = document.createElement('option');
+        option.value = value; // Setze den Wert der Option
+        datalist.appendChild(option); // Füge die Option zum datalist hinzu
+    });
 }
 
 /**
