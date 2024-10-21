@@ -22,7 +22,6 @@
             */
             window.addEventListener('load', () => {
                 getNexYear('/api/year/new'); // Call the API once the page is fully loaded
-                getPerson('api/events/person');
                 const d = new Date();
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
             });
@@ -47,6 +46,13 @@
             * The calendar is initialized and rendered once the page is fully loaded.
             */
             document.addEventListener('DOMContentLoaded', async function() {
+
+                // Warte auf das Resultat der getPerson-Funktion und befülle das datalist-Element
+                const namesArray = getPerson('api/events/person').then(namesArray => {
+                    fillDatalistOptions('datalistOptions', namesArray);
+                }).catch(error => {
+                    console.error('Fehler beim Abrufen der Namen:', error);
+                });
 
                 var calendarEl = document.getElementById('calendar');
 
@@ -239,10 +245,7 @@
                                     <span class="input-group-text" id="basic-addon1">Name</span>
                                     <input class="form-control" list="datalistOptions" id="name" name="name" placeholder="Type to search...">
                                     <datalist id="datalistOptions">
-                                    $($person = (Get-PodeConfig).person)
-                                    $(foreach($i in $person){
-                                        "<option value='$($i)'>"
-                                    })
+                                        <!--option value=Werte aus meinem Array /> -->
                                     </datalist><br>
                                 </div>
                             </div>
