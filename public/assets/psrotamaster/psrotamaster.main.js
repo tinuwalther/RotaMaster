@@ -61,6 +61,22 @@ async function getPerson(url) {
     return person;
 }
 
+async function getAbsence(url) {
+    var absence = [];
+    // console.log('Starting to fetch absence data from:', url); 
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            absence = await response.json();
+        } else {
+            console.error('Error fetching absence:', response.status);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+    return absence;
+}
+
 // Funktion zum Befüllen des datalist mit Optionen
 function fillDatalistOptions(datalistId, values) {
     // Referenz auf das datalist-Element
@@ -78,13 +94,47 @@ function fillDatalistOptions(datalistId, values) {
     }
 
     // Leere das datalist zuerst, um sicherzustellen, dass keine alten Optionen existieren
-    datalist.innerHTML = '';
+    // datalist.innerHTML = '';
 
     // Füge jede Option aus dem Array hinzu
     values.forEach(value => {
         const option = document.createElement('option');
         option.value = value; // Setze den Wert der Option
         datalist.appendChild(option); // Füge die Option zum datalist hinzu
+    });
+}
+
+// Funktion zum Befüllen des Dropdown-Menüs mit Optionen
+function fillDropdownOptions(selectId, values) {
+    // Referenz auf das select-Element
+    const selectElement = document.getElementById(selectId);
+
+    if (!selectElement) {
+        console.error(`Das select-Element mit der ID "${selectId}" wurde nicht gefunden.`);
+        return;
+    }
+
+    // Prüfe, ob das Argument ein Array ist
+    if (!Array.isArray(values)) {
+        console.error('Das übergebene Argument ist kein Array:', values);
+        return;
+    }
+
+    // Leere das select-Element zuerst, um sicherzustellen, dass keine alten Optionen existieren
+    selectElement.innerHTML = '';
+
+    // Füge eine Standardoption hinzu (falls gewünscht)
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Bitte auswählen...';
+    selectElement.appendChild(defaultOption);
+
+    // Füge jede Option aus dem Array hinzu
+    values.forEach(value => {
+        const option = document.createElement('option');
+        option.value = value; // Setze den Wert der Option
+        option.textContent = value; // Setze den Text der Option
+        selectElement.appendChild(option); // Füge die Option zum select hinzu
     });
 }
 
