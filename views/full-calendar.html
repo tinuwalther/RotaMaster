@@ -1,0 +1,359 @@
+<!DOCTYPE html><html >
+
+    <!-- Begin Head -->
+    <head >
+        <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
+        <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
+        <meta name="description" content="PSRotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
+        
+        <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"/>
+        <link rel="stylesheet" href='\assets\BootStrap\bootstrap.icons.css'>
+        <link rel="stylesheet" href="\assets\psrotamaster\psrotamaster.main.css"/>
+
+        <script src="\assets\BootStrap\bootstrap.bundle.min.js"></script>
+        <script src="\assets\psrotamaster\fullcalendar.main.min.js"></script>
+        <script src='\assets\psrotamaster\index.global.min.js'></script>
+        <script src='/assets/psrotamaster/psrotamaster.main.js'></script>
+
+        <script>
+
+            /**
+            * On page load
+            */
+            window.addEventListener('load', () => {
+                getNexYear('/api/year/new'); // Call the API once the page is fully loaded
+                const d = new Date();
+                document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
+            });
+
+            /**
+            * Initializes the FullCalendar instance with events from the API and sets up form submission handling.
+            * 
+            * This function listens for the `DOMContentLoaded` event to ensure the DOM is fully loaded before
+            * initializing the FullCalendar component. It asynchronously fetches event data from the provided API,
+            * configures the calendar with this data, and renders the calendar. Additionally, the form handling logic
+            * for creating new events is included, where form submissions are intercepted, and data is sent to the API.
+            *
+            * Main features:
+            * - Loads calendar events from the API endpoint '/api/event/get'.
+            * - Initializes a FullCalendar instance with various configuration options (locale, views, toolbars, etc.).
+            * - Handles 'dateClick' and 'select' interactions in the calendar.
+            * - Intercepts form submissions to create new events by sending form data to the API endpoint '/api/event/new'.
+            *
+            * @listens DOMContentLoaded
+            * 
+            * @example
+            * The calendar is initialized and rendered once the page is fully loaded.
+            */
+            document.addEventListener('DOMContentLoaded', async function() {
+
+                // Warte auf das Resultat der getPerson-Funktion und befülle das datalist-Element
+                setTimeout(function() {
+                    getPerson('api/events/person').then(namesArray => {
+                        if (namesArray.length) {
+                            fillDatalistOptions('datalistOptions', namesArray);
+                            //fillDropdownOptions('person', namesArray);
+                        } else {
+                            console.error('Keine Namen gefunden.');
+                        }
+                    }).catch(error => {
+                        console.error('Fehler beim Abrufen der Namen:', error);
+                    });
+                }, 200);
+
+                // Warte auf das Resultat der getAbsence-Funktion und befülle das Dropdown-Element
+                setTimeout(function() {
+                    getPerson('api/events/absence').then(typesArray => {
+                        if (typesArray.length) {
+                            fillDropdownOptions('absenceType', typesArray);
+                        } else {
+                            console.error('Keine Absenzen gefunden.');
+                        }
+                    }).catch(error => {
+                        console.error('Fehler beim Abrufen der Absenzen:', error);
+                    });
+                }, 200);
+
+                var calendarEl = document.getElementById('calendar');
+
+                const calendarEvents = await loadApiData('/api/event/get');
+                // console.log('Loaded calendar events:', calendarEvents);
+
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    timeZone: 'local',
+                    locale: 'de-CH',
+                    initialView: 'multiMonthYear',
+                    multiMonthMinWidth: 350,
+                    multiMonthMaxColumns: 2,
+                    headerToolbar: {
+                        left: 'prevYear,prev,today,next,nextYear',
+                        center: 'title',
+                        right: 'multiMonthYear,dayGridMonth,listMonth'
+                    },
+
+                    weekNumbers: false,
+                    dayMaxEvents: true,
+                    showNonCurrentDates: false,
+                    fixedWeekCount: false,
+                    weekNumberCalculation: 'ISO', // "ISO" changes the default value of firstDay from 0 (Sunnday) to 1 (Monday).
+                    
+                    selectable: true,
+                    editable: true,
+                    navLinks: true,
+
+                    // Wenn die Ansicht geändert wird oder das Datum wechselt
+                    datesSet: function(info) {
+                        let displayedYear;
+
+                        // Unterschiedliche Behandlung je nach Ansichtstyp
+                        if (info.view.type === 'dayGridMonth' || info.view.type === 'listMonth') {
+                            const centralDate = new Date(
+                                (info.start.getTime() + info.end.getTime()) / 2
+                            );
+                            // Extrahiere das Jahr und den Monat
+                            displayedYear = centralDate.getFullYear();
+                            const displayedMonth = centralDate.getMonth() + 1; // nullbasierter Monat
+                            // console.log('Monatsansicht - Angezeigtes Jahr:', displayedYear);
+                            // console.log('Monatsansicht - Angezeigter Monat:', displayedMonth);
+                        } else if (info.view.type === 'multiMonthYear') {
+                            const centralDate = new Date(
+                                (info.start.getTime() + info.end.getTime()) / 2
+                            );
+                            // Extrahiere das Jahr
+                            displayedYear = centralDate.getFullYear();
+                            // console.log('Jahresansicht - Angezeigtes Jahr:', displayedYear);
+                        }
+
+                        // Jahr hinter dem Summary-Text anzeigen
+                        if (displayedYear) {
+                            const summaryElement = document.getElementById('eventSummary');
+                            summaryElement.textContent = 'Summary ' + displayedYear;
+                        }else{
+                            // console.log('Kein Jahr abgefüllt:', displayedYear);
+                        }
+
+                        // Aufruf der Funktion und Rendern der Tabelle nach dem Laden der Seite
+                        getEventSummary(calendarEvents, displayedYear).then(summary => {
+                            renderTable(summary); 
+                        });
+
+
+                    },
+
+                    // A URL of a JSON feed that the calendar will fetch Event Objects from.
+                    events: calendarEvents,
+
+                    dateClick: function(info) {
+                        // alert('Datum angeklickt: ' + info.dateStr);
+                        // Hier könntest du ein Formular oder eine Event-Erstellungsfunktion einbauen
+                    },
+
+                    // Daten in Events Formular abfüllen, wenn selected
+                    select: function(info) {
+                        // Start- und Enddatum in Date-Objekte konvertieren
+                        const eventStartDate = new Date(info.startStr);
+                        const eventEndDate = new Date(info.endStr);
+                        // console.log('Daten in Events Formular abfüllen', eventStartDate, eventEndDate);
+
+                        // Einen Tag von Enddatum abziehen, da endDate nicht korrekt vom calendar übergeben wird
+                        eventEndDate.setDate(eventEndDate.getDate() - 1);
+
+                        // Formatierte Daten im Format yyyy-MM-dd erstellen
+                        const formattedStartDate = eventStartDate.toISOString().split('T')[0];
+                        const formattedEndDate = eventEndDate.toISOString().split('T')[0];
+                        // console.log('formatted: ' + formattedStartDate, formattedEndDate);
+
+                        // Formular anzeigen
+                        // const formElement = document.getElementById('eventForm');
+                        // formElement.style.display = 'block'; // Formular sichtbar machen
+
+                        // Werte in die Formularelemente setzen
+                        document.getElementById('start').value = formattedStartDate;
+                        document.getElementById('end').value = formattedEndDate;
+                    }
+
+                });
+
+                calendar.render();
+
+                // Prevent form submit and handle the form via JavaScript
+                const form = document.querySelector('form'); // Select the form element
+                form.addEventListener('submit', async function(event) {
+                    event.preventDefault(); // Prevent default form submission
+
+                    // Get form data
+                    const formData = new FormData(form);
+                    const data = {};
+                    formData.forEach((value, key) => {
+                        data[key] = value;
+                    });
+
+                    try {
+                        // Perform the API call using fetch
+                        const response = await fetch('/api/event/new', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json' // Send as JSON
+                            },
+                            body: JSON.stringify(data) // Convert form data to JSON string
+                        });
+
+                        if (response.ok) {
+                            // If the request is successful, reload the page
+                            // alert('Event added successfully!');
+                            window.location.reload(); // Reload the page to show updated data
+                        } else {
+                            console.error('Request failed with status:', response.status);
+                            alert('Failed to add event!');
+                        }
+                    } catch (error) {
+                        console.error('Error occurred:', error);
+                        alert('An error occurred while adding the event.');
+                    }
+                });
+            });
+
+        </script>
+
+        <title >#PSRotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
+
+    </head>
+    <!-- End Head -->
+
+    <!-- Begin Body -->
+    <Body >
+        <header >
+            <!--div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
+                <h1 >#PSRotaMaster - V2</h1>
+            </div-->
+        </header>
+    
+        <Section Id="section"  >
+            <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
+                <div Class="container-fluid"  >
+                    <a Class="navbar-brand" href="/" Target="_self"  >»PSRotaMaster</a>
+                    <button Class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
+                        <span Class="navbar-toggler-icon"  ></span>
+                    </button>
+                    <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
+                    <ul Class="navbar-nav"  >
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/tinuwalther/" Target="_blank"  >GitLab</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
+                    </ul>
+                    </div>
+                </div>
+            </nav>
+        
+            <div Class="Container-fluid">
+
+                <!--article Id="CalendarBox"-->
+
+                    <div id="events-log">
+
+                        <form action="/api/event/new" method="POST" id="eventForm">
+
+                            <h3>Events</h3>
+
+                            <div class="col-auto">
+
+                                <input type="hidden" id="request" name="request" value="form"><br>
+
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" id="basic-addon1">Name</span>
+                                    <input class="form-control" list="datalistOptions" id="name" name="name" placeholder="Type to search...">
+                                    <datalist id="datalistOptions">
+                                        <!--option value=Werte aus meinem Array /-->
+                                    </datalist><br>
+                                </div>
+                                <!-- <select class="form-select" size="1" aria-label="Default select example" id="person" name="person"></select><br>     -->
+
+                            </div>
+
+                            <div class="col-auto">
+                                <label for="start" class="form-label">Typ der Abwesenheit</label><br>
+                                <select class="form-select" size="5" aria-label="Default select example" id="absenceType" name="type">
+                                    <!--option selected>Typ der Abwesenheit</option-->
+                                </select><br>
+                            </div>
+
+                            <div class="col-auto">
+                                <label for="start" class="form-label">Startdatum</label><br>
+                                <input type="date" class="form-control" id="start" name="start"><br>
+                            </div>
+
+                            <div class="col-auto">
+                                <label for="end" class="form-label">Enddatum</label><br>
+                                <input type="date" class="form-control" id="end" name="end"><br>
+                            </div>
+
+                            <div class="col-auto">
+                                <input type="submit" value="Eintragen" class="btn btn-primary mb-3">
+                            </div>
+                        </form>
+
+                        <div>
+                            <h3 id="eventSummary"><!-- Hier wird das Jahr eingefügt --></h3>
+                            <p>Angaben in ganzen Tagen</p>
+                            <!-- Tabelle zur Anzeige der Event-Daten -->
+                                <table class="table table-striped table-hover table-sm" id="pikettTable" border="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Person</th>
+                                            <th>Pikett</th>
+                                            <th>Pier</th>
+                                            <th>Ferien</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Hier werden die Daten eingefügt -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                                            
+                    <div id="calendar"></div>
+
+                <!--/article-->
+
+            </div>
+
+        </Section>
+
+        <pre Style="text-align:center;color:#000"  >Creates the swiss-public holidays for the given year: I ♥ PS > Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025</pre>
+
+    </Body>
+    <!-- End Body -->
+ 
+    <!-- Begin Footer -->
+    <footer>
+        <div Class="container-fluid"  >
+
+            <div Class="row align-items-center"  >
+
+                <div Class="col-md"  >
+                    <p Style="color:#f8f9fa">
+                        <a Class="btn-sm btn btn-outline-success" href="#" Target="_self"  >I ♥ PS ></a>
+                    </p>
+                </div>
+                    
+                <div Class="col-md"  >
+                    <p Style="color:#f8f9fa">
+                        Based on <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >Pode</a>
+                    </p>
+                </div>
+
+                <div Class="col-md" Style="color:#000"  >
+                    <p id="footerDate" Style="color:#f8f9fa">
+                        <!-- Hier wird der aktuelle TimeStamp eingefügt -->
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </footer>
+    <!--End Footer -->
+
+</html>
