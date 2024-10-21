@@ -88,7 +88,7 @@ function Initialize-WebEndpoints {
     process{
         # Index
         Add-PodeRoute -Method Get -Path '/' -ScriptBlock {
-            Write-PodeViewResponse -Path 'full-calendar.pode'
+            Write-PodeViewResponse -Path 'full-calendar.html'
         }
     }
 
@@ -117,6 +117,11 @@ function Initialize-ApiEndpoints {
             Write-PodeJsonResponse -Value $person  
         }
 
+        Add-PodeRoute -Method Get -Path '/api/events/absence' -ArgumentList @($DbPath) -ScriptBlock {
+            param($DbPath)
+            $absence = Get-Content -Path (Join-Path -Path $DbPath -ChildPath 'absence.json') | ConvertFrom-Json | Sort-Object
+            Write-PodeJsonResponse -Value $absence  
+        }
 
         Add-PodeRoute -Method Post -Path '/api/month/next' -ContentType 'application/json' -ArgumentList @($BinPath) -ScriptBlock {
             param($BinPath)
