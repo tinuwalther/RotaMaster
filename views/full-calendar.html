@@ -54,6 +54,7 @@
                         if (namesArray.length) {
                             fillDatalistOptions('datalistOptions', namesArray);
                             // alternatively fillDropdownOptions('person', namesArray);
+                            fillDropdownOptions('nameDropdown', namesArray);
                         } else {
                             console.error('No names found.');
                         }
@@ -190,6 +191,13 @@
                         alert('An error occurred while adding the event.');
                     }
                 });
+
+                // Event listener to synchronize dropdown selection with datalist input field
+                document.getElementById('nameDropdown').addEventListener('change', function() {
+                    const selectedValue = this.value;
+                    document.getElementById('name').value = selectedValue; // Update datalist input field
+                });
+
             });
 
         </script>
@@ -246,7 +254,14 @@
                                         <!--option value=Werte aus meinem Array /-->
                                     </datalist><br>
                                 </div>
-                                <!-- <select class="form-select" size="1" aria-label="Default select example" id="person" name="person"></select><br>     -->
+                                <!-- Additional dropdown for names -->
+                                <div class="input-group mb-3">
+                                    <label for="nameDropdown" class="input-group-text">Select Name</label>
+                                    <select class="form-select" id="nameDropdown">
+                                        <option value="">Please select...</option>
+                                        <!-- Option values will be filled dynamically by JavaScript -->
+                                    </select>
+                                </div>
 
                             </div>
 
