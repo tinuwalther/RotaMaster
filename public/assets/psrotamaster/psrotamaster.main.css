@@ -1,6 +1,6 @@
 /*
- * PSHTML webframework
- * Override by Martin Walther
+ * CSS for PSRotaMaster
+ * 2024 by Martin Walther
  */
 
  :root {
@@ -58,55 +58,14 @@
   --ps-powershell-color: #012456;
 }
 
-body { 
-  background: #fff !important;
-  color: var(--bs-gray-900);
-}
-
-#events-log {
-  margin: 20px auto;
-  padding: 30px;
-  display: inline-block;
-  vertical-align: top;
-  min-height: 200px;
-}
-
-#events-log div {
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-#calendar {
-  margin: 20px auto;
-  padding: 30px;
-  display: inline-block;
-  vertical-align: top;
-  width: calc(100% - 380px);
-  border-radius: 10px;
-}
-
 header {
-  /*background: #033b63;
-  padding: 20;
-  background: var(--ps-powershell-color);  
-  overflow: auto;
-  overflow-y: hidden;
-  color: var(--bs-gray-200);*/
   font-size: medium;
   display: block;
 }
 
-#Content {
-  padding: 20;
-  background: var(--bs-gray-900);
-}
-
-
-footer {
-  padding: 20;
-  background: #343a40;
-  color: var(--bs-gray-200);
-  text-align: center;
+body { 
+  background: #fff !important;
+  color: var(--bs-gray-900);
 }
 
 h1 {
@@ -137,6 +96,33 @@ h4 {
   color: var(--bs-gray-900);
 }
 
+#events-log {
+  margin: 20px auto;
+  padding: 30px;
+  display: inline-block;
+  vertical-align: top;
+  min-height: 200px;
+}
+
+#events-log div {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+#calendar {
+  margin: 20px auto;
+  padding: 30px;
+  display: inline-block;
+  vertical-align: top;
+  width: calc(100% - 380px);
+  border-radius: 10px;
+}
+
+#Content {
+  padding: 20;
+  background: var(--bs-gray-900);
+}
+
 p {
   font-family: "QuickSand", sans-serif;
   color: var(--bs-gray-900);
@@ -146,25 +132,6 @@ img {
     max-width:100% ;
     margin: 10;
 }
-
-/*
-table {
-  font-family: "QuickSand", sans-serif;
-  color: var(--bs-gray-700);
-  border-collapse: collapse;
-}
-
-thead {
-  background-color: var(--bs-gray-700);
-  color: var(--bs-gray-200);
-}
-
-th, td {
-  border: 1px solid var(--bs-gray-400);
-  padding: 8px; 
-  text-align: left;
-}
-*/
 
 pre {
   width: 100%;
@@ -192,23 +159,21 @@ a:link {
 }
 
 /* visited link */
-  a:visited {
+a:visited {
   color: #198754;
 }
 
 /* mouse over link */
-  a:hover {
-    color: darkgreen;
-  }
+a:hover {
+  color: darkgreen;
+}
 
 /* selected link */
 a:active {
   color: lightgreen;
 }
 
-/*
-  overwrite navbar from bootstrap.min.css
-*/
+/* overwrite navbar from bootstrap.min.css */
 .nav-link.disabled{
   color:#6c757d;
   pointer-events:none;
@@ -298,4 +263,11 @@ a:active {
   .navbar-dark .navbar-text a:focus,.navbar-dark .navbar-text a:hover{
     color:#fff
   }
+}
+
+footer {
+  padding: 20px;
+  background: #343a40;
+  color: var(--bs-gray-200);
+  text-align: center;
 }
