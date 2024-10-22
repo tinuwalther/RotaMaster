@@ -21,7 +21,7 @@
             * On page load
             */
             window.addEventListener('load', () => {
-                getNexYear('/api/year/new'); // Call the API once the page is fully loaded
+                getNextYear('/api/year/new'); // Call the API once the page is fully loaded
                 const d = new Date();
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
             });
@@ -169,7 +169,7 @@
                     });
 
                     try {
-                        // Perform the API call using fetch
+s                        // Perform the API call using fetch
                         const response = await fetch('/api/event/new', {
                             method: 'POST',
                             headers: {
