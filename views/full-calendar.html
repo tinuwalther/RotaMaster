@@ -6,13 +6,13 @@
         <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
         <meta name="description" content="PSRotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
         
-        <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"/>
-        <link rel="stylesheet" href='\assets\BootStrap\bootstrap.icons.css'>
-        <link rel="stylesheet" href="\assets\psrotamaster\psrotamaster.main.css"/>
+        <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
+        <link rel="stylesheet" href='/assets/BootStrap/bootstrap.icons.css'>
+        <link rel="stylesheet" href="/assets/psrotamaster/psrotamaster.main.css"/>
 
-        <script src="\assets\BootStrap\bootstrap.bundle.min.js"></script>
-        <script src="\assets\psrotamaster\fullcalendar.main.min.js"></script>
-        <script src='\assets\psrotamaster\index.global.min.js'></script>
+        <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
+        <script src="/assets/psrotamaster/fullcalendar.main.min.js"></script>
+        <script src='/assets/psrotamaster/index.global.min.js'></script>
         <script src='/assets/psrotamaster/psrotamaster.main.js'></script>
 
         <script>
@@ -47,30 +47,32 @@
             */
             document.addEventListener('DOMContentLoaded', async function() {
 
-                // Warte auf das Resultat der getPerson-Funktion und befülle das datalist-Element
+                // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
-                    getPerson('api/events/person').then(namesArray => {
+                    // Fetch person data
+                    fetchData('api/events/person', 'person').then(namesArray => {
                         if (namesArray.length) {
                             fillDatalistOptions('datalistOptions', namesArray);
-                            //fillDropdownOptions('person', namesArray);
+                            // alternatively fillDropdownOptions('person', namesArray);
                         } else {
-                            console.error('Keine Namen gefunden.');
+                            console.error('No names found.');
                         }
                     }).catch(error => {
-                        console.error('Fehler beim Abrufen der Namen:', error);
+                        console.error('Error fetching names:', error);
                     });
                 }, 200);
 
-                // Warte auf das Resultat der getAbsence-Funktion und befülle das Dropdown-Element
+                // Wait for the result of the getAbsence function and fill the dropdown element
                 setTimeout(function() {
-                    getPerson('api/events/absence').then(typesArray => {
+                    // Fetch absence data
+                    fetchData('api/events/absence', 'absence').then(typesArray => {
                         if (typesArray.length) {
                             fillDropdownOptions('absenceType', typesArray);
                         } else {
-                            console.error('Keine Absenzen gefunden.');
+                            console.error('No absence types found.');
                         }
                     }).catch(error => {
-                        console.error('Fehler beim Abrufen der Absenzen:', error);
+                        console.error('Error fetching absence types:', error);
                     });
                 }, 200);
 
@@ -95,48 +97,29 @@
                     dayMaxEvents: true,
                     showNonCurrentDates: false,
                     fixedWeekCount: false,
-                    weekNumberCalculation: 'ISO', // "ISO" changes the default value of firstDay from 0 (Sunnday) to 1 (Monday).
+                    weekNumberCalculation: 'ISO', // "ISO" changes the default value of firstDay from 0 (Sunday) to 1 (Monday).
                     
                     selectable: true,
                     editable: true,
                     navLinks: true,
 
-                    // Wenn die Ansicht geändert wird oder das Datum wechselt
+                    // When the view is changed or the date changes
                     datesSet: function(info) {
-                        let displayedYear;
+                        
+                        let displayedYear = calcDisplayedYear(info);
 
-                        // Unterschiedliche Behandlung je nach Ansichtstyp
-                        if (info.view.type === 'dayGridMonth' || info.view.type === 'listMonth') {
-                            const centralDate = new Date(
-                                (info.start.getTime() + info.end.getTime()) / 2
-                            );
-                            // Extrahiere das Jahr und den Monat
-                            displayedYear = centralDate.getFullYear();
-                            const displayedMonth = centralDate.getMonth() + 1; // nullbasierter Monat
-                            // console.log('Monatsansicht - Angezeigtes Jahr:', displayedYear);
-                            // console.log('Monatsansicht - Angezeigter Monat:', displayedMonth);
-                        } else if (info.view.type === 'multiMonthYear') {
-                            const centralDate = new Date(
-                                (info.start.getTime() + info.end.getTime()) / 2
-                            );
-                            // Extrahiere das Jahr
-                            displayedYear = centralDate.getFullYear();
-                            // console.log('Jahresansicht - Angezeigtes Jahr:', displayedYear);
-                        }
-
-                        // Jahr hinter dem Summary-Text anzeigen
+                        // Display the year after the Summary text
                         if (displayedYear) {
                             const summaryElement = document.getElementById('eventSummary');
                             summaryElement.textContent = 'Summary ' + displayedYear;
-                        }else{
-                            // console.log('Kein Jahr abgefüllt:', displayedYear);
+                        } else {
+                            // console.log('No year found:', displayedYear);
                         }
 
-                        // Aufruf der Funktion und Rendern der Tabelle nach dem Laden der Seite
+                        // Call the function and render the table after the page has loaded
                         getEventSummary(calendarEvents, displayedYear).then(summary => {
                             renderTable(summary); 
                         });
-
 
                     },
 
@@ -144,30 +127,26 @@
                     events: calendarEvents,
 
                     dateClick: function(info) {
-                        // alert('Datum angeklickt: ' + info.dateStr);
-                        // Hier könntest du ein Formular oder eine Event-Erstellungsfunktion einbauen
+                        // alert('Date clicked: ' + info.dateStr);
+                        // Here you could add a form or event creation functionality
                     },
 
-                    // Daten in Events Formular abfüllen, wenn selected
+                    // Fill the form with event data when a date range is selected
                     select: function(info) {
-                        // Start- und Enddatum in Date-Objekte konvertieren
+                        // Convert start and end dates to Date objects
                         const eventStartDate = new Date(info.startStr);
                         const eventEndDate = new Date(info.endStr);
-                        // console.log('Daten in Events Formular abfüllen', eventStartDate, eventEndDate);
+                        // console.log('Filling data in event form', eventStartDate, eventEndDate);
 
-                        // Einen Tag von Enddatum abziehen, da endDate nicht korrekt vom calendar übergeben wird
+                        // Subtract one day from the end date because the endDate is not correctly passed from the calendar
                         eventEndDate.setDate(eventEndDate.getDate() - 1);
 
-                        // Formatierte Daten im Format yyyy-MM-dd erstellen
+                        // Create formatted dates in the format yyyy-MM-dd
                         const formattedStartDate = eventStartDate.toISOString().split('T')[0];
                         const formattedEndDate = eventEndDate.toISOString().split('T')[0];
-                        // console.log('formatted: ' + formattedStartDate, formattedEndDate);
+                        // console.log('Formatted:', formattedStartDate, formattedEndDate);
 
-                        // Formular anzeigen
-                        // const formElement = document.getElementById('eventForm');
-                        // formElement.style.display = 'block'; // Formular sichtbar machen
-
-                        // Werte in die Formularelemente setzen
+                        // Set values in form elements
                         document.getElementById('start').value = formattedStartDate;
                         document.getElementById('end').value = formattedEndDate;
                     }
@@ -176,7 +155,7 @@
 
                 calendar.render();
 
-                // Prevent form submit and handle the form via JavaScript
+                // Prevent form submission and handle the form via JavaScript
                 const form = document.querySelector('form'); // Select the form element
                 form.addEventListener('submit', async function(event) {
                     event.preventDefault(); // Prevent default form submission
