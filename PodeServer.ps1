@@ -254,8 +254,6 @@ Start-PodeServer -Browse -Threads 2 {
     #     Write-Host "Re-builds of pages not supportet on $($CurrentOS), because mySQLite support only Windows and Linux" -ForegroundColor Red
     # }
 
-    0 | Set-PodeCache -Key Count -Ttl 10
-
     $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
     Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'PSCalendar.psd1')
 
