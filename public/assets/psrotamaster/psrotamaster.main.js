@@ -577,3 +577,44 @@ function convertToISOFormat(dateString) {
     // If the input format does not match expected patterns, return an empty string or handle appropriately
     return ''; 
 }
+
+
+// Funktion, um die Datenbank automatisch vom Server zu laden
+async function loadDatabase(dbFile) {
+    // Lade den SQL.js Compiler
+    const SQL = await initSqlJs({
+        locateFile: file => `assets/psrotamaster/sql-wasm.wasm` // `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm`
+    });
+
+    // Lade die SQLite-Datenbank-Datei vom Server
+    const response = await fetch(dbFile);
+    if (!response.ok) {
+        alert("Fehler beim Laden der Datenbankdatei.");
+        return;
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    // Lade die Datenbank in sql.js
+    db = new SQL.Database(uint8Array);
+    console.log("Datenbank geladen " + dbFile);
+
+    // Beispiel-Abfrage auf der geladenen Datenbank
+    executeQuery("SELECT name FROM sqlite_master WHERE type='table';");
+}
+
+// Funktion, um eine Abfrage auszuführen
+function executeQuery(query) {
+    const outputElement = document.getElementById("output");
+
+    // Beispiel: Alle Tabellen in der Datenbank auflisten
+    const result = db.exec(query);
+
+    if (result.length > 0) {
+        const tableNames = result[0].values.map(row => row[0]);
+        console.log("Tabellen in der Datenbank: " + tableNames.join(", "));
+    } else {
+        ondeviceorientationabsolute.log("Keine Tabellen gefunden.");
+    }
+}
