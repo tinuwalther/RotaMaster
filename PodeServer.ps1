@@ -88,7 +88,7 @@ function Initialize-WebEndpoints {
     process{
         # Index
         Add-PodeRoute -Method Get -Path '/' -ScriptBlock {
-            Write-PodeViewResponse -Path 'full-calendar.html'
+            Write-PodeViewResponse -Path 'index.html'
         }
     }
 
@@ -189,12 +189,13 @@ function Initialize-ApiEndpoints {
             $events = foreach($item in $data){
                 switch -RegEx ($item.type){
                     'Pikett' { $color = 'red'}
-                    'Pikett Pier' { $color = 'orange'} # orange
-                    'Kurs|Aus/Weiterbildung' { $color = '#3498db'} # blue
+                    'Pikett-Pier' { $color = 'orange'} # orange
+                    'Kurs|Aus/Weiterbildung' { $color = '#A37563'}
                     'Militär/ZV/EO|Zivil' { $color = '#006400'} # dark green
-                    'Ferien|Feiertag' { $color = '#05c27c'} # green
-                    'GLZ Kompensation|Absenz|Urlaub' { $color = 'green'} # green
-                    'Krankheit|Unfall' { $color = 'blue'}
+                    'Ferien' { $color = '#05c27c'} # green
+                    'Feiertag' { $color = '#B9E2A7'} # green
+                    'GLZ Kompensation|Absenz|Urlaub' { $color = '#889CC6'} # green
+                    'Krankheit|Unfall' { $color = '#212529'}
                     default { $color = '#378006'}
                 }
                 [PSCustomObject]@{

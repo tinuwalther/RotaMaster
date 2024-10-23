@@ -169,7 +169,7 @@
                     });
 
                     try {
-s                        // Perform the API call using fetch
+                        // Perform the API call using fetch
                         const response = await fetch('/api/event/new', {
                             method: 'POST',
                             headers: {
@@ -249,14 +249,14 @@ s                        // Perform the API call using fetch
 
                                 <div class="input-group mb-3">
                                     <span class="input-group-text" id="basic-addon1">Name</span>
-                                    <input class="form-control" list="datalistOptions" id="name" name="name" placeholder="Type to search...">
+                                    <input class="form-control" list="datalistOptions" id="name" name="name" placeholder="Type to search or select...">
                                     <datalist id="datalistOptions">
                                         <!--option value=Werte aus meinem Array /-->
-                                    </datalist><br>
+                                    </datalist>
                                 </div>
                                 <!-- Additional dropdown for names -->
                                 <div class="input-group mb-3">
-                                    <label for="nameDropdown" class="input-group-text">Select Name</label>
+                                    <!-- <label for="nameDropdown" class="input-group-text">Select Name</label> -->
                                     <select class="form-select" id="nameDropdown">
                                         <option value="">Please select...</option>
                                         <!-- Option values will be filled dynamically by JavaScript -->

@@ -316,15 +316,15 @@ async function loadApiData(url) {
 * with the data. It finds the table body by its selector, clears any existing rows, 
 * and iterates over the provided data to create and append new rows. Each person in the data 
 * object will have their own row in the table with details such as name, Pikett count,
-* Pikett Pier count, and vacation days.
+* Pikett-Pier count, and vacation days.
 * 
 * Main features:
 * - Clears any existing rows in the table body before adding new data.
 * - Iterates over the keys in the data object to populate each row of the table.
-* - Adds columns for each data field: person name, Pikett count, Pikett Pier count, and vacation days.
+* - Adds columns for each data field: person name, Pikett count, Pikett-Pier count, and vacation days.
 * 
 * @param {Object} data - An object containing event data to populate the table.
-* Each key represents a person's name, and each value contains details about Pikett, Pikett Pier, and vacation counts.
+* Each key represents a person's name, and each value contains details about Pikett, Pikett-Pier, and vacation counts.
 * @returns {void}
 * 
 * @example
@@ -351,8 +351,8 @@ function renderTable(data) {
         pikettCell.textContent = data[person].pikett; // Set the Pikett count
         row.appendChild(pikettCell);
 
-        const pikettPierCell = document.createElement('td'); // Cell for the Pikett Pier count
-        pikettPierCell.textContent = data[person].pikettPier; // Set the Pikett Pier count
+        const pikettPierCell = document.createElement('td'); // Cell for the Pikett-Pier count
+        pikettPierCell.textContent = data[person].pikettPier; // Set the Pikett-Pier count
         row.appendChild(pikettPierCell);
 
         const ferienCell = document.createElement('td'); // Cell for the vacation count
@@ -368,19 +368,19 @@ function renderTable(data) {
  * 
  * This function takes an array of calendar event data and a selected year, and
  * returns a summary of the events categorized by person. It processes different
- * types of events, including Pikett, Pikett Pier, and vacations, and counts the
+ * types of events, including Pikett, Pikett-Pier, and vacations, and counts the
  * respective days for each type of event for every person.
  * 
  * Main features:
  * - Processes events for a specific year and ignores those that do not fall within the selected year.
- * - Summarizes event details (Pikett, Pikett Pier, and vacation intervals) for each person.
- * - Calculates total vacation days, Pikett days, and Pikett Pier days for every person.
+ * - Summarizes event details (Pikett, Pikett-Pier, and vacation intervals) for each person.
+ * - Calculates total vacation days, Pikett days, and Pikett-Pier days for every person.
  * 
  * @async
  * @param {Array} calendarData - The array of calendar events. Each event must have a title, start, and end property.
  * @param {number} selectedYear - The year for which to calculate the summary.
  * @returns {Object} An object containing the summary of events per person.
- * Each key represents a person's name, and each value contains counts for Pikett, Pikett Pier, and vacation.
+ * Each key represents a person's name, and each value contains counts for Pikett, Pikett-Pier, and vacation.
  * 
  * @example
  * const summary = await getEventSummary(calendarData, 2024); // Returns the summary of events for 2024
@@ -408,7 +408,7 @@ async function getEventSummary(calendarData, selectedYear) {
             case 'Pikett':
                 result[personName].pikettIntervals.push({ start: eventStartDate, end: eventEndDate });
                 break;
-            case 'Pikett Pier':
+            case 'Pikett-Pier':
                 result[personName].pikettPierIntervals.push({ start: eventStartDate, end: eventEndDate });
                 break;
             case 'Ferien':
@@ -442,7 +442,7 @@ async function getEventSummary(calendarData, selectedYear) {
         // console.log(`Person: ${person}, Pikett Intervals: ${result[person].pikettIntervals}, Total Pikett Days: ${totalPikettDays}`);
 
         result[person].pikettPier = totalPikettPierDays;
-        // console.log(`Person: ${person}, Pikett Pier Intervals: ${result[person].pikettIntervals}, Total Pikett Pier Days: ${totalPikettPierDays}`);
+        // console.log(`Person: ${person}, Pikett-Pier Intervals: ${result[person].pikettIntervals}, Total Pikett-Pier Days: ${totalPikettPierDays}`);
     }
 
     return result;
