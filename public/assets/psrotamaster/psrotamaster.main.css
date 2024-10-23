@@ -118,8 +118,53 @@ h4 {
   border-radius: 10px;
 }
 
+/* Background color for weekend */
+.fc-day-sat {
+  background-color: #FBDDD3;
+}
+
+.fc-day-sun {
+  background-color: #FBDDD3;
+}
+
+/*
+.fc-scroller, .fc-view-harness {
+  border: none;
+}
+*/
+
+.fc-daygrid, .fc-multimonth-daygrid-table {
+  background-color: var(--bs-white);
+}
+
+.fc-toolbar-title {
+  font-weight: bold;
+}
+
+.fc-col-header-cell {
+  background-color: #343a40;
+  color: #ffffff;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.fc-col-header-cell a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.fc-col-header-cell a:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.fc-daygrid-day-number {
+  color: var(--bs-gray-900);
+}
+
 #Content {
-  padding: 20;
+  padding: 20px;
   background: var(--bs-gray-900);
 }
 
@@ -130,13 +175,13 @@ p {
 
 img {
     max-width:100% ;
-    margin: 10;
+    margin: 10px;
 }
 
 pre {
   width: 100%;
-  padding: 10;
-  margin: 5;
+  padding: 10px;
+  margin: 5px;
   overflow: auto;
   overflow-y: hidden;
 
