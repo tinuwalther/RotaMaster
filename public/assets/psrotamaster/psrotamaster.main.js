@@ -601,12 +601,13 @@ async function loadDatabase(dbFile) {
     console.log("Datenbank geladen " + dbFile);
 
     // Beispiel-Abfrage auf der geladenen Datenbank
-    executeQuery("SELECT name FROM sqlite_master WHERE type='table';");
+    // checkDatabase("SELECT name FROM sqlite_master WHERE type='table';");
+    readData("SELECT title, type, start, end FROM events;");
 }
 
 // Funktion, um eine Abfrage auszuführen
-function executeQuery(query) {
-    const outputElement = document.getElementById("output");
+function checkDatabase(query) {
+    const outputElement = document.getElementById("sqlite");
 
     // Beispiel: Alle Tabellen in der Datenbank auflisten
     const result = db.exec(query);
@@ -614,7 +615,28 @@ function executeQuery(query) {
     if (result.length > 0) {
         const tableNames = result[0].values.map(row => row[0]);
         console.log("Tabellen in der Datenbank: " + tableNames.join(", "));
+        outputElement.textContent = "Daten in der Datenbank: " + names;
     } else {
-        ondeviceorientationabsolute.log("Keine Tabellen gefunden.");
+        console.log("Keine Daten gefunden.");
+        outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
+    }
+}
+
+function readData(query) {
+    const outputElement = document.getElementById("sqlite");
+
+    // Beispiel: Alle Tabellen in der Datenbank auflisten
+    const result = db.exec(query);
+
+    if (result.length > 0) {
+        // const tableNames = result[0].values.map(row => row[0]);
+        // console.log("Tabellen in der Datenbank: " + tableNames.join(", "));
+        result[0].values.forEach(element => {
+            console.log(element)
+            outputElement.textContent = "Daten in der Datenbank: " + element;
+        });
+    } else {
+        console.log("Keine Daten gefunden.");
+        outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
     }
 }
