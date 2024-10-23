@@ -161,6 +161,7 @@ h4 {
 
 .fc-daygrid-day-number {
   color: var(--bs-gray-900);
+  text-decoration: none;
 }
 
 #Content {
