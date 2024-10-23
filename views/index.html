@@ -1,5 +1,5 @@
 <!DOCTYPE html><html >
-
+<html lang="en">
     <!-- Begin Head -->
     <head >
         <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
@@ -14,6 +14,7 @@
         <script src="/assets/psrotamaster/fullcalendar.main.min.js"></script>
         <script src='/assets/psrotamaster/index.global.min.js'></script>
         <script src='/assets/psrotamaster/psrotamaster.main.js'></script>
+        <script src="/assets/psrotamaster/sql-wasm.js"></script>
 
         <script>
 
@@ -46,6 +47,11 @@
             * The calendar is initialized and rendered once the page is fully loaded.
             */
             document.addEventListener('DOMContentLoaded', async function() {
+
+                // Load the SQLite database
+                setTimeout(function() { 
+                    loadDatabase('/assets/db/psrota.db');
+                }, 200);
 
                 // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
