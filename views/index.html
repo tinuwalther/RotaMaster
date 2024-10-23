@@ -190,7 +190,7 @@
                             window.location.reload(); // Reload the page to show updated data
                         } else {
                             console.error('Request failed with status:', response.status);
-                            alert('Failed to add event!');
+                            alert('Request failed with status ' + response.status + '. Could not add event!');
                         }
                     } catch (error) {
                         console.error('Error occurred:', error);

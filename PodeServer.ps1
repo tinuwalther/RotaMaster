@@ -151,7 +151,7 @@ function Initialize-ApiEndpoints {
             param($DbPath)
 
             # Read the data of the formular
-            if(-not([String]::IsNullOrEmpty($WebEvent.Data['name']))){
+            if((-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['type']))))){
                 $title  = $WebEvent.Data['name']
                 # $descr  = $WebEvent.Data['description']
                 $type   = $WebEvent.Data['type']
@@ -175,6 +175,8 @@ function Initialize-ApiEndpoints {
 
                 Write-PodeJsonResponse -Value $($WebEvent.Data | ConvertTo-Json)
 
+            }else{
+                Write-PodeJsonResponse -StatusCode 400 -Value @{ StatusDescription = 'No person or type is selected!' }
             }
             
         }
