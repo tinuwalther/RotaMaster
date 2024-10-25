@@ -589,7 +589,7 @@ async function loadDatabase(dbFile) {
     // Lade die SQLite-Datenbank-Datei vom Server
     const response = await fetch(dbFile);
     if (!response.ok) {
-        alert("Fehler beim Laden der Datenbankdatei.");
+        alert("Fehler beim Laden der Datenbankdatei " + dbFile);
         return;
     }
 
@@ -598,16 +598,76 @@ async function loadDatabase(dbFile) {
 
     // Lade die Datenbank in sql.js
     db = new SQL.Database(uint8Array);
-    console.log("Datenbank geladen " + dbFile);
+    console.log("Datenbank geladen " + dbFile, db);
 
     // Beispiel-Abfrage auf der geladenen Datenbank
-    // checkDatabase("SELECT name FROM sqlite_master WHERE type='table';");
-    readData("SELECT title, type, start, end FROM events;");
+    readData("SELECT title, type, start, end FROM events;","sqlite");
 }
 
-// Funktion, um eine Abfrage auszuführen
-function checkDatabase(query) {
-    const outputElement = document.getElementById("sqlite");
+function createData(query, dbFile){
+    // const data = db.export(); // Exportiert als Uint8Array
+    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
+
+    console.log('Not implemented yet:', query)
+}
+
+function readData(query, elementId) {
+    const outputElement = document.getElementById(elementId);
+    const result = db.exec(query);
+
+    if (result.length > 0) {
+        // const tableNames = result[0].values.map(row => row[0]);
+        // console.log("Tabellen in der Datenbank: " + tableNames.join(", "));
+        // result[0].values.forEach(element => {
+        //     console.log(element)
+        //     outputElement.textContent = "Daten in der Datenbank: " + element;
+        // });
+        let data = null;
+        if (result.length > 0) {
+            const columns = result[0].columns; // ["id", "title", "start", "end"]
+            const rows = result[0].values;     // Array von Zeilen
+            rows.forEach(row => {
+                const id = row[0];        // Beispiel: 1
+                const title = row[1];     // Beispiel: "Meeting"
+                const start = row[2];     // Beispiel: "2024-10-23 10:00:00"
+                const end = row[3];       // Beispiel: "2024-10-23 11:00:00"
+                if(data){
+                    data = data + ',' + `ID: ${id}, Title: ${title}, Start: ${start}, End: ${end}`;
+                }else{
+                    data = `ID: ${id}, Title: ${title}, Start: ${start}, End: ${end}`;
+                }
+                console.log(`ID: ${id}, Title: ${title}, Start: ${start}, End: ${end}`);
+            });
+        }
+        outputElement.textContent = data;
+    } else {
+        console.log("Keine Daten gefunden.");
+        outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
+    }
+}
+
+function updateData(query, dbFile, elementId){
+    // const data = db.export(); // Exportiert als Uint8Array
+    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
+
+    console.log('Not implemented yet:', query)
+}
+
+function deleteData(query, dbFile, elementId){
+    // const data = db.export(); // Exportiert als Uint8Array
+    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
+
+    console.log('Not implemented yet:', query)
+}
+
+/**
+ * Get all tables from the named database-file
+ * 
+ * @example
+ * checkDatabase("SELECT name FROM sqlite_master WHERE type='table';");
+ */
+function checkDatabase(query, elementId) {
+    const outputElement = document.getElementById(elementId);
 
     // Beispiel: Alle Tabellen in der Datenbank auflisten
     const result = db.exec(query);
@@ -616,25 +676,6 @@ function checkDatabase(query) {
         const tableNames = result[0].values.map(row => row[0]);
         console.log("Tabellen in der Datenbank: " + tableNames.join(", "));
         outputElement.textContent = "Daten in der Datenbank: " + names;
-    } else {
-        console.log("Keine Daten gefunden.");
-        outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
-    }
-}
-
-function readData(query) {
-    const outputElement = document.getElementById("sqlite");
-
-    // Beispiel: Alle Tabellen in der Datenbank auflisten
-    const result = db.exec(query);
-
-    if (result.length > 0) {
-        // const tableNames = result[0].values.map(row => row[0]);
-        // console.log("Tabellen in der Datenbank: " + tableNames.join(", "));
-        result[0].values.forEach(element => {
-            console.log(element)
-            outputElement.textContent = "Daten in der Datenbank: " + element;
-        });
     } else {
         console.log("Keine Daten gefunden.");
         outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
