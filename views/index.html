@@ -3,11 +3,12 @@
     <!-- Begin Head -->
     <head >
         <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
         <meta name="description" content="PSRotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
         
         <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
-        <link rel="stylesheet" href="/assets/BootStrap/bootstrap-icons.css"/>
+        <!-- <link rel="stylesheet" href="/assets/BootStrap/bootstrap-icons.css"/> -->
         <link rel="stylesheet" href="/assets/psrotamaster/psrotamaster.main.css"/>
 
         <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
@@ -17,6 +18,7 @@
         <script src="/assets/psrotamaster/sql-wasm.js"></script>
 
         <script>
+            let db;
 
             /**
             * On page load
@@ -50,9 +52,7 @@
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
                 // Load the SQLite database
-                setTimeout(function() { 
-                    loadDatabase('/assets/db/psrota.db');
-                }, 200);
+                loadDatabase('/assets/db/psrota.db');
 
                 // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
@@ -232,7 +232,7 @@
             <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
                 <div Class="container-fluid"  >
                     <a Class="navbar-brand" href="/" Target="_self"  >»PSRotaMaster</a>
-                    <button Class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
+                    <button Class="navbar-toggler" type="button" title="Navbar" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
                         <span Class="navbar-toggler-icon"  ></span>
                     </button>
                     <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
@@ -271,7 +271,7 @@
                                 <!-- Additional dropdown for names -->
                                 <div class="input-group mb-3">
                                     <!-- <label for="nameDropdown" class="input-group-text">Select Name</label> -->
-                                    <select class="form-select" id="nameDropdown">
+                                    <select class="form-select" id="nameDropdown" name="nameDropdown" title="nameDropdown">
                                         <option value="">Please select...</option>
                                         <!-- Option values will be filled dynamically by JavaScript -->
                                     </select>
