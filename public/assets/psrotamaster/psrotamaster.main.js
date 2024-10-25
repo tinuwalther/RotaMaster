@@ -35,7 +35,7 @@ async function getNextYear(url) {
         // Check if the request was successful
         if (response.ok) {
             const result = await response.text(); // Read the response as plain text
-            console.log('Success:', result); // Log the successful response
+            // console.log('Success:', result); // Log the successful response
         } else {
             console.error('Request failed with status:', response.status); // Log if the request failed
         }
@@ -583,8 +583,8 @@ function convertToISOFormat(dateString) {
 async function loadDatabase(dbFile) {
     // Lade den SQL.js Compiler
     const SQL = await initSqlJs({
-        // locateFile: file => `assets/psrotamaster/sql-wasm.wasm` // `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm`
-        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm`
+        locateFile: file => `assets/psrotamaster/sql-wasm.wasm` // `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm`
+        // locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm`
     });
 
     // Lade die SQLite-Datenbank-Datei vom Server
@@ -601,8 +601,7 @@ async function loadDatabase(dbFile) {
     db = new SQL.Database(uint8Array);
     console.log("Datenbank geladen " + dbFile, db);
 
-    // Beispiel-Abfrage auf der geladenen Datenbank
-    readDBData("SELECT person, type, start, end FROM events;","sqlite")
+    // readDBData("SELECT person, type, start, end FROM events;","sqlite")
 }
 
 function createDBData(query, dbFile){
