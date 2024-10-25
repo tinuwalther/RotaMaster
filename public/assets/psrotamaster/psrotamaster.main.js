@@ -579,90 +579,31 @@ function convertToISOFormat(dateString) {
 }
 
 
-// Funktion, um die Datenbank automatisch vom Server zu laden
-async function loadDatabase(dbFile) {
-    // Lade den SQL.js Compiler
-    const SQL = await initSqlJs({
-        locateFile: file => `assets/psrotamaster/sql-wasm.wasm` // `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm`
-        // locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm`
-    });
 
-    // Lade die SQLite-Datenbank-Datei vom Server
-    const response = await fetch(dbFile);
-    if (!response.ok) {
-        alert("Fehler beim Laden der Datenbankdatei " + dbFile);
-        return;
-    }
+/**
+ * New functions for SQLite
+ */
+function getEventColors(type) {
+    const colorMap = [
+        { regex: /^Pikett$/, color: 'red' },
+        { regex: /^Pikett-Pier$/, color: 'orange' },
+        { regex: /^(Kurs|Aus\/Weiterbildung)$/, color: '#A37563' },
+        { regex: /^(Militär|ZV\/EO|Zivil)$/, color: '#006400' },
+        { regex: /^Ferien$/, color: '#05c27c' },
+        { regex: /^Feiertag$/, color: '#B9E2A7' },
+        { regex: /^(GLZ Kompensation|Absenz|Urlaub)$/, color: '#889CC6' },
+        { regex: /^(Krankheit|Unfall)$/, color: '#212529' }
+    ];
 
-    const arrayBuffer = await response.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-
-    // Lade die Datenbank in sql.js
-    db = new SQL.Database(uint8Array);
-    console.log("Datenbank geladen " + dbFile, db);
-
-    // readDBData("SELECT person, type, start, end FROM events;","sqlite")
-}
-
-function createDBData(query, dbFile){
-    // const data = db.export(); // Exportiert als Uint8Array
-    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
-
-    console.log('Not implemented yet:', query)
-}
-
-function readDBData(query, elementId) {
-
-    const outputElement = document.getElementById(elementId);
-    const result = db.exec(query);
-
-    if (result.length > 0) {
-        let jsonArray = [];
-
-        if (result.length > 0) {
-            const columns = result[0].columns;
-            const rows = result[0].values;
-
-            rows.forEach(row => {
-                let record = {};
-
-                record["title"] = `${row[0]} - ${row[1]}`;
-                columns.forEach((column, index) => {
-                    record[column] = row[index];
-                });
-
-                jsonArray.push(record);
-            });
-            // Convert the JavaScript Array into a string for debugging
-            // const jsonString = JSON.stringify(jsonArray, null, 2);
-            // console.log("jsonString:", typeof(jsonString), jsonString);
+    // Run through the colorMap and find the first match
+    for (const { regex, color } of colorMap) {
+        if (regex.test(type)) {
+            return color;
         }
-
-        const jsonString = JSON.stringify(jsonArray, null, 2); // Convert the JavaScript Array into a string (as JSON-String)
-        // console.log("jsonString:", typeof(jsonString), jsonString);
-
-        jsonObj = JSON.parse(jsonString); // Parse the JSON-String to an Object
-        // console.log("jsonObj:", typeof(jsonObj), jsonObj);
-
-        outputElement.textContent = "From SQLiteDB: " + jsonObj[0].title + ", " + jsonObj[0].start + ", " + jsonObj[0].end;
-    } else {
-        console.log("Keine Daten gefunden.");
-        outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
     }
-}
 
-function updateDBData(query, dbFile, elementId){
-    // const data = db.export(); // Exportiert als Uint8Array
-    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
-
-    console.log('Not implemented yet:', query)
-}
-
-function deleteDBData(query, dbFile, elementId){
-    // const data = db.export(); // Exportiert als Uint8Array
-    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
-
-    console.log('Not implemented yet:', query)
+    // Return default color if no match was found
+    return '#378006';
 }
 
 /**
@@ -685,4 +626,180 @@ function checkDBDatabase(query, elementId) {
         console.log("Keine Daten gefunden.");
         outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
     }
+}
+
+/**
+ * Loads a SQLite database from a provided file path using SQL.js.
+ * 
+ * This asynchronous function uses SQL.js to initialize and load a SQLite database from a given
+ * file. It first initializes the SQL.js library, then fetches the database file and loads it
+ * into memory. The database is then returned as an object, which can be used to execute queries.
+ * If any error occurs during the loading process, an error message is logged and a notification is shown to the user.
+ * 
+ * Main features:
+ * - Asynchronously initializes SQL.js using a WebAssembly (`.wasm`) file for SQLite emulation.
+ * - Fetches a database file in binary format and converts it to a `Uint8Array` for SQL.js processing.
+ * - Returns a boolean indicating the success or failure of the database loading process.
+ * 
+ * @async
+ * @param {string} dbFile - The path or URL to the SQLite database file (`.sqlite` or `.db`).
+ * @returns {Promise<boolean>} - Returns `true` if the database is successfully loaded, otherwise `false`.
+ * 
+ * Example usage:
+ * ```javascript
+ * const dbFilePath = 'assets/databases/myDatabase.sqlite';
+ * loadDatabase(dbFilePath).then((success) => {
+ *   if (success) {
+ *     console.log('Database loaded successfully!');
+ *   } else {
+ *     console.error('Failed to load database.');
+ *   }
+ * });
+ * ```
+ * 
+ * Notes:
+ * - SQL.js is a JavaScript library that allows you to run SQLite in the browser. It requires a WebAssembly
+ *   file (`sql-wasm.wasm`) to be loaded, which emulates the SQLite engine.
+ * - Ensure that the `dbFile` path is correct and accessible from the environment where this function is executed.
+ * - Use `initSqlJs({ locateFile: () => 'path/to/sql-wasm.wasm' })` to correctly point to the location of the `.wasm` file.
+ * 
+ * @throws {Error} - If the database file cannot be loaded or the SQL.js initialization fails, an error is caught and logged.
+ */
+async function loadDatabase(dbFile) {
+    try {
+        // SQL.js initialisieren
+        const SQL = await initSqlJs({ locateFile: () => 'assets/psrotamaster/sql-wasm.wasm' }); // https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm
+
+        // Retrieve database file and convert to Uint8Array
+        const response = await fetch(dbFile);
+        if (!response.ok) throw new Error(`Error loading the database file: ${dbFile}`);
+
+        const uint8Array = new Uint8Array(await response.arrayBuffer());
+
+        // Load database and return success status
+        db = new SQL.Database(uint8Array);
+        console.log(`Database successfully loaded: ${dbFile}`, db);
+        return !!db;
+    } catch (error) {
+        console.error(error);
+        alert("loadDatabase:", error.message);
+        return false;
+    }
+}
+
+// CRUD Functions
+function createDBData(query, dbFile){
+    // const data = db.export(); // Exportiert als Uint8Array
+    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
+
+    console.log('Not implemented yet:', query)
+}
+
+/**
+ * Executes an SQL query on the loaded SQLite database and returns the result as a JavaScript object.
+ * 
+ * This asynchronous function takes a SQL query and executes it on an SQLite database using SQL.js.
+ * It converts the resulting data into a JSON object, making it easy to use in other parts of the application.
+ * If the database query returns data, it formats it, and if an output element ID is provided, it displays
+ * a summary in the specified HTML element.
+ * 
+ * Main features:
+ * - Executes an SQL query on the preloaded SQLite database (`db`).
+ * - Converts the result to a structured JavaScript object (parsed JSON).
+ * - Displays the result in the provided HTML element, if the query is successful.
+ * - Supports color coding of records based on custom logic (`getEventColors`).
+ * 
+ * @async
+ * @param {string} query - The SQL query string to be executed against the SQLite database.
+ * @param {string} elementId - The ID of the HTML element where a summary of the result will be displayed.
+ * @returns {Promise<Object[]>} - Returns a Promise that resolves to an array of objects representing the query results.
+ * Each object contains the row data with additional properties such as "title" and "color".
+ * 
+ * Example usage:
+ * ```javascript
+ * const query = 'SELECT name, type, start_date, end_date FROM events WHERE year = 2024';
+ * readDBData(query, 'outputElementId').then((result) => {
+ *   if (result.length > 0) {
+ *     console.log('Data retrieved successfully:', result);
+ *   } else {
+ *     console.log('No data found.');
+ *   }
+ * });
+ * ```
+ * 
+ * Notes:
+ * - The function relies on a preloaded database (`db`) using SQL.js.
+ * - The `getEventColors` function is used to assign a color to each record based on its "type" or other properties.
+ * - The `elementId` parameter should refer to an existing HTML element for displaying basic query result summaries.
+ * - The returned JavaScript object is parsed from a JSON string to provide a convenient way to work with the data.
+ * 
+ * @throws {Error} - If the query fails or the database is not correctly loaded, an error may be thrown or logged.
+ */
+async function readDBData(query, elementId) {
+
+    const outputElement = document.getElementById(elementId);
+    const result = db.exec(query);
+
+    if (result.length > 0) {
+        let jsonArray = [];
+
+        if (result.length > 0) {
+            const columns = result[0].columns;
+            const rows = result[0].values;
+
+            rows.forEach(row => {
+                let record = {};
+                // 0 = person, 1 = title, 2 = start, 3 = end
+                record["title"] = `${row[0]} - ${row[1]}`;
+                record["color"] = getEventColors(row[1]);
+
+                // Conversion of field 3 (end) to a date format and addition of a day
+                if (row[3]) {
+                    let endDate = new Date(row[3]);
+                    endDate.setDate(endDate.getDate() + 1);
+                    // Save end date in the format “yyyy-MM-dd”
+                    const formattedEndDate = endDate.toISOString().split('T')[0];
+                    record[columns[3]] = formattedEndDate;
+                }
+
+                // Save the remaining fields in the record
+                columns.forEach((column, index) => {
+                    if (index !== 3) {
+                        record[column] = row[index];
+                    }
+                });
+
+                jsonArray.push(record);
+            });
+            // Convert the JavaScript Array into a string for debugging
+            // const jsonString = JSON.stringify(jsonArray, null, 2);
+            // console.log("jsonString:", typeof(jsonString), jsonString);
+        }
+
+        const jsonString = JSON.stringify(jsonArray, null, 2); // Convert the JavaScript Array into a string (as JSON-String)
+        // console.log("jsonString:", typeof(jsonString), jsonString);
+
+        jsonObj = JSON.parse(jsonString); // Parse the JSON-String to an Object
+        // console.log("jsonObj:", typeof(jsonObj), jsonObj);
+        return jsonObj;
+
+        outputElement.textContent = "From SQLiteDB: " + jsonObj[0].title + ", " + jsonObj[0].start + ", " + jsonObj[0].end;
+    } else {
+        console.log("Keine Daten gefunden.");
+        outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
+    }
+}
+
+function updateDBData(query, dbFile, elementId){
+    // const data = db.export(); // Exportiert als Uint8Array
+    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
+
+    console.log('Not implemented yet:', query)
+}
+
+function deleteDBData(query, dbFile, elementId){
+    // const data = db.export(); // Exportiert als Uint8Array
+    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
+
+    console.log('Not implemented yet:', query)
 }
