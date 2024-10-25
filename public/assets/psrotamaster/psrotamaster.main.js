@@ -583,7 +583,8 @@ function convertToISOFormat(dateString) {
 async function loadDatabase(dbFile) {
     // Lade den SQL.js Compiler
     const SQL = await initSqlJs({
-        locateFile: file => `assets/psrotamaster/sql-wasm.wasm` // `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm`
+        // locateFile: file => `assets/psrotamaster/sql-wasm.wasm` // `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm`
+        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm`
     });
 
     // Lade die SQLite-Datenbank-Datei vom Server
@@ -601,22 +602,23 @@ async function loadDatabase(dbFile) {
     console.log("Datenbank geladen " + dbFile, db);
 
     // Beispiel-Abfrage auf der geladenen Datenbank
-    readData("SELECT person, type, start, end FROM events;","sqlite");
+    readDBData("SELECT person, type, start, end FROM events;","sqlite")
 }
 
-function createData(query, dbFile){
+function createDBData(query, dbFile){
     // const data = db.export(); // Exportiert als Uint8Array
     // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
 
     console.log('Not implemented yet:', query)
 }
 
-function readData(query, elementId) {
+function readDBData(query, elementId) {
+
     const outputElement = document.getElementById(elementId);
     const result = db.exec(query);
 
     if (result.length > 0) {
-        let jsonData = [];
+        let jsonArray = [];
 
         if (result.length > 0) {
             const columns = result[0].columns;
@@ -630,27 +632,34 @@ function readData(query, elementId) {
                     record[column] = row[index];
                 });
 
-                jsonData.push(record);
+                jsonArray.push(record);
             });
-            const jsonString = JSON.stringify(jsonData, null, 2);
-            console.log(jsonString);
+            // Convert the JavaScript Array into a string for debugging
+            // const jsonString = JSON.stringify(jsonArray, null, 2);
+            // console.log("jsonString:", typeof(jsonString), jsonString);
         }
-        const jsonText = JSON.stringify(jsonData);
-        outputElement.textContent = jsonText;
+
+        const jsonString = JSON.stringify(jsonArray, null, 2); // Convert the JavaScript Array into a string (as JSON-String)
+        // console.log("jsonString:", typeof(jsonString), jsonString);
+
+        jsonObj = JSON.parse(jsonString); // Parse the JSON-String to an Object
+        // console.log("jsonObj:", typeof(jsonObj), jsonObj);
+
+        outputElement.textContent = "From SQLiteDB: " + jsonObj[0].title + ", " + jsonObj[0].start + ", " + jsonObj[0].end;
     } else {
         console.log("Keine Daten gefunden.");
         outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
     }
 }
 
-function updateData(query, dbFile, elementId){
+function updateDBData(query, dbFile, elementId){
     // const data = db.export(); // Exportiert als Uint8Array
     // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
 
     console.log('Not implemented yet:', query)
 }
 
-function deleteData(query, dbFile, elementId){
+function deleteDBData(query, dbFile, elementId){
     // const data = db.export(); // Exportiert als Uint8Array
     // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
 
@@ -661,9 +670,9 @@ function deleteData(query, dbFile, elementId){
  * Get all tables from the named database-file
  * 
  * @example
- * checkDatabase("SELECT name FROM sqlite_master WHERE type='table';");
+ * checkDBDatabase("SELECT name FROM sqlite_master WHERE type='table';");
  */
-function checkDatabase(query, elementId) {
+function checkDBDatabase(query, elementId) {
     const outputElement = document.getElementById(elementId);
 
     // Beispiel: Alle Tabellen in der Datenbank auflisten
