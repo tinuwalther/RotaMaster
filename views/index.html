@@ -23,8 +23,6 @@
             */
             window.addEventListener('load', () => {
                 getNextYear('/api/year/new'); // Call the API once the page is fully loaded
-                const d = new Date();
-                document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
             });
 
             /**
@@ -47,6 +45,9 @@
             * The calendar is initialized and rendered once the page is fully loaded.
             */
             document.addEventListener('DOMContentLoaded', async function() {
+                
+                const d = new Date();
+                document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
                 // Load the SQLite database
                 setTimeout(function() { 
