@@ -52,7 +52,8 @@
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
                 // Load the SQLite database
-                loadDatabase('/assets/db/psrota.db');
+                await loadDatabase('/assets/db/psrota.db');
+                readDBData("SELECT person, type, start, end FROM events;","sqlite")
 
                 // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
