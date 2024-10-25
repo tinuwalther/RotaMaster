@@ -601,7 +601,7 @@ async function loadDatabase(dbFile) {
     console.log("Datenbank geladen " + dbFile, db);
 
     // Beispiel-Abfrage auf der geladenen Datenbank
-    readData("SELECT title, type, start, end FROM events;","sqlite");
+    readData("SELECT person, type, start, end FROM events;","sqlite");
 }
 
 function createData(query, dbFile){
@@ -616,30 +616,27 @@ function readData(query, elementId) {
     const result = db.exec(query);
 
     if (result.length > 0) {
-        // const tableNames = result[0].values.map(row => row[0]);
-        // console.log("Tabellen in der Datenbank: " + tableNames.join(", "));
-        // result[0].values.forEach(element => {
-        //     console.log(element)
-        //     outputElement.textContent = "Daten in der Datenbank: " + element;
-        // });
-        let data = null;
+        let jsonData = [];
+
         if (result.length > 0) {
-            const columns = result[0].columns; // ["id", "title", "start", "end"]
-            const rows = result[0].values;     // Array von Zeilen
+            const columns = result[0].columns;
+            const rows = result[0].values;
+
             rows.forEach(row => {
-                const id = row[0];        // Beispiel: 1
-                const title = row[1];     // Beispiel: "Meeting"
-                const start = row[2];     // Beispiel: "2024-10-23 10:00:00"
-                const end = row[3];       // Beispiel: "2024-10-23 11:00:00"
-                if(data){
-                    data = data + ',' + `ID: ${id}, Title: ${title}, Start: ${start}, End: ${end}`;
-                }else{
-                    data = `ID: ${id}, Title: ${title}, Start: ${start}, End: ${end}`;
-                }
-                console.log(`ID: ${id}, Title: ${title}, Start: ${start}, End: ${end}`);
+                let record = {};
+
+                record["title"] = `${row[0]} - ${row[1]}`;
+                columns.forEach((column, index) => {
+                    record[column] = row[index];
+                });
+
+                jsonData.push(record);
             });
+            const jsonString = JSON.stringify(jsonData, null, 2);
+            console.log(jsonString);
         }
-        outputElement.textContent = data;
+        const jsonText = JSON.stringify(jsonData);
+        outputElement.textContent = jsonText;
     } else {
         console.log("Keine Daten gefunden.");
         outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
