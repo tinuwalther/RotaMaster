@@ -668,7 +668,7 @@ function checkDBDatabase(query, elementId) {
 async function loadDatabase(dbFile) {
     try {
         // SQL.js initialisieren
-        const SQL = await initSqlJs({ locateFile: () => 'assets/psrotamaster/sql-wasm.wasm' }); // https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm
+        const SQL = await initSqlJs({ locateFile: () => 'assets/rotamaster/sql-wasm.wasm' }); // https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm
 
         // Retrieve database file and convert to Uint8Array
         const response = await fetch(dbFile);
@@ -735,9 +735,8 @@ function createDBData(query, dbFile){
  * 
  * @throws {Error} - If the query fails or the database is not correctly loaded, an error may be thrown or logged.
  */
-async function readDBData(query, elementId) {
+async function readDBData(query) {
 
-    const outputElement = document.getElementById(elementId);
     const result = db.exec(query);
 
     if (result.length > 0) {
@@ -782,11 +781,8 @@ async function readDBData(query, elementId) {
         jsonObj = JSON.parse(jsonString); // Parse the JSON-String to an Object
         // console.log("jsonObj:", typeof(jsonObj), jsonObj);
         return jsonObj;
-
-        outputElement.textContent = "From SQLiteDB: " + jsonObj[0].title + ", " + jsonObj[0].start + ", " + jsonObj[0].end;
     } else {
         console.log("Keine Daten gefunden.");
-        outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
     }
 }
 
