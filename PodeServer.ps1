@@ -201,7 +201,7 @@ function Initialize-ApiEndpoints {
                     default { $color = '#378006'}
                 }
                 [PSCustomObject]@{
-                    title = if($item.type -ne 'Feiertag'){$item.title, $item.type -join " - "}else{$item.title}
+                    title = $item.title, $item.type -join " - "
                     # description = $item.description
                     start = Get-Date $item.start -f 'yyyy-MM-dd'
                     end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
