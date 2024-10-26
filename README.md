@@ -1,4 +1,4 @@
-# PSRotaMaster V2
+# RotaMaster V3
 
 Absence and duty scheduling program for teams based on Pode, and [FullCalendar](https://fullcalendar.io/), created with ChatGPT prompt for JavaScript.
 
@@ -40,13 +40,13 @@ Select a range fills the selected start- and end date into the formular. Type or
 
 ## Functionality
 
-The PSRotaMaster is a Web service based on Pode.
+The RotaMaster is a Web service based on Pode.
 
 All of the APIs on the backend are written in PowerShell and the frontend is written in JavaScript and HTML/CSS.
 
 ## Folders
 
-The PSRotaMaster needs the following folder-structure:
+The RotaMaster needs the following folder-structure:
 
 ````cmd
 PSRotaMaser
@@ -60,7 +60,7 @@ PSRotaMaser
 |   |   +---BootStrap
 |   |   +---img
 |   |   +---Jquery
-|   |   \---psrotamaster
+|   |   \---rotamaster
 |   \---img
 \---views
 ````
