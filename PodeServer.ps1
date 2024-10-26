@@ -88,7 +88,7 @@ function Initialize-WebEndpoints {
     process{
         # Index
         Add-PodeRoute -Method Get -Path '/' -ScriptBlock {
-            Write-PodeViewResponse -Path 'full-calendar.pode'
+            Write-PodeViewResponse -Path 'index.html'
         }
     }
 
@@ -111,18 +111,22 @@ function Initialize-ApiEndpoints {
         $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
         $DbPath  = $($BinPath).Replace('bin','db')
 
+        Add-PodeRoute -Method Get -Path '/api/events/person' -ArgumentList @($DbPath) -ScriptBlock {
+            param($DbPath)
+            $person = Get-Content -Path (Join-Path -Path $DbPath -ChildPath 'person.json') | ConvertFrom-Json | Sort-Object
+            Write-PodeJsonResponse -Value $person  
+        }
+
+        Add-PodeRoute -Method Get -Path '/api/events/absence' -ArgumentList @($DbPath) -ScriptBlock {
+            param($DbPath)
+            $absence = Get-Content -Path (Join-Path -Path $DbPath -ChildPath 'absence.json') | ConvertFrom-Json | Sort-Object
+            Write-PodeJsonResponse -Value $absence  
+        }
+
         Add-PodeRoute -Method Post -Path '/api/month/next' -ContentType 'application/json' -ArgumentList @($BinPath) -ScriptBlock {
             param($BinPath)
             
             $body = $WebEvent.Data
-
-            # 'Now' | Out-Default
-            # $CurrentMonth = ([System.DateTime]::Now).Month
-
-            # 'WebData' | Out-Default
-            # $MonthName     = [PSCustomObject]$WebEvent.Data.Month
-            # $currCulture   = [system.globalization.cultureinfo]::CurrentCulture
-            # $MonthAsNumber = [System.DateTime]::ParseExact($MonthName, 'MMMM', $currCulture).Month
             
             if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
             $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlCalendar.ps1') -Title 'PS calendar' -Year $body.Year -Month $body.Month
@@ -147,7 +151,7 @@ function Initialize-ApiEndpoints {
             param($DbPath)
 
             # Read the data of the formular
-            if(-not([String]::IsNullOrEmpty($WebEvent.Data['name']))){
+            if((-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['type']))))){
                 $title  = $WebEvent.Data['name']
                 # $descr  = $WebEvent.Data['description']
                 $type   = $WebEvent.Data['type']
@@ -155,17 +159,14 @@ function Initialize-ApiEndpoints {
                 $end    = $WebEvent.Data['end']
                 
                 # "new-events: $($title), $($start), $($end)"| Out-Default
-                if($WebEvent.Data['request'] -eq 'select'){
-                    $EndSate = Get-Date ([datetime]$end) -f 'yyyy-MM-dd'
-                }else{
-                    $EndSate = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
-                }
+                # $EndSate = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
+                $EndSate = "$(Get-Date ([datetime]$end) -f 'yyyy-MM-dd')"
                 $data = [PSCustomObject]@{
                     Id    = [guid]::NewGuid()
                     Title = $title
                     # Description = $descr
                     Type    = $type
-                    Start   = Get-Date ([datetime]$start) -f 'yyyy-MM-dd'
+                    Start   = "$(Get-Date ([datetime]$start) -f 'yyyy-MM-dd')"
                     End     = $EndSate 
                     Created = Get-Date -f 'yyyy-MM-dd'
                 }
@@ -174,6 +175,8 @@ function Initialize-ApiEndpoints {
 
                 Write-PodeJsonResponse -Value $($WebEvent.Data | ConvertTo-Json)
 
+            }else{
+                Write-PodeJsonResponse -StatusCode 400 -Value @{ StatusDescription = 'No person or type is selected!' }
             }
             
         }
@@ -187,18 +190,22 @@ function Initialize-ApiEndpoints {
 
             $events = foreach($item in $data){
                 switch -RegEx ($item.type){
-                    'Pikett'                    { $color = '#cd00cd'} # purple
-                    'Pikett Pier'               { $color = '#ffa500'} # orange
-                    'Kurs'                      { $color = '#3498db'} # blue
-                    'Militär|Zivil'             { $color = '#006400'} # dark green
-                    'Ferien|Feiertag|Gleitzeit' { $color = '#05c27c'} # green
-                    default                     { $color = '#378006'}
+                    'Pikett' { $color = 'red'}
+                    'Pikett-Pier' { $color = 'orange'} # orange
+                    'Kurs|Aus/Weiterbildung' { $color = '#A37563'}
+                    'Militär/ZV/EO|Zivil' { $color = '#006400'} # dark green
+                    'Ferien' { $color = '#05c27c'} # green
+                    'Feiertag' { $color = '#B9E2A7'} # green
+                    'GLZ Kompensation|Absenz|Urlaub' { $color = '#889CC6'} # green
+                    'Krankheit|Unfall' { $color = '#212529'}
+                    default { $color = '#378006'}
                 }
                 [PSCustomObject]@{
                     title = if($item.type -ne 'Feiertag'){$item.title, $item.type -join " - "}else{$item.title}
                     # description = $item.description
-                    start = $item.start
-                    end   = $item.end
+                    start = Get-Date $item.start -f 'yyyy-MM-dd'
+                    end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
+                    # end   = Get-Date (Get-Date $item.end) -f 'yyyy-MM-dd'
                     color = $color
                 } 
             }
@@ -246,8 +253,6 @@ Start-PodeServer -Browse -Threads 2 {
     # if($CurrentOS -eq [OSType]::Mac){
     #     Write-Host "Re-builds of pages not supportet on $($CurrentOS), because mySQLite support only Windows and Linux" -ForegroundColor Red
     # }
-
-    0 | Set-PodeCache -Key Count -Ttl 10
 
     $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
     Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'PSCalendar.psd1')
