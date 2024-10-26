@@ -52,8 +52,15 @@
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
                 // Load the SQLite database
-                // const dbIsLoaded = await loadDatabase('/assets/db/psrota.db');
-                // const calendarEvents = await readDBData("SELECT person, type, start, end FROM events;","sqlite");
+                const dbIsLoaded = await loadDatabase('/assets/db/rotamaster.db');
+                const calendarEvents   = await loadApiData('/api/event/get'); //await readDBData("SELECT person, type, start, end FROM events;");
+                console.log(calendarEvents);
+                // const holidays = await loadApiData('/api/event/get');
+                // const calendarEventsArray = [];
+                // calendarEventsArray.push(holidays);
+                // calendarEventsArray.push(events);
+                // const jsonString = JSON.stringify(calendarEventsArray, null, 2)
+                // const calendarEvents = JSON.parse(jsonString);
 
                 // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
@@ -87,7 +94,7 @@
 
                 var calendarEl = document.getElementById('calendar');
 
-                const calendarEvents = await loadApiData('/api/event/get');
+                // const calendarEvents = await loadApiData('/api/event/get');
                 // console.log('Loaded calendar events:', calendarEvents);
 
                 var calendar = new FullCalendar.Calendar(calendarEl, {
