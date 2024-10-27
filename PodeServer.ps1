@@ -200,8 +200,14 @@ function Initialize-ApiEndpoints {
                     'Krankheit|Unfall' { $color = '#212529'}
                     default { $color = '#378006'}
                 }
+                if($item.type -like 'Feiertag'){
+                    $title = $item.title
+                }else{
+                    $title = $item.title, $item.type -join " - "
+                }
                 [PSCustomObject]@{
-                    title = $item.title, $item.type -join " - "
+                    title = $title
+                    type  = $item.type
                     # description = $item.description
                     start = Get-Date $item.start -f 'yyyy-MM-dd'
                     end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
