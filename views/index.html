@@ -53,14 +53,12 @@
 
                 // Load the SQLite database
                 const dbIsLoaded = await loadDatabase('/assets/db/rotamaster.db');
-                const calendarEvents   = await loadApiData('/api/event/get'); //await readDBData("SELECT person, type, start, end FROM events;");
+                const events = await readDBData("SELECT person, type, start, end FROM events;");
+                const holidays = await loadApiData('/api/event/get');
+                const calendarEvents = [];
+                calendarEvents.push(...holidays);
+                calendarEvents.push(...events);
                 console.log(calendarEvents);
-                // const holidays = await loadApiData('/api/event/get');
-                // const calendarEventsArray = [];
-                // calendarEventsArray.push(holidays);
-                // calendarEventsArray.push(events);
-                // const jsonString = JSON.stringify(calendarEventsArray, null, 2)
-                // const calendarEvents = JSON.parse(jsonString);
 
                 // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
