@@ -9,14 +9,10 @@ CREATE TABLE events(
 
 
 sqlite3
-SQLite version 3.39.5 2022-10-14 20:58:05
-Enter ".help" for usage hints.
-Connected to a transient in-memory database.
-Use ".open FILENAME" to reopen on a persistent database.
 .open /Users/Tinu/git/RotaMaster/public/assets/db/rotamaster.db 
-select * from events;
-1|Tinu|Pikett|2024-12-09|2024-12-15|2024-10-23
 
 .mode csv
 .separator ";"
 .import /Users/Tinu/git/RotaMaster/db/import.txt events
+
+select * from events;

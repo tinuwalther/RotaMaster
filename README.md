@@ -50,14 +50,15 @@ The RotaMaster needs the following folder-structure:
 
 ````cmd
 PSRotaMaser
++---api
 +---archiv
 +---bin
-+---db
 +---errors
 +---img
 +---public
 |   +---assets
 |   |   +---BootStrap
+|   |   +---db
 |   |   +---img
 |   |   +---Jquery
 |   |   \---rotamaster
@@ -69,6 +70,12 @@ PSRotaMaser
 
 This is the root-folder for the web service. Here must be the PodeServer.ps1 located.
 
+### api
+
+This folder contains the files of the Web service. For example, the files for the public holidays, the absence type, or the persons.
+
+The files for the absence- and persons must be JSON-files, and the files that contains the public holidays must be a CSV-file.
+
 ### archiv
 
 For obsolete files, that you want to archive and not load in to the calendar.
@@ -76,12 +83,6 @@ For obsolete files, that you want to archive and not load in to the calendar.
 ### bin
 
 This folder contains the PowerShell code of the backend.
-
-### db
-
-This folder contains the files or the database of the Web service. For example, the files for the public holidays, the absence type, or the persons.
-
-The files for the absence- and persons must be JSON-files, and the files that contains the public holidays and the calendar are currently CSV-files.
 
 ### errors
 

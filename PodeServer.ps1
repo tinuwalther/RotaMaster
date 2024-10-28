@@ -109,17 +109,17 @@ function Initialize-ApiEndpoints {
 
     process{
         $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
-        $DbPath  = $($BinPath).Replace('bin','db')
+        $ApiPath  = $($BinPath).Replace('bin','api')
 
-        Add-PodeRoute -Method Get -Path '/api/events/person' -ArgumentList @($DbPath) -ScriptBlock {
-            param($DbPath)
-            $person = Get-Content -Path (Join-Path -Path $DbPath -ChildPath 'person.json') | ConvertFrom-Json | Sort-Object
+        Add-PodeRoute -Method Get -Path '/api/events/person' -ArgumentList @($ApiPath) -ScriptBlock {
+            param($ApiPath)
+            $person = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'person.json') | ConvertFrom-Json | Sort-Object
             Write-PodeJsonResponse -Value $person  
         }
 
-        Add-PodeRoute -Method Get -Path '/api/events/absence' -ArgumentList @($DbPath) -ScriptBlock {
-            param($DbPath)
-            $absence = Get-Content -Path (Join-Path -Path $DbPath -ChildPath 'absence.json') | ConvertFrom-Json | Sort-Object
+        Add-PodeRoute -Method Get -Path '/api/events/absence' -ArgumentList @($ApiPath) -ScriptBlock {
+            param($ApiPath)
+            $absence = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'absence.json') | ConvertFrom-Json | Sort-Object
             Write-PodeJsonResponse -Value $absence  
         }
 
@@ -134,11 +134,11 @@ function Initialize-ApiEndpoints {
 
         }
 
-        Add-PodeRoute -Method Post -Path '/api/year/new' -ContentType 'application/text' -ArgumentList @($DbPath) -ScriptBlock {
-            param($DbPath)
+        Add-PodeRoute -Method Post -Path '/api/year/new' -ContentType 'application/text' -ArgumentList @($ApiPath) -ScriptBlock {
+            param($ApiPath)
             
             $Year    = [int]$WebEvent.Data
-            $NewFile = (Join-Path -Path $DbPath -ChildPath "$($Year).csv")
+            $NewFile = (Join-Path -Path $ApiPath -ChildPath "$($Year).csv")
 
             if(-not(Test-Path $NewFile)){            
                 $data = Get-SwissHolidays -Year $Year
@@ -147,8 +147,8 @@ function Initialize-ApiEndpoints {
             }
         }
 
-        Add-PodeRoute -Method Post -Path '/api/event/new' -ArgumentList @($DbPath) -ScriptBlock {
-            param($DbPath)
+        Add-PodeRoute -Method Post -Path '/api/event/new' -ArgumentList @($ApiPath) -ScriptBlock {
+            param($ApiPath)
 
             # Read the data of the formular
             if((-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['type']))))){
@@ -171,7 +171,7 @@ function Initialize-ApiEndpoints {
                     Created = Get-Date -f 'yyyy-MM-dd'
                 }
 
-                $data | Export-Csv -Path (Join-Path -Path $DbPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
+                $data | Export-Csv -Path (Join-Path -Path $ApiPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
 
                 Write-PodeJsonResponse -Value $($WebEvent.Data | ConvertTo-Json)
 
@@ -182,9 +182,9 @@ function Initialize-ApiEndpoints {
         }
 
         # Route zum Abrufen der Events als JSON
-        Add-PodeRoute -Method Get -Path '/api/event/get' -ArgumentList @($DbPath) -ScriptBlock {
-            param($DbPath)
-            $data = Get-ChildItem -Path $DbPath -Filter '*.csv' | ForEach-Object {
+        Add-PodeRoute -Method Get -Path '/api/event/get' -ArgumentList @($ApiPath) -ScriptBlock {
+            param($ApiPath)
+            $data = Get-ChildItem -Path $ApiPath -Filter '*.csv' | ForEach-Object {
                 Import-Csv -Path $PSItem.Fullname -Delimiter ';' -Encoding utf8
             }
 
