@@ -44,6 +44,13 @@ The RotaMaster is a Web service based on Pode.
 
 All of the APIs on the backend are written in PowerShell and the frontend is written in JavaScript and HTML/CSS.
 
+## Modules
+
+The following PowerShell-Modules are mandatory:
+
+- Pode
+- PSSQLite
+
 ## Folders
 
 The RotaMaster needs the following folder-structure:
@@ -58,7 +65,6 @@ PSRotaMaser
 +---public
 |   +---assets
 |   |   +---BootStrap
-|   |   +---db
 |   |   +---img
 |   |   +---Jquery
 |   |   \---rotamaster
@@ -72,9 +78,11 @@ This is the root-folder for the web service. Here must be the PodeServer.ps1 loc
 
 ### api
 
-This folder contains the files of the Web service. For example, the files for the public holidays, the absence type, or the persons.
+This folder contains the files of the web service. For example, the files for the public holidays, the absence type or the persons.
 
-The files for the absence- and persons must be JSON-files, and the files that contains the public holidays must be a CSV-file.
+The files for the absence and people must be JSON files, and the file containing the holidays must be a CSV file.
+
+The events have also been saved in a SQLite database called rotamaster.db in this folder.
 
 ### archiv
 
