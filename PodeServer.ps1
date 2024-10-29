@@ -178,7 +178,7 @@ function Initialize-ApiEndpoints {
             param($ApiPath)
             
             $Year    = [int]$WebEvent.Data
-            $NewFile = (Join-Path -Path $ApiPath -ChildPath "$($Year).csv")
+            $NewFile = (Join-Path -Path $ApiPath -ChildPath "holidays$($Year).csv")
 
             if(-not(Test-Path $NewFile)){            
                 $data = Get-SwissHolidays -Year $Year
