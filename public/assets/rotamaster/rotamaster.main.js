@@ -676,23 +676,41 @@ async function loadDatabase(dbFile) {
 
         const uint8Array = new Uint8Array(await response.arrayBuffer());
 
-        // Load database and return success status
-        db = new SQL.Database(uint8Array);
-        console.log(`Database successfully loaded: ${dbFile}`, db);
-        return !!db;
+        // Load database
+        const db = new SQL.Database(uint8Array);
+        // console.log(`Database successfully loaded: ${dbFile}`, db);
+        return db; 
     } catch (error) {
         console.error(error);
         alert("loadDatabase:", error.message);
-        return false;
+        return null;
     }
 }
 
 // CRUD Functions
-function createDBData(query, dbFile){
-    // const data = db.export(); // Exportiert als Uint8Array
-    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
+async function createDBData(url, data){
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json' // Send as JSON
+        },
+        body: JSON.stringify(data) // Convert form data to JSON string
+    });
+    if (response.ok) {
+        return response.status;
+    } else {
+        return 'Request failed with status:', response.status, response.statusText;
+    }
+}
 
-    console.log('Not implemented yet:', query)
+async function readDBData(url) {
+    const response = await fetch(url);
+    if (response.ok) {
+        const json = await response.json(); // Convert form data to JSON string
+        return json
+    } else {
+        return 'Request failed with status:', response.status, response.statusText;
+    }
 }
 
 /**
@@ -734,7 +752,6 @@ function createDBData(query, dbFile){
  * - The returned JavaScript object is parsed from a JSON string to provide a convenient way to work with the data.
  * 
  * @throws {Error} - If the query fails or the database is not correctly loaded, an error may be thrown or logged.
- */
 async function readDBData(query) {
 
     const result = db.exec(query);
@@ -785,6 +802,7 @@ async function readDBData(query) {
         console.log("Keine Daten gefunden.");
     }
 }
+ */
 
 function updateDBData(query, dbFile, elementId){
     // const data = db.export(); // Exportiert als Uint8Array
