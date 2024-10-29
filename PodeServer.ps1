@@ -22,19 +22,20 @@ function Get-EventColor{
 
     begin{
         $function = $($MyInvocation.MyCommand.Name)
-        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', "$($function)", $Watch -Join ' ')
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', "$($function)", $type -Join ' ')
     }
 
     process{
         switch -RegEx ($type){
-            'Pikett' { $color = 'red'}
-            'Pikett-Pier' { $color = 'orange'} # orange
-            'Kurs|Aus/Weiterbildung' { $color = '#A37563'}
-            'Militär/ZV/EO|Zivil' { $color = '#006400'} # dark green
-            'Ferien' { $color = '#05c27c'} # green
-            'Feiertag' { $color = '#B9E2A7'} # green
-            'GLZ Kompensation|Absenz|Urlaub' { $color = '#889CC6'} # green
-            'Krankheit|Unfall' { $color = '#212529'}
+            '^Patch wave \d{1}$' {$color = '#d8d800'; break}
+            '^Pikett$' { $color = 'red'; break}
+            '^Pikett-Pier$' { $color = 'orange'; break} # orange
+            'Kurs|Aus/Weiterbildung' { $color = '#A37563'; break}
+            'Militär/ZV/EO|Zivil' { $color = '#006400'; break} # dark green
+            '^Ferien$' { $color = '#05c27c'; break} # green
+            '^Feiertag$' { $color = '#B9E2A7'; break} # green
+            'GLZ Kompensation|Absenz|Urlaub' { $color = '#889CC6'; break} # green
+            'Krankheit|Unfall' { $color = '#212529'; break}
             default { $color = '#378006'}
         }
         return $color
@@ -258,10 +259,9 @@ function Initialize-ApiEndpoints {
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
 
                 $events = foreach($item in $data){
-                    if($item.type -like 'Feiertag'){
-                        $title = $item.title
-                    }else{
-                        $title = $item.person, $item.type -join " - "
+                    switch -Regex ($item.type){
+                        'Feiertag|Patch wave' {$title = $item.title; break}
+                        default {$title = $item.person, $item.type -join " - "}
                     }
                     [PSCustomObject]@{
                         title = $title
@@ -287,29 +287,16 @@ function Initialize-ApiEndpoints {
             }
 
             $events = foreach($item in $data){
-                switch -RegEx ($item.type){
-                    'Pikett' { $color = 'red'}
-                    'Pikett-Pier' { $color = 'orange'} # orange
-                    'Kurs|Aus/Weiterbildung' { $color = '#A37563'}
-                    'Militär/ZV/EO|Zivil' { $color = '#006400'} # dark green
-                    'Ferien' { $color = '#05c27c'} # green
-                    'Feiertag' { $color = '#B9E2A7'} # green
-                    'GLZ Kompensation|Absenz|Urlaub' { $color = '#889CC6'} # green
-                    'Krankheit|Unfall' { $color = '#212529'}
-                    default { $color = '#378006'}
-                }
-                if($item.type -like 'Feiertag'){
-                    $title = $item.title
-                }else{
-                    $title = $item.title, $item.type -join " - "
+                switch -Regex ($item.type){
+                    'Feiertag|Patch wave' {$title = $item.title; break}
+                    default {$title = $item.title, $item.type -join " - "}
                 }
                 [PSCustomObject]@{
                     title = $title
                     type  = $item.type
                     start = Get-Date $item.start -f 'yyyy-MM-dd'
                     end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
-                    # end   = Get-Date (Get-Date $item.end) -f 'yyyy-MM-dd'
-                    color = $color
+                    color = Get-EventColor -type $item.type
                 } 
             }
             Write-PodeJsonResponse -Value $events
