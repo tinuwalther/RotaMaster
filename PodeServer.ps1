@@ -12,6 +12,40 @@
 param ()
 
 #region functions
+function Get-EventColor{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [String]$type
+    )
+
+    begin{
+        $function = $($MyInvocation.MyCommand.Name)
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', "$($function)", $Watch -Join ' ')
+    }
+
+    process{
+        switch -RegEx ($type){
+            'Pikett' { $color = 'red'}
+            'Pikett-Pier' { $color = 'orange'} # orange
+            'Kurs|Aus/Weiterbildung' { $color = '#A37563'}
+            'Militär/ZV/EO|Zivil' { $color = '#006400'} # dark green
+            'Ferien' { $color = '#05c27c'} # green
+            'Feiertag' { $color = '#B9E2A7'} # green
+            'GLZ Kompensation|Absenz|Urlaub' { $color = '#889CC6'} # green
+            'Krankheit|Unfall' { $color = '#212529'}
+            default { $color = '#378006'}
+        }
+        return $color
+    }
+
+    end{
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', "$($MyInvocation.MyCommand.Name)" -Join ' ')
+    }
+
+}
+
 function Initialize-FileWatcher {
     [CmdletBinding()]
     param(
@@ -109,20 +143,24 @@ function Initialize-ApiEndpoints {
 
     process{
         $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
-        $ApiPath  = $($BinPath).Replace('bin','api')
+        $ApiPath = $($BinPath).Replace('bin','api')
+        $dbPath = Join-Path -Path $($ApiPath) -ChildPath '/rotamaster.db'
 
+        # Get person from JSON-file
         Add-PodeRoute -Method Get -Path '/api/events/person' -ArgumentList @($ApiPath) -ScriptBlock {
             param($ApiPath)
             $person = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'person.json') | ConvertFrom-Json | Sort-Object
             Write-PodeJsonResponse -Value $person  
         }
 
+        # Get absences from JSON-file
         Add-PodeRoute -Method Get -Path '/api/events/absence' -ArgumentList @($ApiPath) -ScriptBlock {
             param($ApiPath)
             $absence = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'absence.json') | ConvertFrom-Json | Sort-Object
             Write-PodeJsonResponse -Value $absence  
         }
 
+        <# Calculate next month for PS calendar
         Add-PodeRoute -Method Post -Path '/api/month/next' -ContentType 'application/json' -ArgumentList @($BinPath) -ScriptBlock {
             param($BinPath)
             
@@ -133,7 +171,9 @@ function Initialize-ApiEndpoints {
             Write-PodeJsonResponse -Value $Response    
 
         }
+        #>
 
+        # Calculate swiss holidays for next year
         Add-PodeRoute -Method Post -Path '/api/year/new' -ContentType 'application/text' -ArgumentList @($ApiPath) -ScriptBlock {
             param($ApiPath)
             
@@ -147,6 +187,7 @@ function Initialize-ApiEndpoints {
             }
         }
 
+        <# obsolete
         Add-PodeRoute -Method Post -Path '/api/event/new' -ArgumentList @($ApiPath) -ScriptBlock {
             param($ApiPath)
 
@@ -162,26 +203,83 @@ function Initialize-ApiEndpoints {
                 # $EndSate = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
                 $EndSate = "$(Get-Date ([datetime]$end) -f 'yyyy-MM-dd')"
                 $data = [PSCustomObject]@{
-                    Id    = [guid]::NewGuid()
-                    Title = $title
+                    # Id    = [guid]::NewGuid()
+                    person  = $title
                     # Description = $descr
-                    Type    = $type
-                    Start   = "$(Get-Date ([datetime]$start) -f 'yyyy-MM-dd')"
-                    End     = $EndSate 
-                    Created = Get-Date -f 'yyyy-MM-dd'
+                    type    = $type
+                    start   = "$(Get-Date ([datetime]$start) -f 'yyyy-MM-dd')"
+                    end     = $EndSate 
+                    created = Get-Date -f 'yyyy-MM-dd'
                 }
 
-                $data | Export-Csv -Path (Join-Path -Path $ApiPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
+                # $data | Export-Csv -Path (Join-Path -Path $ApiPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
 
-                Write-PodeJsonResponse -Value $($WebEvent.Data | ConvertTo-Json)
+                Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
 
             }else{
                 Write-PodeJsonResponse -StatusCode 400 -Value @{ StatusDescription = 'No person or type is selected!' }
             }
             
         }
+        #>
 
-        # Route zum Abrufen der Events als JSON
+        # Add new record into the SQLiteDB
+        Add-PodeRoute -Method POST -Path '/api/event/insert' -ArgumentList @($dbPath) -ScriptBlock {
+            param($dbPath)
+            # Read the data of the formular
+            if((-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['type']))))){
+                try{
+                    $person  = $WebEvent.Data['name']
+                    $type    = $WebEvent.Data['type']
+                    $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd')"
+                    $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd')"
+                    $created = Get-Date -f 'yyyy-MM-dd'
+    
+                    $sql = "INSERT INTO events (person, type, start, end, created) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($created)')"
+                    $connection = New-SQLiteConnection -DataSource $dbPath
+                    Invoke-SqliteQuery -Connection $connection -Query $sql
+                    $Connection.Close()
+                    Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
+                }catch{
+                    $_.Exception.Message | Out-Default
+                    Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+                }
+            }else{
+                Write-PodeJsonResponse -StatusCode 400 -Value @{ StatusDescription = 'No person or type is selected!' }
+            }
+        }
+
+        # Read data from SQLiteDB for events
+        Add-PodeRoute -Method Get -Path 'api/event/read' -ArgumentList @($dbPath) -ScriptBlock {
+            param($dbPath)
+            try{
+                $sql = 'SELECT person,"type",start,end FROM events'
+                $connection = New-SQLiteConnection -DataSource $dbPath
+                $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+
+                $events = foreach($item in $data){
+                    if($item.type -like 'Feiertag'){
+                        $title = $item.title
+                    }else{
+                        $title = $item.person, $item.type -join " - "
+                    }
+                    [PSCustomObject]@{
+                        title = $title
+                        type  = $item.type
+                        start = Get-Date $item.start -f 'yyyy-MM-dd'
+                        end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
+                        color = Get-EventColor -type $item.type
+                    } 
+                }
+                $Connection.Close()
+                Write-PodeJsonResponse -Value $($events | ConvertTo-Json)
+            }catch{
+                $_.Exception.Message | Out-Default
+                Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+            }
+        }
+
+        # Get events from CSV and return it as JSON, used for swiss holidays
         Add-PodeRoute -Method Get -Path '/api/event/get' -ArgumentList @($ApiPath) -ScriptBlock {
             param($ApiPath)
             $data = Get-ChildItem -Path $ApiPath -Filter '*.csv' | ForEach-Object {
@@ -208,14 +306,12 @@ function Initialize-ApiEndpoints {
                 [PSCustomObject]@{
                     title = $title
                     type  = $item.type
-                    # description = $item.description
                     start = Get-Date $item.start -f 'yyyy-MM-dd'
                     end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
                     # end   = Get-Date (Get-Date $item.end) -f 'yyyy-MM-dd'
                     color = $color
                 } 
             }
-            # Gebe die Events als JSON aus, damit sie im Calendar angezeigt werden
             Write-PodeJsonResponse -Value $events
         }
     }
@@ -259,6 +355,7 @@ Start-PodeServer -Browse -Threads 2 {
     # if($CurrentOS -eq [OSType]::Mac){
     #     Write-Host "Re-builds of pages not supportet on $($CurrentOS), because mySQLite support only Windows and Linux" -ForegroundColor Red
     # }
+    Import-Module PSSQLite -Force
 
     $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
     Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'PSCalendar.psd1')
