@@ -51,14 +51,13 @@
                 const d = new Date();
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
-                // Load the SQLite database
-                const dbIsLoaded = await loadDatabase('/assets/db/rotamaster.db');
-                const events = await readDBData("SELECT person, type, start, end FROM events;");
-                const holidays = await loadApiData('/api/event/get');
                 const calendarEvents = [];
+                const events = await readDBData('/api/event/read');
+                const holidays = await loadApiData('/api/event/get');
+                // Concatenate holidays and events to one Array
                 calendarEvents.push(...holidays);
                 calendarEvents.push(...events);
-                console.log(calendarEvents);
+                // console.log(calendarEvents);
 
                 // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
@@ -91,9 +90,6 @@
                 }, 200);
 
                 var calendarEl = document.getElementById('calendar');
-
-                // const calendarEvents = await loadApiData('/api/event/get');
-                // console.log('Loaded calendar events:', calendarEvents);
 
                 var calendar = new FullCalendar.Calendar(calendarEl, {
                     timeZone: 'local',
@@ -147,7 +143,7 @@
                     events: calendarEvents,
 
                     dateClick: function(info) {
-                        // alert('Date clicked: ' + info.dateStr);
+                        alert('Date clicked: ' + info.dateStr);
                         // Here you could add a form or event creation functionality
                     },
 
@@ -186,24 +182,21 @@
                     formData.forEach((value, key) => {
                         data[key] = value;
                     });
+                    console.log('Get form data:', data);
+
+                    // Überprüfe die Formulardaten auf Vollständigkeit
+                    if (!data.name || !data.type || !data.start || !data.end) {
+                        console.error('Fehler: Fehlende Formulardaten', data);
+                        return;
+                    }
 
                     try {
                         // Perform the API call using fetch
-                        const response = await fetch('/api/event/new', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json' // Send as JSON
-                            },
-                            body: JSON.stringify(data) // Convert form data to JSON string
-                        });
-
-                        if (response.ok) {
-                            // If the request is successful, reload the page
-                            // alert('Event added successfully!');
+                        const newevent = await createDBData('/api/event/insert', data);
+                        if (newevent === 200) {
                             window.location.reload(); // Reload the page to show updated data
                         } else {
-                            console.error('Request failed with status:', response.status);
-                            alert('Request failed with status ' + response.status + '. Could not add event!');
+                            alert(newevent);
                         }
                     } catch (error) {
                         console.error('Error occurred:', error);
