@@ -1,4 +1,4 @@
-# PSRotaMaster V2
+# RotaMaster V3
 
 Absence and duty scheduling program for teams based on Pode, and [FullCalendar](https://fullcalendar.io/), created with ChatGPT prompt for JavaScript.
 
@@ -40,19 +40,26 @@ Select a range fills the selected start- and end date into the formular. Type or
 
 ## Functionality
 
-The PSRotaMaster is a Web service based on Pode.
+The RotaMaster is a Web service based on Pode.
 
 All of the APIs on the backend are written in PowerShell and the frontend is written in JavaScript and HTML/CSS.
 
+## Modules
+
+The following PowerShell-Modules are mandatory:
+
+- Pode
+- PSSQLite
+
 ## Folders
 
-The PSRotaMaster needs the following folder-structure:
+The RotaMaster needs the following folder-structure:
 
 ````cmd
 PSRotaMaser
++---api
 +---archiv
 +---bin
-+---db
 +---errors
 +---img
 +---public
@@ -60,7 +67,7 @@ PSRotaMaser
 |   |   +---BootStrap
 |   |   +---img
 |   |   +---Jquery
-|   |   \---psrotamaster
+|   |   \---rotamaster
 |   \---img
 \---views
 ````
@@ -69,6 +76,14 @@ PSRotaMaser
 
 This is the root-folder for the web service. Here must be the PodeServer.ps1 located.
 
+### api
+
+This folder contains the files of the web service. For example, the files for the public holidays, the absence type or the persons.
+
+The files for the absence and people must be JSON files, and the file containing the holidays must be a CSV file.
+
+The events have also been saved in a SQLite database called rotamaster.db in this folder.
+
 ### archiv
 
 For obsolete files, that you want to archive and not load in to the calendar.
@@ -76,12 +91,6 @@ For obsolete files, that you want to archive and not load in to the calendar.
 ### bin
 
 This folder contains the PowerShell code of the backend.
-
-### db
-
-This folder contains the files or the database of the Web service. For example, the files for the public holidays, the absence type, or the persons.
-
-The files for the absence- and persons must be JSON-files, and the files that contains the public holidays and the calendar are currently CSV-files.
 
 ### errors
 

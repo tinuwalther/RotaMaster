@@ -606,93 +606,30 @@ function getEventColors(type) {
     return '#378006';
 }
 
-/**
- * Get all tables from the named database-file
- * 
- * @example
- * checkDBDatabase("SELECT name FROM sqlite_master WHERE type='table';");
- */
-function checkDBDatabase(query, elementId) {
-    const outputElement = document.getElementById(elementId);
-
-    // Beispiel: Alle Tabellen in der Datenbank auflisten
-    const result = db.exec(query);
-
-    if (result.length > 0) {
-        const tableNames = result[0].values.map(row => row[0]);
-        console.log("Tabellen in der Datenbank: " + tableNames.join(", "));
-        outputElement.textContent = "Daten in der Datenbank: " + names;
-    } else {
-        console.log("Keine Daten gefunden.");
-        outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
-    }
-}
-
-/**
- * Loads a SQLite database from a provided file path using SQL.js.
- * 
- * This asynchronous function uses SQL.js to initialize and load a SQLite database from a given
- * file. It first initializes the SQL.js library, then fetches the database file and loads it
- * into memory. The database is then returned as an object, which can be used to execute queries.
- * If any error occurs during the loading process, an error message is logged and a notification is shown to the user.
- * 
- * Main features:
- * - Asynchronously initializes SQL.js using a WebAssembly (`.wasm`) file for SQLite emulation.
- * - Fetches a database file in binary format and converts it to a `Uint8Array` for SQL.js processing.
- * - Returns a boolean indicating the success or failure of the database loading process.
- * 
- * @async
- * @param {string} dbFile - The path or URL to the SQLite database file (`.sqlite` or `.db`).
- * @returns {Promise<boolean>} - Returns `true` if the database is successfully loaded, otherwise `false`.
- * 
- * Example usage:
- * ```javascript
- * const dbFilePath = 'assets/databases/myDatabase.sqlite';
- * loadDatabase(dbFilePath).then((success) => {
- *   if (success) {
- *     console.log('Database loaded successfully!');
- *   } else {
- *     console.error('Failed to load database.');
- *   }
- * });
- * ```
- * 
- * Notes:
- * - SQL.js is a JavaScript library that allows you to run SQLite in the browser. It requires a WebAssembly
- *   file (`sql-wasm.wasm`) to be loaded, which emulates the SQLite engine.
- * - Ensure that the `dbFile` path is correct and accessible from the environment where this function is executed.
- * - Use `initSqlJs({ locateFile: () => 'path/to/sql-wasm.wasm' })` to correctly point to the location of the `.wasm` file.
- * 
- * @throws {Error} - If the database file cannot be loaded or the SQL.js initialization fails, an error is caught and logged.
- */
-async function loadDatabase(dbFile) {
-    try {
-        // SQL.js initialisieren
-        const SQL = await initSqlJs({ locateFile: () => 'assets/psrotamaster/sql-wasm.wasm' }); // https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm
-
-        // Retrieve database file and convert to Uint8Array
-        const response = await fetch(dbFile);
-        if (!response.ok) throw new Error(`Error loading the database file: ${dbFile}`);
-
-        const uint8Array = new Uint8Array(await response.arrayBuffer());
-
-        // Load database and return success status
-        db = new SQL.Database(uint8Array);
-        console.log(`Database successfully loaded: ${dbFile}`, db);
-        return !!db;
-    } catch (error) {
-        console.error(error);
-        alert("loadDatabase:", error.message);
-        return false;
-    }
-}
-
 // CRUD Functions
-function createDBData(query, dbFile){
-    // const data = db.export(); // Exportiert als Uint8Array
-    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
+async function createDBData(url, data){
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json' // Send as JSON
+        },
+        body: JSON.stringify(data) // Convert form data to JSON string
+    });
+    if (response.ok) {
+        return response.status;
+    } else {
+        return 'Request failed with status:', response.status, response.statusText;
+    }
+}
 
-    console.log('Not implemented yet:', query)
+async function readDBData(url) {
+    const response = await fetch(url);
+    if (response.ok) {
+        const json = await response.json(); // Convert form data to JSON string
+        return json
+    } else {
+        return 'Request failed with status:', response.status, response.statusText;
+    }
 }
 
 /**
@@ -734,10 +671,8 @@ function createDBData(query, dbFile){
  * - The returned JavaScript object is parsed from a JSON string to provide a convenient way to work with the data.
  * 
  * @throws {Error} - If the query fails or the database is not correctly loaded, an error may be thrown or logged.
- */
-async function readDBData(query, elementId) {
+async function readDBData(query) {
 
-    const outputElement = document.getElementById(elementId);
     const result = db.exec(query);
 
     if (result.length > 0) {
@@ -782,13 +717,11 @@ async function readDBData(query, elementId) {
         jsonObj = JSON.parse(jsonString); // Parse the JSON-String to an Object
         // console.log("jsonObj:", typeof(jsonObj), jsonObj);
         return jsonObj;
-
-        outputElement.textContent = "From SQLiteDB: " + jsonObj[0].title + ", " + jsonObj[0].start + ", " + jsonObj[0].end;
     } else {
         console.log("Keine Daten gefunden.");
-        outputElement.textContent = "Daten in der Datenbank: keine Daten gefunden.";
     }
 }
+ */
 
 function updateDBData(query, dbFile, elementId){
     // const data = db.export(); // Exportiert als Uint8Array

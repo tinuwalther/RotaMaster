@@ -4,5 +4,15 @@ CREATE TABLE events(
  type TEXT NOT NULL,
  start DATETIME NOT NULL,
  end DATETIME NOT NULL,
- created DATETIME DEFAULT CURRENT_TIMESTAMP
+ created TEXT NOT NULL
 )
+
+
+sqlite3
+.open /Users/Tinu/git/RotaMaster/public/assets/db/rotamaster.db 
+
+.mode csv
+.separator ";"
+.import /Users/Tinu/git/RotaMaster/db/import.txt events
+
+select * from events;

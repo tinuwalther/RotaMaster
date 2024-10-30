@@ -1,4 +1,4 @@
-"id";"title";"type";"start";"end";"created"
+"id";"person";"type";"start";"end";"created"
 "6a47ff44-e904-4f71-8ef6-ab8b8d69af40";"Fridu";"Pikett";"2024-10-07";"2024-10-13";"2024-10-02"
 "b1ce786c-2c41-4f0c-a76b-d25e41d8a783";"Hausi";"Gleitzeit";"2024-10-03";"2024-10-02";"2024-10-02";
 "ebbe015a-78dd-419d-aa3e-6c29bb4b1f66";"Hausi";"Pikett";"2024-10-14";"2024-10-20";"2024-10-06"
