@@ -8,14 +8,12 @@
         <meta name="description" content="RotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
         
         <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
-        <!-- <link rel="stylesheet" href="/assets/BootStrap/bootstrap-icons.css"/> -->
         <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
 
         <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
         <script src="/assets/rotamaster/fullcalendar.main.min.js"></script>
         <script src="/assets/rotamaster/index.global.min.js"></script>
         <script src="/assets/rotamaster/rotamaster.main.js"></script>
-        <script src="/assets/rotamaster/sql-wasm.js"></script>
 
         <script>
             let db;
@@ -100,7 +98,7 @@
                     headerToolbar: {
                         left: 'prevYear,prev,today,next,nextYear',
                         center: 'title',
-                        right: 'multiMonthYear,dayGridMonth,listMonth'
+                        right: 'multiMonthYear,dayGridMonth,listMonth,exportToIcs'
                     },
                     buttonText: {
                         today: 'Heute',
@@ -142,10 +140,42 @@
                     // A URL of a JSON feed that the calendar will fetch Event Objects from.
                     events: calendarEvents,
 
+                    // Ein zusätzlicher Button zum Exportieren der Events
+                    customButtons: {
+                        exportToIcs: {
+                            text: 'Export to iCal',
+                            click: function() {
+                                exportCalendarEvents(calendar.getEvents());
+                            }
+                        }
+                    },
+
                     dateClick: function(info) {
                         // alert('Date clicked: ' + info);
-                        console.log('info:', info);
+                        // console.log('info:', info);
                         // Here you could add a form or event creation functionality
+                    },
+
+                    eventClick: function(info) {
+                        // Prevent default click action if necessary
+                        info.jsEvent.preventDefault();
+            
+                        // Das angeklickte Event-Objekt
+                        var event = info.event;
+            
+                        // Ausgabe in PopUp
+                        alert("Event Details:\n" +
+                            "ID: " + event.id + "\n" +
+                            "Title: " + event.title + "\n" +
+                            "Start: " + event.start.toISOString() + "\n" +
+                            "End: " + (event.end ? event.end.toISOString() : 'Not specified') + "\n" +
+                            "All-Day: " + (event.allDay ? 'Yes' : 'No')
+                        );
+            
+                        // Falls du noch weitere Properties loggen möchtest
+                        for (const [key, value] of Object.entries(event.extendedProps)) {
+                            console.log(`${key}: ${value}`);
+                        }
                     },
 
                     // Fill the form with event data when a date range is selected
@@ -241,7 +271,7 @@
                         <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
-                        <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/sql-js/sql.js/" Target="_blank"  >SQL.JS</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/RamblingCookieMonster/PSSQLite/" Target="_blank"  >PSSQLite</a></li>
                     </ul>
                     </div>
                 </div>
