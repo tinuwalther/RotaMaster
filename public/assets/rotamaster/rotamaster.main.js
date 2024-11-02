@@ -736,3 +736,46 @@ function deleteDBData(query, dbFile, elementId){
 
     console.log('Not implemented yet:', query)
 }
+
+
+function exportCalendarEvents(events) {
+    let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//YourCompany//YourApp//EN`;
+
+    // Alle Events durchlaufen und sie im iCalendar-Format hinzufügen
+    events.forEach(event => {
+        const startDate = formatDateToICS(event.start);
+        const endDate = event.end ? formatDateToICS(event.end) : formatDateToICS(event.start);
+
+        icsContent += `
+BEGIN:VEVENT
+UID:${event.id}
+SUMMARY:${event.title}
+DTSTART:${startDate}
+DTEND:${endDate}
+END:VEVENT`;
+    });
+
+    icsContent += `
+END:VCALENDAR`;
+
+    // .ics-Datei zum Download bereitstellen
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'calendar-events.ics';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function formatDateToICS(date) {
+    const year = date.getUTCFullYear();
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = date.getUTCDate().toString().padStart(2, '0');
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    const seconds = date.getUTCSeconds().toString().padStart(2, '0');
+    return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+}
