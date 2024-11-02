@@ -56,7 +56,7 @@ The following PowerShell-Modules are mandatory:
 The RotaMaster needs the following folder-structure:
 
 ````cmd
-PSRotaMaser
+RotaMaster
 +---api
 +---archiv
 +---bin
@@ -72,7 +72,7 @@ PSRotaMaser
 \---views
 ````
 
-### PSRotaMaser
+### RotaMaster
 
 This is the root-folder for the web service. Here must be the PodeServer.ps1 located.
 
