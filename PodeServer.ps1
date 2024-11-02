@@ -1,19 +1,16 @@
+#Requires -Modules pode, PSSQLite
 <#
     .SYNOPSIS
     Start Pode server
 
     .DESCRIPTION
-    Test if it's running on Windows, then test if it's running with elevated Privileges, and start a new session if not.
+    Start a pode server and open the default browser.
 
     .EXAMPLE
-    pwsh .\PodePSHTML\PodeServer.ps1
+    pwsh .\RotaMaster\PodeServer.ps1
 #>
 [CmdletBinding()]
 param ()
-
-#region functions
-# all functions could be found in the Module RotaMaster.psd1
-#endregion
 
 #region Main
 enum OSType {
