@@ -481,7 +481,7 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method Get -Path 'api/event/read' -ArgumentList @($dbPath) -ScriptBlock {
             param($dbPath)
             try{
-                $sql = 'SELECT person,"type",start,end FROM events'
+                $sql = 'SELECT id,person,"type",start,end FROM events'
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
 
@@ -491,6 +491,7 @@ function Initialize-ApiEndpoints {
                         default {$title = $item.person, $item.type -join " - "}
                     }
                     [PSCustomObject]@{
+                        id = $item.id
                         title = $title
                         type  = $item.type
                         start = Get-Date $item.start -f 'yyyy-MM-dd'
