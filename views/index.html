@@ -98,7 +98,7 @@
                     headerToolbar: {
                         left: 'prevYear,prev,today,next,nextYear',
                         center: 'title',
-                        right: 'multiMonthYear,dayGridMonth,listMonth,exportToIcs'
+                        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs,exportPersonEvents'
                     },
                     buttonText: {
                         today: 'Heute',
@@ -140,41 +140,72 @@
                     // A URL of a JSON feed that the calendar will fetch Event Objects from.
                     events: calendarEvents,
 
-                    // Ein zusätzlicher Button zum Exportieren der Events
                     customButtons: {
+                        // Ein zusätzlicher Button zum Exportieren der Events
                         exportToIcs: {
-                            text: 'Export to iCal',
+                            text: 'Alle Events',
                             click: function() {
-                                exportCalendarEvents(calendar.getEvents());
+                                exportAllCalendarEvents(calendar.getEvents());
+                            }
+                        },
+
+                        // Ein zusätzlicher Button zum Exportieren der Events einer bestimmten Person
+                        exportPersonEvents: {
+                            text: 'Personen Events',
+                            click: function() {
+                                // Abfrage für den Namen der Person
+                                const personName = prompt("Geben Sie den Namen der Person ein, deren Events Sie exportieren möchten:");
+
+                                if (personName) {
+                                    // Filtere alle Events im Kalender, die zu dieser Person gehören
+                                    const personEvents = calendar.getEvents().filter(event => {
+                                        const [eventPersonName] = event.title.split(' - ');
+                                        return eventPersonName.trim().toLowerCase() === personName.trim().toLowerCase();
+                                    });
+
+                                    // Überprüfe, ob Events für die eingegebene Person gefunden wurden
+                                    if (personEvents.length > 0) {
+                                        // Exportiere die gefilterten Events als ICS-Datei
+                                        exportMultipleEvents(personName, personEvents);
+                                    } else {
+                                        alert(`Keine Events für die Person "${personName}" gefunden.`);
+                                    }
+                                }
                             }
                         }
                     },
 
+                    /*
                     dateClick: function(info) {
                         // alert('Date clicked: ' + info);
                         // console.log('info:', info);
                         // Here you could add a form or event creation functionality
                     },
+                    */
 
                     eventClick: function(info) {
                         // Prevent default click action if necessary
                         info.jsEvent.preventDefault();
-            
-                        // Das angeklickte Event-Objekt
+
                         var event = info.event;
-            
-                        // Ausgabe in PopUp
-                        alert("Event Details:\n" +
-                            "ID: " + event.id + "\n" +
-                            "Title: " + event.title + "\n" +
-                            "Start: " + event.start.toISOString() + "\n" +
-                            "End: " + (event.end ? event.end.toISOString() : 'Not specified') + "\n" +
-                            "All-Day: " + (event.allDay ? 'Yes' : 'No')
-                        );
-            
-                        // Falls du noch weitere Properties loggen möchtest
+
+                        /* Abfrage an den Benutzer, ob er das Event als ICS-Datei herunterladen möchte
+                        "ID: " + event.id + "\n" +
+                        "Title: " + event.title + "\n" +
+                        "Start: " + event.start.toISOString() + "\n" +
+                        "End: " + (event.end ? event.end.toISOString() : 'Not specified')
                         for (const [key, value] of Object.entries(event.extendedProps)) {
                             console.log(`${key}: ${value}`);
+                        }
+                        */
+                        const userConfirmed = confirm(
+                            "Event " + event.id + " '" + event.title + "'\n" +
+                            "als ICS-Datei herunterladen?"
+                        );
+                        
+                        if (userConfirmed) {
+                            // Erstelle die ICS-Datei für dieses Event und lade sie herunter
+                            exportSingleEvent(event);
                         }
                     },
 
@@ -202,6 +233,25 @@
 
                 calendar.render();
 
+                // Tooltip für den Button hinzufügen, nachdem der Kalender gerendert wurde
+                setTimeout(function() {
+                    const buttons = [
+                        { selector: '.fc-multiMonthYear-button', tooltip: 'Jahressansicht' },
+                        { selector: '.fc-dayGridMonth-button', tooltip: 'Monatsansicht' },
+                        { selector: '.fc-listMonth-button', tooltip: 'Listenansicht' },
+
+                        { selector: '.fc-exportToIcs-button', tooltip: 'Exportiere alle Kalender-Events als iCalendar (.ics) Datei' },
+                        { selector: '.fc-exportPersonEvents-button', tooltip: 'Exportiere alle Kalender-Events personenspezifisch als iCalendar (.ics) Datei' }
+                    ];
+                
+                    buttons.forEach(button => {
+                        const element = document.querySelector(button.selector);
+                        if (element) {
+                            element.setAttribute('title', button.tooltip);
+                        }
+                    });
+                }, 0);                
+                
                 // Prevent form submission and handle the form via JavaScript
                 const form = document.querySelector('form'); // Select the form element
                 form.addEventListener('submit', async function(event) {
