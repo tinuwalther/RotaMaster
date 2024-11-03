@@ -737,11 +737,69 @@ function deleteDBData(query, dbFile, elementId){
     console.log('Not implemented yet:', query)
 }
 
+// Click on event
+function exportSingleEvent(event) {
+    // ICS-Dateiinhalte erstellen
+    let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//YourCompany//YourApp//EN
+BEGIN:VEVENT
+UID:${event.id}
+SUMMARY:${event.title}
+DTSTART:${formatDateToICS(event.start)}
+DTEND:${event.end ? formatDateToICS(event.end) : formatDateToICS(event.start)}
+END:VEVENT
+END:VCALENDAR`;
 
-function exportCalendarEvents(events) {
+    // .ics-Datei zum Download bereitstellen
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${event.title}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// Per person
+function exportMultipleEvents(personName, events) {
+    // ICS-Dateiinhalte erstellen
     let icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//YourCompany//YourApp//EN`;
+
+    // Alle Events der Person durchlaufen und sie im iCalendar-Format hinzufügen
+    events.forEach(event => {
+        const startDate = formatDateToICS(event.start);
+        const endDate = event.end ? formatDateToICS(event.end) : formatDateToICS(event.start);
+
+        icsContent += `
+BEGIN:VEVENT
+UID:${event.id}
+SUMMARY:${event.title}
+DTSTART:${startDate}
+DTEND:${endDate}
+END:VEVENT`;
+    });
+
+    icsContent += `
+END:VCALENDAR`;
+
+    // .ics-Datei zum Download bereitstellen
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${personName}-events.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// All events
+function exportAllCalendarEvents(events) {
+    let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//EngOps//RotaMaster//EN`;
 
     // Alle Events durchlaufen und sie im iCalendar-Format hinzufügen
     events.forEach(event => {
