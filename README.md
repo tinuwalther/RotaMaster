@@ -12,37 +12,45 @@ If you want to create the holidays for a different year, you can call the API wi
 
 In this calendar view, you can view the events of the current month, scroll to another month, and add new events.
 
-![PSRotaMasterFullYear](./img/PSRotaMasterFullYear.png)
+![RotaMasterFullYear](./img/RotaMasterFullYear.png)
 
 ## Month view
 
 To show the current month, click on the middle button 'month'.
 
-![PSRotaMasterFullMonth](./img/PSRotaMasterFullMonth.png)
+![RotaMasterFullMonth](./img/RotaMasterFullMonth.png)
 
 ## List view
 
 Or if you prefere a list of the events of the current month, click on the right button 'list'.
 
-![PSRotaMasterList](./img/PSRotaMasterList.png)
+![RotaMasterList](./img/RotaMasterList.png)
 
 ## Add a range with form dates
 
 Type, or select the person and select absence-type, choose the start- and end date, and press the button to submit the new event.
 
-![PSRotaMasterForm](./img/PSRotaMasterForm.png)
+![RotaMasterForm](./img/RotaMasterForm.png)
 
 ## Add a range with selecting dates
 
 Select a range fills the selected start- and end date into the formular. Type or select the person and select the absence-type and press the button to submit the new event.
 
-![PSRotaMasterSelected](./img/PSRotaMasterSelected.png)
+![RotaMasterSelected](./img/RotaMasterSelected.png)
+
+## Export
+
+It's possible to export all events, or events of a specified person, or a single event as an ics-file.
+
+![RotaMasterSingleICS](./img/RotaMasterSingleICS.png)
 
 ## Functionality
 
 The RotaMaster is a Web service based on Pode.
 
 All of the APIs on the backend are written in PowerShell and the frontend is written in JavaScript and HTML/CSS.
+
+It would be nice to use the [OpsGenie API](https://docs.opsgenie.com/docs/api-overview) to export/import Pikett-events into OpsGenie.
 
 ## Modules
 
@@ -56,7 +64,7 @@ The following PowerShell-Modules are mandatory:
 The RotaMaster needs the following folder-structure:
 
 ````cmd
-PSRotaMaser
+RotaMaster
 +---api
 +---archiv
 +---bin
@@ -72,7 +80,7 @@ PSRotaMaser
 \---views
 ````
 
-### PSRotaMaser
+### RotaMaster
 
 This is the root-folder for the web service. Here must be the PodeServer.ps1 located.
 

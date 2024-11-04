@@ -1,5 +1,5 @@
 /*
- * CSS for PSRotaMaster
+ * CSS for RotaMaster
  * 2024 by Martin Walther
  */
 
@@ -96,6 +96,7 @@ h4 {
   color: var(--bs-gray-900);
 }
 
+/* events */
 #events-log {
   margin: 20px auto;
   padding: 30px;
@@ -109,6 +110,7 @@ h4 {
   line-height: 1.4;
 }
 
+/* calendar */
 #calendar {
   margin: 20px auto;
   padding: 30px;
@@ -126,12 +128,6 @@ h4 {
 .fc-day-sun {
   background-color: #FBDDD3;
 }
-
-/*
-.fc-scroller, .fc-view-harness {
-  border: none;
-}
-*/
 
 .fc-daygrid, .fc-multimonth-daygrid-table {
   background-color: var(--bs-white);
