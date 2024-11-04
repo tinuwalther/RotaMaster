@@ -145,7 +145,7 @@
                         exportToIcs: {
                             text: 'Alle Events',
                             click: function() {
-                                exportAllCalendarEvents(calendar.getEvents());
+                                exportCalendarEvents(calendar.getEvents(), 'all-events.ics');
                             }
                         },
 
@@ -166,7 +166,7 @@
                                     // Überprüfe, ob Events für die eingegebene Person gefunden wurden
                                     if (personEvents.length > 0) {
                                         // Exportiere die gefilterten Events als ICS-Datei
-                                        exportMultipleEvents(personName, personEvents);
+                                        exportCalendarEvents(personEvents, `${personName}-events.ics`);
                                     } else {
                                         alert(`Keine Events für die Person "${personName}" gefunden.`);
                                     }
@@ -205,7 +205,8 @@
                         
                         if (userConfirmed) {
                             // Erstelle die ICS-Datei für dieses Event und lade sie herunter
-                            exportSingleEvent(event);
+                            //exportSingleEvent(event);
+                            exportCalendarEvents(event, `${event.title}.ics`);
                         }
                     },
 
@@ -377,7 +378,7 @@
                             </div>
 
                             <div class="col-auto">
-                                <input type="submit" value="Eintragen" class="btn btn-primary mb-3">
+                                <input type="submit" value="Eintragen" class="btn btn-dark mb-3">
                             </div>
                         </form>
 
