@@ -578,7 +578,55 @@ function convertToISOFormat(dateString) {
     return ''; 
 }
 
+// Export events per person or all events
+function exportCalendarEvents(events, fileName) {
+    // Sicherstellen, dass die Eingabe ein Array ist (falls nur ein einzelnes Event übergeben wird)
+    if (!Array.isArray(events)) {
+        events = [events];
+    }
 
+    // ICS-Dateiinhalte erstellen
+    let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//EngOps//RotaMaster//EN`;
+
+    // Alle Events durchlaufen und sie im iCalendar-Format hinzufügen
+    events.forEach(event => {
+        const startDate = formatDateToICS(event.start);
+        const endDate = event.end ? formatDateToICS(event.end) : formatDateToICS(event.start);
+
+        icsContent += `
+BEGIN:VEVENT
+UID:${event.id}
+SUMMARY:${event.title}
+DTSTART:${startDate}
+DTEND:${endDate}
+END:VEVENT`;
+    });
+
+    icsContent += `
+END:VCALENDAR`;
+
+    // .ics-Datei zum Download bereitstellen
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// Format date to ICS-date
+function formatDateToICS(date) {
+    const year = date.getUTCFullYear();
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = date.getUTCDate().toString().padStart(2, '0');
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    const seconds = date.getUTCSeconds().toString().padStart(2, '0');
+    return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+}
 
 /**
  * New functions for SQLite
@@ -632,97 +680,6 @@ async function readDBData(url) {
     }
 }
 
-/**
- * Executes an SQL query on the loaded SQLite database and returns the result as a JavaScript object.
- * 
- * This asynchronous function takes a SQL query and executes it on an SQLite database using SQL.js.
- * It converts the resulting data into a JSON object, making it easy to use in other parts of the application.
- * If the database query returns data, it formats it, and if an output element ID is provided, it displays
- * a summary in the specified HTML element.
- * 
- * Main features:
- * - Executes an SQL query on the preloaded SQLite database (`db`).
- * - Converts the result to a structured JavaScript object (parsed JSON).
- * - Displays the result in the provided HTML element, if the query is successful.
- * - Supports color coding of records based on custom logic (`getEventColors`).
- * 
- * @async
- * @param {string} query - The SQL query string to be executed against the SQLite database.
- * @param {string} elementId - The ID of the HTML element where a summary of the result will be displayed.
- * @returns {Promise<Object[]>} - Returns a Promise that resolves to an array of objects representing the query results.
- * Each object contains the row data with additional properties such as "title" and "color".
- * 
- * Example usage:
- * ```javascript
- * const query = 'SELECT name, type, start_date, end_date FROM events WHERE year = 2024';
- * readDBData(query, 'outputElementId').then((result) => {
- *   if (result.length > 0) {
- *     console.log('Data retrieved successfully:', result);
- *   } else {
- *     console.log('No data found.');
- *   }
- * });
- * ```
- * 
- * Notes:
- * - The function relies on a preloaded database (`db`) using SQL.js.
- * - The `getEventColors` function is used to assign a color to each record based on its "type" or other properties.
- * - The `elementId` parameter should refer to an existing HTML element for displaying basic query result summaries.
- * - The returned JavaScript object is parsed from a JSON string to provide a convenient way to work with the data.
- * 
- * @throws {Error} - If the query fails or the database is not correctly loaded, an error may be thrown or logged.
-async function readDBData(query) {
-
-    const result = db.exec(query);
-
-    if (result.length > 0) {
-        let jsonArray = [];
-
-        if (result.length > 0) {
-            const columns = result[0].columns;
-            const rows = result[0].values;
-
-            rows.forEach(row => {
-                let record = {};
-                // 0 = person, 1 = title, 2 = start, 3 = end
-                record["title"] = `${row[0]} - ${row[1]}`;
-                record["color"] = getEventColors(row[1]);
-
-                // Conversion of field 3 (end) to a date format and addition of a day
-                if (row[3]) {
-                    let endDate = new Date(row[3]);
-                    endDate.setDate(endDate.getDate() + 1);
-                    // Save end date in the format “yyyy-MM-dd”
-                    const formattedEndDate = endDate.toISOString().split('T')[0];
-                    record[columns[3]] = formattedEndDate;
-                }
-
-                // Save the remaining fields in the record
-                columns.forEach((column, index) => {
-                    if (index !== 3) {
-                        record[column] = row[index];
-                    }
-                });
-
-                jsonArray.push(record);
-            });
-            // Convert the JavaScript Array into a string for debugging
-            // const jsonString = JSON.stringify(jsonArray, null, 2);
-            // console.log("jsonString:", typeof(jsonString), jsonString);
-        }
-
-        const jsonString = JSON.stringify(jsonArray, null, 2); // Convert the JavaScript Array into a string (as JSON-String)
-        // console.log("jsonString:", typeof(jsonString), jsonString);
-
-        jsonObj = JSON.parse(jsonString); // Parse the JSON-String to an Object
-        // console.log("jsonObj:", typeof(jsonObj), jsonObj);
-        return jsonObj;
-    } else {
-        console.log("Keine Daten gefunden.");
-    }
-}
- */
-
 function updateDBData(query, dbFile, elementId){
     // const data = db.export(); // Exportiert als Uint8Array
     // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
@@ -735,77 +692,4 @@ function deleteDBData(query, dbFile, elementId){
     // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
 
     console.log('Not implemented yet:', query)
-}
-
-// Click on event
-/* function exportSingleEvent(event) {
-    // ICS-Dateiinhalte erstellen
-    let icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//EngOps//RotaMaster//EN
-BEGIN:VEVENT
-UID:${event.id}
-SUMMARY:${event.title}
-DTSTART:${formatDateToICS(event.start)}
-DTEND:${event.end ? formatDateToICS(event.end) : formatDateToICS(event.start)}
-END:VEVENT
-END:VCALENDAR`;
-
-    // .ics-Datei zum Download bereitstellen
-    const blob = new Blob([icsContent], { type: 'text/calendar' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${event.title}.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
- */
-// Export events per person or all events
-function exportCalendarEvents(events, fileName) {
-    // Sicherstellen, dass die Eingabe ein Array ist (falls nur ein einzelnes Event übergeben wird)
-    if (!Array.isArray(events)) {
-        events = [events];
-    }
-
-    // ICS-Dateiinhalte erstellen
-    let icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//EngOps//RotaMaster//EN`;
-
-    // Alle Events durchlaufen und sie im iCalendar-Format hinzufügen
-    events.forEach(event => {
-        const startDate = formatDateToICS(event.start);
-        const endDate = event.end ? formatDateToICS(event.end) : formatDateToICS(event.start);
-
-        icsContent += `
-BEGIN:VEVENT
-UID:${event.id}
-SUMMARY:${event.title}
-DTSTART:${startDate}
-DTEND:${endDate}
-END:VEVENT`;
-    });
-
-    icsContent += `
-END:VCALENDAR`;
-
-    // .ics-Datei zum Download bereitstellen
-    const blob = new Blob([icsContent], { type: 'text/calendar' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-function formatDateToICS(date) {
-    const year = date.getUTCFullYear();
-    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-    const day = date.getUTCDate().toString().padStart(2, '0');
-    const hours = date.getUTCHours().toString().padStart(2, '0');
-    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-    const seconds = date.getUTCSeconds().toString().padStart(2, '0');
-    return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
 }
