@@ -738,11 +738,11 @@ function deleteDBData(query, dbFile, elementId){
 }
 
 // Click on event
-function exportSingleEvent(event) {
+/* function exportSingleEvent(event) {
     // ICS-Dateiinhalte erstellen
     let icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//YourCompany//YourApp//EN
+PRODID:-//EngOps//RotaMaster//EN
 BEGIN:VEVENT
 UID:${event.id}
 SUMMARY:${event.title}
@@ -760,43 +760,15 @@ END:VCALENDAR`;
     a.click();
     URL.revokeObjectURL(url);
 }
+ */
+// Export events per person or all events
+function exportCalendarEvents(events, fileName) {
+    // Sicherstellen, dass die Eingabe ein Array ist (falls nur ein einzelnes Event übergeben wird)
+    if (!Array.isArray(events)) {
+        events = [events];
+    }
 
-// Per person
-function exportMultipleEvents(personName, events) {
     // ICS-Dateiinhalte erstellen
-    let icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//YourCompany//YourApp//EN`;
-
-    // Alle Events der Person durchlaufen und sie im iCalendar-Format hinzufügen
-    events.forEach(event => {
-        const startDate = formatDateToICS(event.start);
-        const endDate = event.end ? formatDateToICS(event.end) : formatDateToICS(event.start);
-
-        icsContent += `
-BEGIN:VEVENT
-UID:${event.id}
-SUMMARY:${event.title}
-DTSTART:${startDate}
-DTEND:${endDate}
-END:VEVENT`;
-    });
-
-    icsContent += `
-END:VCALENDAR`;
-
-    // .ics-Datei zum Download bereitstellen
-    const blob = new Blob([icsContent], { type: 'text/calendar' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${personName}-events.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-// All events
-function exportAllCalendarEvents(events) {
     let icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//EngOps//RotaMaster//EN`;
@@ -823,7 +795,7 @@ END:VCALENDAR`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'calendar-events.ics';
+    a.download = fileName;
     a.click();
     URL.revokeObjectURL(url);
 }
