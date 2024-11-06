@@ -151,6 +151,7 @@
                                 const exportModal = new bootstrap.Modal(document.getElementById('exportEvents'), {
                                     keyboard: true
                                 });
+                                document.getElementById('btnAllEvents').checked = true;
                                 document.getElementById('personNameInput').value = '';
                                 document.getElementById('eventTypeInput').value = '';
                                 exportModal.show();
@@ -181,14 +182,21 @@
                             document.getElementById('other').textContent = `${key}: ${value}`;
                         }
                         */
+                        document.getElementById('btnExportEvent').checked = true;
                         updateExportModal.show();
 
-                        const exportButton = document.getElementById('btnUpdateExport');
-                        exportButton.onclick = function() {
+                        const exportButton1 = document.getElementById('btnUpdateExport');
+                        exportButton1.onclick = function() {
                             if (btnExportEvent.checked) {
                                 exportCalendarEvents(event, `${event.title}.ics`);
                             }
+                            if (btnRemoveEvent.checked) {
+                                if (confirm("Möchten Sie dieses Event wirklich löschen?")) {
+                                    deleteDBData(info.event.id);
+                                }
+                            }
                         };
+
                     },
 
                     // Fill the form with event data when a date range is selected
