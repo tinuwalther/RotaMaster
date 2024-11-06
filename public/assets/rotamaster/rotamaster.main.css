@@ -160,6 +160,11 @@ h4 {
   text-decoration: none;
 }
 
+.modal-title {
+  font-weight: bold !important;
+  color: #000 !important; /* Optional: Stelle sicher, dass die Farbe auch hervorsticht */
+}
+
 #Content {
   padding: 20px;
   background: var(--bs-gray-900);
