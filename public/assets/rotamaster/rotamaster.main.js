@@ -1,4 +1,6 @@
-// calendarConfig
+/**
+ * CalendarConfig
+ */
 const calendarConfig = {
     timeZone: 'local',
     locale: 'de-CH',

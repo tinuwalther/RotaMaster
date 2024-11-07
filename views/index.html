@@ -122,7 +122,7 @@
                             text: 'Export Events',
                             click: function() {
                                 // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
-                                const exportModal = new bootstrap.Modal(document.getElementById('exportEvents'), {
+                                const exportModal = new bootstrap.Modal(document.getElementById('multipleEvents'), {
                                     keyboard: true
                                 });
                                 document.getElementById('btnAllEvents').checked = true;
@@ -135,7 +135,7 @@
 
                     eventClick: function(info) {
                         const event = info.event;
-                        const updateExportModal = new bootstrap.Modal(document.getElementById('updateExportEvents'), {
+                        const updateExportModal = new bootstrap.Modal(document.getElementById('singleEvent'), {
                             keyboard: true
                         });
 
@@ -171,7 +171,7 @@
 
                 calendar.render();
 
-                // Event-Listener für den Export-Button im Modal exportEvents
+                // Event-Listener für den Export-Button im Modal multipleEvents
                 const exportButton = document.getElementById('btnExport');
                 exportButton.addEventListener('click', function() {
                     // Rufe die Events aus dem Kalender ab
@@ -212,7 +212,7 @@
                     }
 
                     // Modal nach dem Export schließen
-                    const exportModal = bootstrap.Modal.getInstance(document.getElementById('exportEvents'));
+                    const exportModal = bootstrap.Modal.getInstance(document.getElementById('multipleEvents'));
                     exportModal.hide();
                 });
 
@@ -336,8 +336,8 @@
             </nav>
             <!-- End NavBar -->
         
-            <!-- Begin Modal exportEvents -->
-            <div class="modal fade" id="exportEvents" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <!-- Begin Modal multipleEvents -->
+            <div class="modal fade" id="multipleEvents" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -378,10 +378,10 @@
                     </div>
                 </div>
             </div>
-            <!-- End Modal -->
+            <!-- End Modal multipleEvents -->
 
-            <!-- Begin Modal updateExportEvents -->
-            <div class="modal fade" id="updateExportEvents" tabindex="-1" aria-labelledby="updateExportEventsLabel" aria-hidden="true">
+            <!-- Begin Modal singleEvent -->
+            <div class="modal fade" id="singleEvent" tabindex="-1" aria-labelledby="updateExportEventsLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -413,7 +413,7 @@
                     </div>
                 </div>
             </div>
-            <!-- End Modal -->
+            <!-- End Modal singleEvent -->
 
             <div Class="Container-fluid">
 
