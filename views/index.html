@@ -94,7 +94,10 @@
                     // concatenate calendarConfig from rotamaster.js
                     ...calendarConfig,
 
-                    // When the view is changed or the date changes
+                    // JSON feed that the calendar will fetch Event Objects from.
+                    events: calendarEvents,
+
+                    // view is changed or the date changes
                     datesSet: function(info) {
                         
                         let displayedYear = calcDisplayedYear(info);
@@ -114,40 +117,22 @@
 
                     },
 
-                    // A URL of a JSON feed that the calendar will fetch Event Objects from.
-                    events: calendarEvents,
-
-                    customButtons: {
-                        exportToIcs: {
-                            text: 'Export Events',
-                            click: function() {
-                                // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
-                                const exportModal = new bootstrap.Modal(document.getElementById('multipleEvents'), {
-                                    keyboard: true
-                                });
-                                document.getElementById('btnAllEvents').checked = true;
-                                document.getElementById('personNameInput').value = '';
-                                document.getElementById('eventTypeInput').value = '';
-                                exportModal.show();
-                            }
-                        }
-                    },
-
+                    // event is clicked
                     eventClick: function(info) {
                         const event = info.event;
-                        const updateExportModal = new bootstrap.Modal(document.getElementById('singleEvent'), {
+                        const singleEvent = new bootstrap.Modal(document.getElementById('singleEvent'), {
                             keyboard: true
                         });
-
                         setModalEventData(event);
                         document.getElementById('btnExportEvent').checked = true;
-                        updateExportModal.show();
+                        singleEvent.show();
 
                         const exportButton = document.getElementById('btnUpdateExport'); 
                         exportButton.onclick = handleModalButtonClick.bind(null, event);
+
                     },
 
-                    // Fill the form with event data when a date range is selected
+                    // date range is selected
                     select: function(info) {
                         // Convert start and end dates to Date objects
                         const eventStartDate = new Date(info.startStr);
@@ -268,16 +253,9 @@
                     event.preventDefault(); // Prevent default form submission
 
                     // Get form data
-                    const formData = new FormData(form);
-                    const data = {};
-                    formData.forEach((value, key) => {
-                        data[key] = value;
-                    });
-                    console.log('Get form data:', data);
-
-                    // Überprüfe die Formulardaten auf Vollständigkeit
-                    if (!data.name || !data.type || !data.start || !data.end) {
-                        console.error('Fehler: Fehlende Formulardaten', data);
+                    const data = getFormData(form);
+                    if (!data) {
+                        alert('Bitte füllen Sie alle erforderlichen Felder aus.');
                         return;
                     }
 

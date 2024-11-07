@@ -25,7 +25,22 @@ const calendarConfig = {
     weekNumberCalculation: 'ISO',
     selectable: true,
     editable: true,
-    navLinks: true
+    navLinks: true,
+    customButtons: {
+        exportToIcs: {
+            text: 'Export Events',
+            click: function() {
+                // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
+                const exportModal = new bootstrap.Modal(document.getElementById('multipleEvents'), {
+                    keyboard: true
+                });
+                document.getElementById('btnAllEvents').checked = true;
+                document.getElementById('personNameInput').value = '';
+                document.getElementById('eventTypeInput').value = '';
+                exportModal.show();
+            }
+        }
+    }
 };
 
 
@@ -816,3 +831,20 @@ function handleModalButtonClick(event) {
     }
 }
 
+// Funktion zum Extrahieren und Validieren der Formulardaten
+function getFormData(form) {
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+        data[key] = value;
+    });
+
+    // Überprüfe die Formulardaten auf Vollständigkeit
+    if (!data.name || !data.type || !data.start || !data.end) {
+        console.error('Fehler: Fehlende Formulardaten', data);
+        return null;
+    }
+
+    console.log('Formulardaten extrahiert:', data);
+    return data;
+}
