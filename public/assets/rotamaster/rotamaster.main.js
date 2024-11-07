@@ -636,7 +636,7 @@ function formatDateToICS(date) {
 }
 
 /**
- * New functions for SQLite
+ * functions for SQLite
  */
 function getEventColors(type) {
     const colorMap = [
@@ -714,5 +714,33 @@ async function deleteDBData(eventId){
     } catch (error) {
         console.error('Error occurred while deleting event:', error);
         alert('Ein Fehler ist beim Löschen des Events aufgetreten');
+    }
+}
+
+/**
+ * Outsourced from index.html
+ * Event listener to synchronize dropdown selection with datalist input field
+**/
+function eventListenerDropwodn(soureElement, targetElement){
+    document.getElementById(soureElement).addEventListener('change', function() {
+        const selectedValue = this.value;
+        document.getElementById(targetElement).value = selectedValue; // Update datalist input field
+    });
+}
+
+/**
+ * Exportiert gefilterte Events als ICS-Datei.
+ *
+ * @param {Array} events - Die zu filternden Events.
+ * @param {Function} filterFn - Eine Callback-Funktion, um Events zu filtern.
+ * @param {string} filename - Der Dateiname der ICS-Datei.
+ * @param {Function} exportFn - Die Funktion zum Exportieren der Events.
+ */
+function exportFilteredEvents(events, filterFn, filename, exportFn) {
+    const filteredEvents = events.filter(filterFn);
+    if (filteredEvents.length > 0) {
+        exportFn(filteredEvents, filename);
+    } else {
+        alert('Keine passenden Events gefunden.');
     }
 }
