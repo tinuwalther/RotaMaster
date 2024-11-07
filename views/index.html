@@ -47,16 +47,16 @@
             */
             document.addEventListener('DOMContentLoaded', async function() {
 
+                // Refresh footer datetime
                 const d = new Date();
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
+                // Get calendarEvents from SQLite and concatenate holidays and events to one Array
                 const calendarEvents = [];
                 const events = await readDBData('/api/event/read');
                 const holidays = await loadApiData('/api/event/get');
-                // Concatenate holidays and events to one Array
                 calendarEvents.push(...holidays);
                 calendarEvents.push(...events);
-                // console.log(calendarEvents);
 
                 // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
@@ -223,50 +223,43 @@
 
                 calendar.render();
 
-                // Event-Listener für den Export-Button im Modal
+                // Event-Listener für den Export-Button im Modal exportEvents
                 const exportButton = document.getElementById('btnExport');
                 exportButton.addEventListener('click', function() {
                     // Rufe die Events aus dem Kalender ab
                     const events = calendar.getEvents();
 
                     if (btnAllEvents.checked) {
-                        // Exportiere alle Events
                         exportCalendarEvents(events, 'all-events.ics');
                     } else if (btnPersonEvents.checked) {
-                        // Exportiere nur Events einer bestimmten Person
                         const personName = document.getElementById('personNameInput').value.trim();
                         if (personName) {
-                            const personEvents = events.filter(event => {
-                                const [eventPersonName] = event.title.split(' - ');
-                                return eventPersonName.trim().toLowerCase() === personName.toLowerCase();
-                            });
-
-                            if (personEvents.length > 0) {
-                                exportCalendarEvents(personEvents, `${personName}-events.ics`);
-                            } else {
-                                alert(`Keine Events für "${personName}" gefunden.`);
-                            }
+                            exportFilteredEvents(
+                                events,
+                                event => {
+                                    const [eventPersonName] = event.title.split(' - ');
+                                    return eventPersonName.trim().toLowerCase() === personName.toLowerCase();
+                                },
+                                `${personName}-events.ics`,
+                                exportCalendarEvents
+                            );
                         } else {
                             alert('Bitte geben Sie einen Namen ein.');
-                            return;
                         }
                     } else if (btnTypeOfEvents.checked) {
-                        // Exportiere nur Events eines bestimmten Typs
                         const eventType = document.getElementById('eventTypeInput').value.trim();
                         if (eventType) {
-                            const typeEvents = events.filter(event => {
-                                const [, eventTypeName] = event.title.split(' - ');
-                                return eventTypeName && eventTypeName.trim().toLowerCase() === eventType.toLowerCase();
-                            });
-            
-                            if (typeEvents.length > 0) {
-                                exportCalendarEvents(typeEvents, `${eventType}-events.ics`);
-                            } else {
-                                alert(`Keine Events des Typs "${eventType}" gefunden.`);
-                            }
+                            exportFilteredEvents(
+                                events,
+                                event => {
+                                    const [, eventTypeName] = event.title.split(' - ');
+                                    return eventTypeName && eventTypeName.trim().toLowerCase() === eventType.toLowerCase();
+                                },
+                                `${eventType}-events.ics`,
+                                exportCalendarEvents
+                            );
                         } else {
                             alert('Bitte geben Sie einen Event-Typ ein.');
-                            return;
                         }
                     }
 
@@ -354,12 +347,8 @@
                     }
                 });
 
-                // Event listener to synchronize dropdown selection with datalist input field
-                document.getElementById('nameDropdown').addEventListener('change', function() {
-                    const selectedValue = this.value;
-                    document.getElementById('name').value = selectedValue; // Update datalist input field
-                });
-
+                // synchronize dropdown selection with datalist input field
+                eventListenerDropwodn('nameDropdown','datalistName');
             });
 
         </script>
@@ -492,7 +481,7 @@
 
                             <div class="input-group mb-3">
                                 <span class="input-group-text" id="basic-addon1">Name</span>
-                                <input class="form-control" list="datalistOptions" id="name" name="name" placeholder="Tippen oder auswählen...">
+                                <input class="form-control" list="datalistOptions" id="datalistName" name="name" placeholder="Tippen oder auswählen...">
                                 <datalist id="datalistOptions">
                                     <!--option value=Werte aus meinem Array /-->
                                 </datalist>
