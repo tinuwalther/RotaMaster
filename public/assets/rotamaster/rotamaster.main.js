@@ -825,8 +825,12 @@ function handleModalButtonClick(event) {
         exportCalendarEvents(event, `${event.title}.ics`);
     }
     if (btnRemoveEvent.checked) {
-        if (confirm("Möchten Sie dieses Event wirklich löschen?")) {
-            deleteDBData(event.id);
+        if(event.id){
+            if (confirm("Möchten Sie dieses Event wirklich löschen?")) {
+                deleteDBData(event.id);
+            }
+        }else{
+            alert (`${event.title} kann nicht gelöscht werden!`)
         }
     }
 }
