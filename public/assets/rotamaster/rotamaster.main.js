@@ -826,7 +826,7 @@ function handleModalButtonClick(event) {
     }
     if (btnRemoveEvent.checked) {
         if(event.id){
-            if (confirm("Möchten Sie dieses Event wirklich löschen?")) {
+            if (confirm(`Event ${event.id}, ${event.title} wirklich löschen?`)) {
                 deleteDBData(event.id);
             }
         }else{
