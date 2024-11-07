@@ -1,3 +1,32 @@
+// calendarConfig
+const calendarConfig = {
+    timeZone: 'local',
+    locale: 'de-CH',
+    initialView: 'multiMonthYear',
+    multiMonthMinWidth: 350,
+    multiMonthMaxColumns: 2,
+    headerToolbar: {
+        left: 'prevYear,prev,today,next,nextYear',
+        center: 'title',
+        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs'
+    },
+    buttonText: {
+        today: 'Heute',
+        year: 'Jahr',
+        month: 'Monat',
+        list: 'Liste'
+    },
+    weekNumbers: false,
+    dayMaxEvents: true,
+    showNonCurrentDates: false,
+    fixedWeekCount: false,
+    weekNumberCalculation: 'ISO',
+    selectable: true,
+    editable: true,
+    navLinks: true
+};
+
+
 /**
 * Sends the next year as plain text to the provided API URL and logs the response.
 * 
@@ -744,3 +773,44 @@ function exportFilteredEvents(events, filterFn, filename, exportFn) {
         alert('Keine passenden Events gefunden.');
     }
 }
+
+/**
+ * Setzt die Event-Daten in das Modal.
+ *
+ * @param {Object} event - Das Event-Objekt.
+ */
+function setModalEventData(event) {
+
+    const eventStartDate = formatDateToShortISOFormat(event.start);
+    const eventEndDate = formatDateToShortISOFormat(new Date(event.end.setDate(event.end.getDate() - 1))); // remove one day from the end-date
+
+    document.getElementById('id').textContent = `id: ${event.id}`;
+    document.getElementById('title').textContent = `title: ${event.title}`;
+    document.getElementById('date').textContent = `start: ${eventStartDate} end: ${eventEndDate}`;
+    
+    /*
+    // Falls es erweiterte Eigenschaften gibt, hier setzen
+    const otherElement = document.getElementById('other');
+    otherElement.textContent = '';
+    for (const [key, value] of Object.entries(event.extendedProps)) {
+        otherElement.textContent += `${key}: ${value}\n`;
+    }
+    */
+}
+
+/**
+ * Verarbeitet den Klick auf die Schaltflächen im Modal.
+ *
+ * @param {Object} event - Das Event-Objekt.
+ */
+function handleModalButtonClick(event) {
+    if (btnExportEvent.checked) {
+        exportCalendarEvents(event, `${event.title}.ics`);
+    }
+    if (btnRemoveEvent.checked) {
+        if (confirm("Möchten Sie dieses Event wirklich löschen?")) {
+            deleteDBData(event.id);
+        }
+    }
+}
+
