@@ -507,6 +507,20 @@ function Initialize-ApiEndpoints {
             }
         }
 
+        Add-PodeRoute -Method Delete -Path '/api/event/delete/:id' -ArgumentList @($dbPath) -ScriptBlock {
+            param($dbPath)
+
+            $id = $WebEvent.Parameters['id']
+            $sql = "DELETE FROM events WHERE id = $id"
+
+            try {
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully deleted" }
+            } catch {
+                Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to delete record: $_" } -StatusCode 500
+            }
+        }
+
         # Get events from CSV and return it as JSON, used for swiss holidays
         Add-PodeRoute -Method Get -Path '/api/event/get' -ArgumentList @($ApiPath) -ScriptBlock {
             param($ApiPath)

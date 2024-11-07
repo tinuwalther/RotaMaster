@@ -96,11 +96,13 @@
                     initialView: 'multiMonthYear',
                     multiMonthMinWidth: 350,
                     multiMonthMaxColumns: 2,
+
                     headerToolbar: {
                         left: 'prevYear,prev,today,next,nextYear',
                         center: 'title',
-                        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs,exportPersonEvents'
+                        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs'
                     },
+
                     buttonText: {
                         today: 'Heute',
                         year: 'Jahr',
@@ -141,71 +143,60 @@
                     // A URL of a JSON feed that the calendar will fetch Event Objects from.
                     events: calendarEvents,
 
-                    // Custom Button to export events as ics-file
                     customButtons: {
-                        // Export all events as ics-file
                         exportToIcs: {
-                            text: 'Alle Events',
+                            text: 'Export Events',
                             click: function() {
-                                exportCalendarEvents(calendar.getEvents(), 'all-events.ics');
-                            }
-                        },
-
-                        // Export events of a specified person as ics-file
-                        exportPersonEvents: {
-                            text: 'Personen Events',
-                            click: function() {
-                                // Prompt the name of the person
-                                const personName = prompt("Geben Sie den Namen der Person ein, deren Events Sie exportieren möchten:");
-
-                                if (personName) {
-                                    const personEvents = calendar.getEvents().filter(event => {
-                                        const [eventPersonName] = event.title.split(' - ');
-                                        return eventPersonName.trim().toLowerCase() === personName.trim().toLowerCase();
-                                    });
-
-                                    if (personEvents.length > 0) {
-                                        exportCalendarEvents(personEvents, `${personName}-events.ics`);
-                                    } else {
-                                        alert(`Keine Events für die Person "${personName}" gefunden.`);
-                                    }
-                                }
+                                // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
+                                const exportModal = new bootstrap.Modal(document.getElementById('exportEvents'), {
+                                    keyboard: true
+                                });
+                                document.getElementById('btnAllEvents').checked = true;
+                                document.getElementById('personNameInput').value = '';
+                                document.getElementById('eventTypeInput').value = '';
+                                exportModal.show();
                             }
                         }
                     },
-
-                    /*
-                    dateClick: function(info) {
-                        // alert('Date clicked: ' + info);
-                        // console.log('info:', info);
-                        // Here you could add a form or event creation functionality
-                    },
-                    */
 
                     eventClick: function(info) {
-                        // Prevent default click action if necessary
-                        info.jsEvent.preventDefault();
-
                         var event = info.event;
 
-                        /* Abfrage an den Benutzer, ob er das Event als ICS-Datei herunterladen möchte
-                        "ID: " + event.id + "\n" +
-                        "Title: " + event.title + "\n" +
-                        "Start: " + event.start.toISOString() + "\n" +
-                        "End: " + (event.end ? event.end.toISOString() : 'Not specified')
+                        // Hier wird das Modal geöffnet, wenn auf einen Event geklickt wird
+                        const updateExportModal = new bootstrap.Modal(document.getElementById('updateExportEvents'), {
+                            keyboard: true
+                        });
+
+                        // Optional: Du kannst hier die Event-Daten in das Modal einfügen
+                        let eventStartDate = formatDateToShortISOFormat(event.start);
+                        // remove one day from the end-date
+                        const originalDate = new Date(event.end);
+                        originalDate.setDate(originalDate.getDate() - 1);
+                        let eventEndDate = formatDateToShortISOFormat(originalDate);
+
+                        document.getElementById('id').textContent = `id: ${event.id}`;
+                        document.getElementById('title').textContent = `title: ${event.title}`;
+                        document.getElementById('date').textContent = `start: ${eventStartDate} end: ${eventEndDate}`;
+                        /*
                         for (const [key, value] of Object.entries(event.extendedProps)) {
-                            console.log(`${key}: ${value}`);
+                            document.getElementById('other').textContent = `${key}: ${value}`;
                         }
                         */
-                        const userConfirmed = confirm(
-                            "Event " + event.id + " '" + event.title + "'\n" +
-                            "als ICS-Datei herunterladen?"
-                        );
-                        
-                        if (userConfirmed) {
-                            //exportSingleEvent(event);
-                            exportCalendarEvents(event, `${event.title}.ics`);
-                        }
+                        document.getElementById('btnExportEvent').checked = true;
+                        updateExportModal.show();
+
+                        const exportButton1 = document.getElementById('btnUpdateExport');
+                        exportButton1.onclick = function() {
+                            if (btnExportEvent.checked) {
+                                exportCalendarEvents(event, `${event.title}.ics`);
+                            }
+                            if (btnRemoveEvent.checked) {
+                                if (confirm("Möchten Sie dieses Event wirklich löschen?")) {
+                                    deleteDBData(info.event.id);
+                                }
+                            }
+                        };
+
                     },
 
                     // Fill the form with event data when a date range is selected
@@ -231,6 +222,86 @@
                 });
 
                 calendar.render();
+
+                // Event-Listener für den Export-Button im Modal
+                const exportButton = document.getElementById('btnExport');
+                exportButton.addEventListener('click', function() {
+                    // Rufe die Events aus dem Kalender ab
+                    const events = calendar.getEvents();
+
+                    if (btnAllEvents.checked) {
+                        // Exportiere alle Events
+                        exportCalendarEvents(events, 'all-events.ics');
+                    } else if (btnPersonEvents.checked) {
+                        // Exportiere nur Events einer bestimmten Person
+                        const personName = document.getElementById('personNameInput').value.trim();
+                        if (personName) {
+                            const personEvents = events.filter(event => {
+                                const [eventPersonName] = event.title.split(' - ');
+                                return eventPersonName.trim().toLowerCase() === personName.toLowerCase();
+                            });
+
+                            if (personEvents.length > 0) {
+                                exportCalendarEvents(personEvents, `${personName}-events.ics`);
+                            } else {
+                                alert(`Keine Events für "${personName}" gefunden.`);
+                            }
+                        } else {
+                            alert('Bitte geben Sie einen Namen ein.');
+                            return;
+                        }
+                    } else if (btnTypeOfEvents.checked) {
+                        // Exportiere nur Events eines bestimmten Typs
+                        const eventType = document.getElementById('eventTypeInput').value.trim();
+                        if (eventType) {
+                            const typeEvents = events.filter(event => {
+                                const [, eventTypeName] = event.title.split(' - ');
+                                return eventTypeName && eventTypeName.trim().toLowerCase() === eventType.toLowerCase();
+                            });
+            
+                            if (typeEvents.length > 0) {
+                                exportCalendarEvents(typeEvents, `${eventType}-events.ics`);
+                            } else {
+                                alert(`Keine Events des Typs "${eventType}" gefunden.`);
+                            }
+                        } else {
+                            alert('Bitte geben Sie einen Event-Typ ein.');
+                            return;
+                        }
+                    }
+
+                    // Modal nach dem Export schließen
+                    const exportModal = bootstrap.Modal.getInstance(document.getElementById('exportEvents'));
+                    exportModal.hide();
+                });
+
+                // Event-Listener, um das Inputfeld sichtbar zu machen, wenn der entsprechende Radio-Button ausgewählt wird
+                const btnAllEvents = document.getElementById('btnAllEvents');
+                const btnPersonEvents = document.getElementById('btnPersonEvents');
+                const btnTypeOfEvents = document.getElementById('btnTypeOfEvents');
+                const personNameContainer = document.getElementById('personNameContainer');
+                const eventTypeContainer = document.getElementById('eventTypeContainer');
+
+                btnAllEvents.addEventListener('change', function() {
+                    if (btnAllEvents.checked) {
+                        personNameContainer.style.display = 'none';
+                        eventTypeContainer.style.display = 'none';
+                    }
+                });
+            
+                btnPersonEvents.addEventListener('change', function() {
+                    if (btnPersonEvents.checked) {
+                        personNameContainer.style.display = 'block';
+                        eventTypeContainer.style.display = 'none';
+                    }
+                });
+            
+                btnTypeOfEvents.addEventListener('change', function() {
+                    if (btnTypeOfEvents.checked) {
+                        personNameContainer.style.display = 'none';
+                        eventTypeContainer.style.display = 'block';
+                    }
+                });
 
                 // Add Tooltip to the Buttons
                 setTimeout(function() {
@@ -328,6 +399,83 @@
             </nav>
             <!-- End NavBar -->
         
+            <!-- Begin Modal exportEvents -->
+            <div class="modal fade" id="exportEvents" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">#RotaMaster - Export multiple Events</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Events als ICS-Datei herunterladen:</p>
+
+                            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                                <input type="radio" class="btn-check" name="btnradio" id="btnAllEvents" autocomplete="off" checked>
+                                <label class="btn btn-outline-dark" for="btnAllEvents" data-bs-toggle="tooltip" title="Exportiert alle Events als ICS-Datei">Alle Events</label>
+
+                                <input type="radio" class="btn-check" name="btnradio" id="btnPersonEvents" autocomplete="off">
+                                <label class="btn btn-outline-dark" for="btnPersonEvents" data-bs-toggle="tooltip" title="Exportiert alle Events einer bestimmten Person als ICS-Datei">Personen Events</label>
+
+                                <input type="radio" class="btn-check" name="btnradio" id="btnTypeOfEvents" autocomplete="off">
+                                <label class="btn btn-outline-dark" for="btnTypeOfEvents" data-bs-toggle="tooltip" title="Exportiert alle Events eines bestimmten Typs als ICS-Datei">Event Typen</label>
+                            </div>
+
+                            <!-- Inputfeld für den Namen, standardmäßig versteckt -->
+                            <div id="personNameContainer" style="display: none; margin-top: 10px;">
+                                <label for="personNameInput" class="form-label">Name der Person:</label>
+                                <input type="text" id="personNameInput" class="form-control" placeholder="Name eingeben...">
+                            </div>
+
+                            <!-- Inputfeld für den Event-Typ, standardmäßig versteckt -->
+                            <div id="eventTypeContainer" style="display: none; margin-top: 10px;">
+                                <label for="eventTypeInput" class="form-label">Event Typ:</label>
+                                <input type="text" id="eventTypeInput" class="form-control" placeholder="Typ eingeben...">
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="btnClose" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" id="btnExport" class="btn btn-dark">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Modal -->
+
+            <!-- Begin Modal updateExportEvents -->
+            <div class="modal fade" id="updateExportEvents" tabindex="-1" aria-labelledby="updateExportEventsLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="updateExportEventTitle">#RotaMaster - Single Event</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p id="id"></p>
+                            <p id="title"></p>
+                            <p id="date"></p>
+                            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                                <input type="radio" class="btn-check" name="btnradio" id="btnExportEvent" autocomplete="off" checked>
+                                <label class="btn btn-outline-dark" for="btnExportEvent" data-bs-toggle="tooltip" title="Exportiert den Event als ICS-Datei">Export</label>
+
+                                <input type="radio" class="btn-check" name="btnradio" id="btnUpdateEvent" autocomplete="off">
+                                <label class="btn btn-outline-dark" for="btnUpdateEvent" data-bs-toggle="tooltip" title="Event ändern">Update</label>
+
+                                <input type="radio" class="btn-check" name="btnradio" id="btnRemoveEvent" autocomplete="off">
+                                <label class="btn btn-outline-dark" for="btnRemoveEvent" data-bs-toggle="tooltip" title="Event löschen">Remove</label>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="btnClose" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" id="btnUpdateExport" class="btn btn-dark">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Modal -->
+
             <div Class="Container-fluid">
 
                 <!-- Begin Events -->

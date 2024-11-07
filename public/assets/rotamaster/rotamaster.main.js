@@ -578,6 +578,13 @@ function convertToISOFormat(dateString) {
     return ''; 
 }
 
+function formatDateToShortISOFormat(date) {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+}
+
 // Export events per person or all events
 function exportCalendarEvents(events, fileName) {
     // Sicherstellen, dass die Eingabe ein Array ist (falls nur ein einzelnes Event übergeben wird)
@@ -681,15 +688,31 @@ async function readDBData(url) {
 }
 
 function updateDBData(query, dbFile, elementId){
-    // const data = db.export(); // Exportiert als Uint8Array
-    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
-
     console.log('Not implemented yet:', query)
 }
 
-function deleteDBData(query, dbFile, elementId){
-    // const data = db.export(); // Exportiert als Uint8Array
-    // localStorage.setItem(dbFile, btoa(String.fromCharCode(...data)));
+async function deleteDBData(eventId){
+    try {
+        // Sende DELETE-Anfrage an die PowerShell API
+        const response = await fetch(`/api/event/delete/${eventId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
 
-    console.log('Not implemented yet:', query)
+        // Überprüfe, ob die Anfrage erfolgreich war
+        if (response.ok) {
+            const responseData = await response.json();
+            console.log(responseData.message); // Ausgabe: "Record successfully deleted"
+            // Aktualisiere den Kalender oder die UI, nachdem der Record gelöscht wurde
+            window.location.reload();
+        } else {
+            console.error('Failed to delete event:', response.status);
+            alert('Fehler beim Löschen des Events');
+        }
+    } catch (error) {
+        console.error('Error occurred while deleting event:', error);
+        alert('Ein Fehler ist beim Löschen des Events aufgetreten');
+    }
 }
