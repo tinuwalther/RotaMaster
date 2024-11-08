@@ -737,6 +737,20 @@ function updateDBData(query, dbFile, elementId){
     console.log('Not implemented yet:', query)
 }
 
+/**
+ * Deletes a database record associated with a given event ID using a DELETE request.
+ * 
+ * This asynchronous function sends a DELETE request to the PowerShell API endpoint to delete
+ * a specific event from the database. Upon successful deletion, the page is reloaded to reflect the changes.
+ * If an error occurs during the process, an error message is logged to the console, and an alert is shown to the user.
+ * 
+ * @async
+ * @param {string} eventId - The ID of the event to delete from the database.
+ * @returns {Promise<void>} - No return value, but logs messages to the console and displays alerts based on the outcome.
+ * 
+ * @example
+ * await deleteDBData('12345'); // Deletes the event with ID '12345' and reloads the page if successful.
+ */
 async function deleteDBData(eventId){
     try {
         // Sende DELETE-Anfrage an die PowerShell API

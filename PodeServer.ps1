@@ -41,13 +41,60 @@ $Protocol = 'http'
 Start-PodeServer -Browse -Threads 2 {
     Write-Host "Press Ctrl. + C to terminate the Pode server" -ForegroundColor Yellow
 
+    # Here our sessions will last for 15 Min, and will be extended on each request
+    Enable-PodeSessionMiddleware -Duration 900 -Extend
+
+    # Setup ActiveDirectory authentication
+    # https://pode.readthedocs.io/en/latest/Tutorials/Authentication/Inbuilt/WindowsAD/#usage
+    # New-PodeAuthScheme -Form | Add-PodeAuthWindowsAd -Name 'Login' -DirectGroups
+    # New-PodeAuthScheme -Form | Add-PodeAuthWindowsAd -Name 'Login' -Groups @('XAAS-vCenter-Administrators-Compute-GS') -FailureUrl '/login' -SuccessUrl '/'
+
+    # Setup Form authentication
+    New-PodeAuthScheme -Form | Add-PodeAuth -Name 'Login' -FailureUrl '/login' -SuccessUrl '/' -ScriptBlock {
+        param($username, $password)
+    
+        # here you'd check a real user storage, this is just for example
+        if ($password -eq '') {
+            return @{
+                User = @{
+                    ID   = New-Guid
+                    Name = $username
+                    Type = 'local'
+                }
+            }
+        }
+    
+        # No user was found
+        return @{ Message = 'Invalid details supplied!' }
+    }
+
+    # Redirected to the login page
+    Add-PodeRoute -Method Get -Path '/' -Authentication 'Login' -ScriptBlock {
+        $WebEvent.Session.Data.Views++
+        Write-PodeViewResponse -Path 'index.html' -Data @{
+            Username = $WebEvent.Auth.User.Name;
+        }
+    }
+
+    # the login page itself
+    Add-PodeRoute -Method Get -Path '/login' -Authentication 'Login' -Login -ScriptBlock {
+        Write-PodeViewResponse -Path 'login.pode' -FlashMessages
+    }
+
+    # the POST action for the <form>
+    Add-PodeRoute -Method Post -Path '/login' -Authentication 'Login' -Login
+    
+    # the logout Route
+    Add-PodeRoute -Method Post -Path '/logout' -Authentication 'Login' -Logout
+    #endregion
+
     Import-Module PSSQLite -Force
 
     $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
     Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'RotaMaster.psd1')
 
     # Enables Error Logging
-    New-PodeLoggingMethod -Terminal | Enable-PodeErrorLogging
+    New-PodeLoggingMethod -File -Name 'error' -MaxDays 7 | Enable-PodeErrorLogging
 
     # Add listener to Port 8080 for Protocol http
     Add-PodeEndpoint -Address $Address -Port $Port -Protocol $Protocol
@@ -56,7 +103,7 @@ Start-PodeServer -Browse -Threads 2 {
     Set-PodeViewEngine -Type Pode
     
     # Set Pode endpoints for the web pages
-    Initialize-WebEndpoints
+    # Initialize-WebEndpoints
 
     # Set Pode endpoints for the api
     Initialize-ApiEndpoints
