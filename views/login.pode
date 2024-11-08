@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <!-- Begin Head -->
+    <head >
+        <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
+        <meta name="description" content="RotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
+        
+        <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
+        <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
+        <script src="/assets/rotamaster/rotamaster.main.js"></script>
+        <script>
+            window.addEventListener('load', () => {
+                const d = new Date();
+                document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
+            });
+        </script>
+
+        <title >#RotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
+
+        <style>
+            footer {
+                position: fixed;
+                padding: 20px;
+                background: #343a40;
+                color: var(--bs-gray-200);
+                text-align: center;
+                bottom: 0;
+                width: 100%;
+            }
+        </style>
+
+    </head>
+
+    <body>
+
+		<header >
+            <!--div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
+                <h1 >#RotaMaster - V2</h1>
+            </div-->
+		</header>
+
+		 <Section Id="section"  >
+
+            <!-- Begin NavBar -->
+            <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
+                <div Class="container-fluid"  >
+                    <a Class="navbar-brand" href="/" Target="_self"  >»RotaMaster</a>
+                    <button Class="navbar-toggler" type="button" title="Navbar" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
+                        <span Class="navbar-toggler-icon"  ></span>
+                    </button>
+                    <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
+                    <ul Class="navbar-nav"  >
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/tinuwalther/" Target="_blank"  >GitLab</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/RamblingCookieMonster/PSSQLite/" Target="_blank"  >PSSQLite</a></li>
+                    </ul>
+                    </div>
+                </div>
+            </nav>
+            <!-- End NavBar -->
+            </Section>
+
+            <!--div Style="text-align: center" Class="container-fluid"-->
+            <div style="display: flex; text-align: center; justify-content: center; align-items: center; height: 50vh;" class="container-fluid">
+
+                <article>
+
+                    <div class="login">
+                    <h3>Please Login</h3>
+
+                    <form action="/login" method="post">
+                        <div class="col-auto">
+                            <label class="form-label">Username:</label><br>
+                            <input type="text" name="username" placeholder="Your Active Directory Account"/>
+                        </div><br>
+                        
+                        <div class="col-auto">
+                            <label class="form-label">Password:</label><br>
+                            <input type="password" name="password" placeholder="Your strong password"/>
+                        </div><br>
+                        
+                        <div class="col-auto">
+                            <input type="submit" value="Login" class="btn btn-dark mb-3"/>
+                        </div>
+                    </form>
+
+                    $(if ($Data.flash['auth-error']) {
+                        "<p>$($Data.flash['auth-error'])</p>"
+                    })
+                    </div>
+
+                </article>
+		
+		</div>
+
+    </body>
+
+	<!-- Begin Footer -->
+    <footer>
+        <div Class="container-fluid"  >
+
+            <div Class="row align-items-center"  >
+
+                <div Class="col-md"  >
+                    <p Style="color:#f8f9fa">
+                        <a Class="btn-sm btn btn-outline-success" href="#" Target="_self"  >I ♥ PS ></a>
+                    </p>
+                </div>
+                    
+                <div Class="col-md"  >
+                    <p Style="color:#f8f9fa">
+                        Based on <a href="https://www.powershellgallery.com/packages/Pode" Target="_blank"  >Pode</a>
+                    </p>
+                </div>
+
+                <div Class="col-md" Style="color:#000"  >
+                    <p id="footerDate" Style="color:#f8f9fa">
+                        <!-- Hier wird der aktuelle TimeStamp eingefügt -->
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </footer>
+    <!--End Footer -->
+
+</html>

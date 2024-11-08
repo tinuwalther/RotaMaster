@@ -349,7 +349,7 @@ function Initialize-WebEndpoints {
 
     process{
         # Index
-        Add-PodeRoute -Method Get -Path '/' -ScriptBlock {
+        Add-PodeRoute -Method Get -Path '/' -Authentication 'Login' -ScriptBlock {
             Write-PodeViewResponse -Path 'index.html'
         }
     }
@@ -375,14 +375,14 @@ function Initialize-ApiEndpoints {
         $dbPath = Join-Path -Path $($ApiPath) -ChildPath '/rotamaster.db'
 
         # Get person from JSON-file
-        Add-PodeRoute -Method Get -Path '/api/events/person' -ArgumentList @($ApiPath) -ScriptBlock {
+        Add-PodeRoute -Method Get -Path '/api/events/person' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
             param($ApiPath)
             $person = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'person.json') | ConvertFrom-Json | Sort-Object
             Write-PodeJsonResponse -Value $person  
         }
 
         # Get absences from JSON-file
-        Add-PodeRoute -Method Get -Path '/api/events/absence' -ArgumentList @($ApiPath) -ScriptBlock {
+        Add-PodeRoute -Method Get -Path '/api/events/absence' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
             param($ApiPath)
             $absence = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'absence.json') | ConvertFrom-Json | Sort-Object
             Write-PodeJsonResponse -Value $absence  
@@ -402,7 +402,7 @@ function Initialize-ApiEndpoints {
         #>
 
         # Calculate swiss holidays for next year
-        Add-PodeRoute -Method Post -Path '/api/year/new' -ContentType 'application/text' -ArgumentList @($ApiPath) -ScriptBlock {
+        Add-PodeRoute -Method Post -Path '/api/year/new' -ContentType 'application/text' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
             param($ApiPath)
             
             $Year    = [int]$WebEvent.Data
@@ -452,7 +452,7 @@ function Initialize-ApiEndpoints {
         #>
 
         # Add new record into the SQLiteDB
-        Add-PodeRoute -Method POST -Path '/api/event/insert' -ArgumentList @($dbPath) -ScriptBlock {
+        Add-PodeRoute -Method POST -Path '/api/event/insert' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
             # Read the data of the formular
             if((-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['type']))))){
@@ -478,7 +478,7 @@ function Initialize-ApiEndpoints {
         }
 
         # Read data from SQLiteDB for events
-        Add-PodeRoute -Method Get -Path 'api/event/read' -ArgumentList @($dbPath) -ScriptBlock {
+        Add-PodeRoute -Method Get -Path 'api/event/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
             try{
                 $sql = 'SELECT id,person,"type",start,end FROM events'
@@ -507,7 +507,7 @@ function Initialize-ApiEndpoints {
             }
         }
 
-        Add-PodeRoute -Method Delete -Path '/api/event/delete/:id' -ArgumentList @($dbPath) -ScriptBlock {
+        Add-PodeRoute -Method Delete -Path '/api/event/delete/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
 
             $id = $WebEvent.Parameters['id']
@@ -522,7 +522,7 @@ function Initialize-ApiEndpoints {
         }
 
         # Get events from CSV and return it as JSON, used for swiss holidays
-        Add-PodeRoute -Method Get -Path '/api/event/get' -ArgumentList @($ApiPath) -ScriptBlock {
+        Add-PodeRoute -Method Get -Path '/api/event/get' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
             param($ApiPath)
             $data = Get-ChildItem -Path $ApiPath -Filter '*.csv' | ForEach-Object {
                 Import-Csv -Path $PSItem.Fullname -Delimiter ';' -Encoding utf8

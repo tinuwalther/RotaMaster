@@ -47,16 +47,16 @@
             */
             document.addEventListener('DOMContentLoaded', async function() {
 
+                // Refresh footer datetime
                 const d = new Date();
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
+                // Get calendarEvents from SQLite and concatenate holidays and events to one Array
                 const calendarEvents = [];
                 const events = await readDBData('/api/event/read');
                 const holidays = await loadApiData('/api/event/get');
-                // Concatenate holidays and events to one Array
                 calendarEvents.push(...holidays);
                 calendarEvents.push(...events);
-                // console.log(calendarEvents);
 
                 // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
@@ -91,36 +91,13 @@
                 var calendarEl = document.getElementById('calendar');
 
                 var calendar = new FullCalendar.Calendar(calendarEl, {
-                    timeZone: 'local',
-                    locale: 'de-CH',
-                    initialView: 'multiMonthYear',
-                    multiMonthMinWidth: 350,
-                    multiMonthMaxColumns: 2,
+                    // concatenate calendarConfig from rotamaster.js
+                    ...calendarConfig,
 
-                    headerToolbar: {
-                        left: 'prevYear,prev,today,next,nextYear',
-                        center: 'title',
-                        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs'
-                    },
+                    // JSON feed that the calendar will fetch Event Objects from.
+                    events: calendarEvents,
 
-                    buttonText: {
-                        today: 'Heute',
-                        year: 'Jahr',
-                        month: 'Monat',
-                        list: 'Liste'
-                    },
-
-                    weekNumbers: false,
-                    dayMaxEvents: true,
-                    showNonCurrentDates: false,
-                    fixedWeekCount: false,
-                    weekNumberCalculation: 'ISO', // "ISO" changes the default value of firstDay from 0 (Sunday) to 1 (Monday).
-                    
-                    selectable: true,
-                    editable: true,
-                    navLinks: true,
-
-                    // When the view is changed or the date changes
+                    // view is changed or the date changes
                     datesSet: function(info) {
                         
                         let displayedYear = calcDisplayedYear(info);
@@ -140,66 +117,22 @@
 
                     },
 
-                    // A URL of a JSON feed that the calendar will fetch Event Objects from.
-                    events: calendarEvents,
-
-                    customButtons: {
-                        exportToIcs: {
-                            text: 'Export Events',
-                            click: function() {
-                                // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
-                                const exportModal = new bootstrap.Modal(document.getElementById('exportEvents'), {
-                                    keyboard: true
-                                });
-                                document.getElementById('btnAllEvents').checked = true;
-                                document.getElementById('personNameInput').value = '';
-                                document.getElementById('eventTypeInput').value = '';
-                                exportModal.show();
-                            }
-                        }
-                    },
-
+                    // event is clicked
                     eventClick: function(info) {
-                        var event = info.event;
-
-                        // Hier wird das Modal geöffnet, wenn auf einen Event geklickt wird
-                        const updateExportModal = new bootstrap.Modal(document.getElementById('updateExportEvents'), {
+                        const event = info.event;
+                        const singleEvent = new bootstrap.Modal(document.getElementById('singleEvent'), {
                             keyboard: true
                         });
-
-                        // Optional: Du kannst hier die Event-Daten in das Modal einfügen
-                        let eventStartDate = formatDateToShortISOFormat(event.start);
-                        // remove one day from the end-date
-                        const originalDate = new Date(event.end);
-                        originalDate.setDate(originalDate.getDate() - 1);
-                        let eventEndDate = formatDateToShortISOFormat(originalDate);
-
-                        document.getElementById('id').textContent = `id: ${event.id}`;
-                        document.getElementById('title').textContent = `title: ${event.title}`;
-                        document.getElementById('date').textContent = `start: ${eventStartDate} end: ${eventEndDate}`;
-                        /*
-                        for (const [key, value] of Object.entries(event.extendedProps)) {
-                            document.getElementById('other').textContent = `${key}: ${value}`;
-                        }
-                        */
+                        setModalEventData(event);
                         document.getElementById('btnExportEvent').checked = true;
-                        updateExportModal.show();
+                        singleEvent.show();
 
-                        const exportButton1 = document.getElementById('btnUpdateExport');
-                        exportButton1.onclick = function() {
-                            if (btnExportEvent.checked) {
-                                exportCalendarEvents(event, `${event.title}.ics`);
-                            }
-                            if (btnRemoveEvent.checked) {
-                                if (confirm("Möchten Sie dieses Event wirklich löschen?")) {
-                                    deleteDBData(info.event.id);
-                                }
-                            }
-                        };
+                        const exportButton = document.getElementById('btnUpdateExport'); 
+                        exportButton.onclick = handleModalButtonClick.bind(null, event);
 
                     },
 
-                    // Fill the form with event data when a date range is selected
+                    // date range is selected
                     select: function(info) {
                         // Convert start and end dates to Date objects
                         const eventStartDate = new Date(info.startStr);
@@ -223,55 +156,48 @@
 
                 calendar.render();
 
-                // Event-Listener für den Export-Button im Modal
+                // Event-Listener für den Export-Button im Modal multipleEvents
                 const exportButton = document.getElementById('btnExport');
                 exportButton.addEventListener('click', function() {
                     // Rufe die Events aus dem Kalender ab
                     const events = calendar.getEvents();
 
                     if (btnAllEvents.checked) {
-                        // Exportiere alle Events
                         exportCalendarEvents(events, 'all-events.ics');
                     } else if (btnPersonEvents.checked) {
-                        // Exportiere nur Events einer bestimmten Person
                         const personName = document.getElementById('personNameInput').value.trim();
                         if (personName) {
-                            const personEvents = events.filter(event => {
-                                const [eventPersonName] = event.title.split(' - ');
-                                return eventPersonName.trim().toLowerCase() === personName.toLowerCase();
-                            });
-
-                            if (personEvents.length > 0) {
-                                exportCalendarEvents(personEvents, `${personName}-events.ics`);
-                            } else {
-                                alert(`Keine Events für "${personName}" gefunden.`);
-                            }
+                            exportFilteredEvents(
+                                events,
+                                event => {
+                                    const [eventPersonName] = event.title.split(' - ');
+                                    return eventPersonName.trim().toLowerCase() === personName.toLowerCase();
+                                },
+                                `${personName}-events.ics`,
+                                exportCalendarEvents
+                            );
                         } else {
                             alert('Bitte geben Sie einen Namen ein.');
-                            return;
                         }
                     } else if (btnTypeOfEvents.checked) {
-                        // Exportiere nur Events eines bestimmten Typs
                         const eventType = document.getElementById('eventTypeInput').value.trim();
                         if (eventType) {
-                            const typeEvents = events.filter(event => {
-                                const [, eventTypeName] = event.title.split(' - ');
-                                return eventTypeName && eventTypeName.trim().toLowerCase() === eventType.toLowerCase();
-                            });
-            
-                            if (typeEvents.length > 0) {
-                                exportCalendarEvents(typeEvents, `${eventType}-events.ics`);
-                            } else {
-                                alert(`Keine Events des Typs "${eventType}" gefunden.`);
-                            }
+                            exportFilteredEvents(
+                                events,
+                                event => {
+                                    const [, eventTypeName] = event.title.split(' - ');
+                                    return eventTypeName && eventTypeName.trim().toLowerCase() === eventType.toLowerCase();
+                                },
+                                `${eventType}-events.ics`,
+                                exportCalendarEvents
+                            );
                         } else {
                             alert('Bitte geben Sie einen Event-Typ ein.');
-                            return;
                         }
                     }
 
                     // Modal nach dem Export schließen
-                    const exportModal = bootstrap.Modal.getInstance(document.getElementById('exportEvents'));
+                    const exportModal = bootstrap.Modal.getInstance(document.getElementById('multipleEvents'));
                     exportModal.hide();
                 });
 
@@ -327,16 +253,9 @@
                     event.preventDefault(); // Prevent default form submission
 
                     // Get form data
-                    const formData = new FormData(form);
-                    const data = {};
-                    formData.forEach((value, key) => {
-                        data[key] = value;
-                    });
-                    console.log('Get form data:', data);
-
-                    // Überprüfe die Formulardaten auf Vollständigkeit
-                    if (!data.name || !data.type || !data.start || !data.end) {
-                        console.error('Fehler: Fehlende Formulardaten', data);
+                    const data = getFormData(form);
+                    if (!data) {
+                        alert('Bitte füllen Sie alle erforderlichen Felder aus.');
                         return;
                     }
 
@@ -354,12 +273,8 @@
                     }
                 });
 
-                // Event listener to synchronize dropdown selection with datalist input field
-                document.getElementById('nameDropdown').addEventListener('change', function() {
-                    const selectedValue = this.value;
-                    document.getElementById('name').value = selectedValue; // Update datalist input field
-                });
-
+                // synchronize dropdown selection with datalist input field
+                eventListenerDropwodn('nameDropdown','datalistName');
             });
 
         </script>
@@ -399,8 +314,8 @@
             </nav>
             <!-- End NavBar -->
         
-            <!-- Begin Modal exportEvents -->
-            <div class="modal fade" id="exportEvents" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <!-- Begin Modal multipleEvents -->
+            <div class="modal fade" id="multipleEvents" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -441,10 +356,10 @@
                     </div>
                 </div>
             </div>
-            <!-- End Modal -->
+            <!-- End Modal multipleEvents -->
 
-            <!-- Begin Modal updateExportEvents -->
-            <div class="modal fade" id="updateExportEvents" tabindex="-1" aria-labelledby="updateExportEventsLabel" aria-hidden="true">
+            <!-- Begin Modal singleEvent -->
+            <div class="modal fade" id="singleEvent" tabindex="-1" aria-labelledby="updateExportEventsLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -459,8 +374,10 @@
                                 <input type="radio" class="btn-check" name="btnradio" id="btnExportEvent" autocomplete="off" checked>
                                 <label class="btn btn-outline-dark" for="btnExportEvent" data-bs-toggle="tooltip" title="Exportiert den Event als ICS-Datei">Export</label>
 
+                                <!-- 
                                 <input type="radio" class="btn-check" name="btnradio" id="btnUpdateEvent" autocomplete="off">
                                 <label class="btn btn-outline-dark" for="btnUpdateEvent" data-bs-toggle="tooltip" title="Event ändern">Update</label>
+                                -->
 
                                 <input type="radio" class="btn-check" name="btnradio" id="btnRemoveEvent" autocomplete="off">
                                 <label class="btn btn-outline-dark" for="btnRemoveEvent" data-bs-toggle="tooltip" title="Event löschen">Remove</label>
@@ -474,7 +391,7 @@
                     </div>
                 </div>
             </div>
-            <!-- End Modal -->
+            <!-- End Modal singleEvent -->
 
             <div Class="Container-fluid">
 
@@ -492,7 +409,7 @@
 
                             <div class="input-group mb-3">
                                 <span class="input-group-text" id="basic-addon1">Name</span>
-                                <input class="form-control" list="datalistOptions" id="name" name="name" placeholder="Tippen oder auswählen...">
+                                <input class="form-control" list="datalistOptions" id="datalistName" name="name" placeholder="Tippen oder auswählen...">
                                 <datalist id="datalistOptions">
                                     <!--option value=Werte aus meinem Array /-->
                                 </datalist>

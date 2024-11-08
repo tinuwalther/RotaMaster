@@ -1,4 +1,50 @@
 /**
+ * CalendarConfig
+ */
+const calendarConfig = {
+    timeZone: 'local',
+    locale: 'de-CH',
+    initialView: 'multiMonthYear',
+    multiMonthMinWidth: 350,
+    multiMonthMaxColumns: 2,
+    headerToolbar: {
+        left: 'prevYear,prev,today,next,nextYear',
+        center: 'title',
+        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs'
+    },
+    buttonText: {
+        today: 'Heute',
+        year: 'Jahr',
+        month: 'Monat',
+        list: 'Liste'
+    },
+    weekNumbers: false,
+    dayMaxEvents: true,
+    showNonCurrentDates: false,
+    fixedWeekCount: false,
+    weekNumberCalculation: 'ISO',
+    selectable: true,
+    editable: true,
+    navLinks: true,
+    customButtons: {
+        exportToIcs: {
+            text: 'Export Events',
+            click: function() {
+                // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
+                const exportModal = new bootstrap.Modal(document.getElementById('multipleEvents'), {
+                    keyboard: true
+                });
+                document.getElementById('btnAllEvents').checked = true;
+                document.getElementById('personNameInput').value = '';
+                document.getElementById('eventTypeInput').value = '';
+                exportModal.show();
+            }
+        }
+    }
+};
+
+
+/**
 * Sends the next year as plain text to the provided API URL and logs the response.
 * 
 * This asynchronous function calculates the next year dynamically,
@@ -636,7 +682,7 @@ function formatDateToICS(date) {
 }
 
 /**
- * New functions for SQLite
+ * functions for SQLite
  */
 function getEventColors(type) {
     const colorMap = [
@@ -691,6 +737,20 @@ function updateDBData(query, dbFile, elementId){
     console.log('Not implemented yet:', query)
 }
 
+/**
+ * Deletes a database record associated with a given event ID using a DELETE request.
+ * 
+ * This asynchronous function sends a DELETE request to the PowerShell API endpoint to delete
+ * a specific event from the database. Upon successful deletion, the page is reloaded to reflect the changes.
+ * If an error occurs during the process, an error message is logged to the console, and an alert is shown to the user.
+ * 
+ * @async
+ * @param {string} eventId - The ID of the event to delete from the database.
+ * @returns {Promise<void>} - No return value, but logs messages to the console and displays alerts based on the outcome.
+ * 
+ * @example
+ * await deleteDBData('12345'); // Deletes the event with ID '12345' and reloads the page if successful.
+ */
 async function deleteDBData(eventId){
     try {
         // Sende DELETE-Anfrage an die PowerShell API
@@ -715,4 +775,94 @@ async function deleteDBData(eventId){
         console.error('Error occurred while deleting event:', error);
         alert('Ein Fehler ist beim Löschen des Events aufgetreten');
     }
+}
+
+/**
+ * Outsourced from index.html
+ * Event listener to synchronize dropdown selection with datalist input field
+**/
+function eventListenerDropwodn(soureElement, targetElement){
+    document.getElementById(soureElement).addEventListener('change', function() {
+        const selectedValue = this.value;
+        document.getElementById(targetElement).value = selectedValue; // Update datalist input field
+    });
+}
+
+/**
+ * Exportiert gefilterte Events als ICS-Datei.
+ *
+ * @param {Array} events - Die zu filternden Events.
+ * @param {Function} filterFn - Eine Callback-Funktion, um Events zu filtern.
+ * @param {string} filename - Der Dateiname der ICS-Datei.
+ * @param {Function} exportFn - Die Funktion zum Exportieren der Events.
+ */
+function exportFilteredEvents(events, filterFn, filename, exportFn) {
+    const filteredEvents = events.filter(filterFn);
+    if (filteredEvents.length > 0) {
+        exportFn(filteredEvents, filename);
+    } else {
+        alert('Keine passenden Events gefunden.');
+    }
+}
+
+/**
+ * Setzt die Event-Daten in das Modal.
+ *
+ * @param {Object} event - Das Event-Objekt.
+ */
+function setModalEventData(event) {
+
+    const eventStartDate = formatDateToShortISOFormat(event.start);
+    const eventEndDate = formatDateToShortISOFormat(new Date(event.end.setDate(event.end.getDate() - 1))); // remove one day from the end-date
+
+    document.getElementById('id').textContent = `id: ${event.id}`;
+    document.getElementById('title').textContent = `title: ${event.title}`;
+    document.getElementById('date').textContent = `start: ${eventStartDate} end: ${eventEndDate}`;
+    
+    /*
+    // Falls es erweiterte Eigenschaften gibt, hier setzen
+    const otherElement = document.getElementById('other');
+    otherElement.textContent = '';
+    for (const [key, value] of Object.entries(event.extendedProps)) {
+        otherElement.textContent += `${key}: ${value}\n`;
+    }
+    */
+}
+
+/**
+ * Verarbeitet den Klick auf die Schaltflächen im Modal.
+ *
+ * @param {Object} event - Das Event-Objekt.
+ */
+function handleModalButtonClick(event) {
+    if (btnExportEvent.checked) {
+        exportCalendarEvents(event, `${event.title}.ics`);
+    }
+    if (btnRemoveEvent.checked) {
+        if(event.id){
+            if (confirm(`Event ${event.id}, ${event.title} wirklich löschen?`)) {
+                deleteDBData(event.id);
+            }
+        }else{
+            alert (`${event.title} kann nicht gelöscht werden!`)
+        }
+    }
+}
+
+// Funktion zum Extrahieren und Validieren der Formulardaten
+function getFormData(form) {
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+        data[key] = value;
+    });
+
+    // Überprüfe die Formulardaten auf Vollständigkeit
+    if (!data.name || !data.type || !data.start || !data.end) {
+        console.error('Fehler: Fehlende Formulardaten', data);
+        return null;
+    }
+
+    console.log('Formulardaten extrahiert:', data);
+    return data;
 }
