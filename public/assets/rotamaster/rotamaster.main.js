@@ -2,6 +2,7 @@
  * CalendarConfig
  */
 const calendarConfig = {
+    appVersion: "4.0.0",
     timeZone: 'local',
     locale: 'de-CH',
     initialView: 'multiMonthYear',
@@ -25,6 +26,7 @@ const calendarConfig = {
     weekNumberCalculation: 'ISO',
     selectable: true,
     editable: true,
+    displayEventTime: false,
     navLinks: true,
     customButtons: {
         exportToIcs: {
@@ -339,7 +341,7 @@ function fillDropdownOptions(selectId, values) {
 */
 async function loadApiData(url) {
     var calendarData = []; // Initialize an empty array to store calendar event data
-    // // console.log('Starting to fetch calendar data from:', url); 
+    // console.log('Starting to fetch calendar data from:', url); 
 
     try {
         const response = await fetch(url); // Send a GET request to the provided URL
@@ -381,7 +383,7 @@ async function loadApiData(url) {
 * renderTable(data); // Populates the HTML table with rows for Alice and Bob.
 */
 function renderTable(data) {
-    // // console.log('renderTable:', data);
+    // console.log('renderTable:', data);
     const tableBody = document.querySelector('#pikettTable tbody');
     tableBody.innerHTML = ''; // Clear the table to ensure no old data is present
 
@@ -433,34 +435,39 @@ function renderTable(data) {
  */
 async function getEventSummary(calendarData, selectedYear) {
     const result = {};
-
     calendarData.forEach(event => {
-        const [personName, eventType] = event.title.split(' - ');
-        if (!personName || !eventType) return;
 
-        let eventStartDate = new Date(event.start + 'T00:00:00');
-        let eventEndDate = new Date(event.end + 'T00:00:00');
+        if(event.type !== 'Feiertag'){
+            // console.log('Calculate summary', event);
+            const [personName, eventType] = event.title.split(' - ');
+            if (!personName || !eventType) return;
 
-        // Process only events that fall within the selected year
-        if (eventStartDate.getFullYear() !== selectedYear && eventEndDate.getFullYear() !== selectedYear) return;
+            // console.log(event.start,event.end);
+            let eventStartDate = new Date(event.start);
+            let eventEndDate = new Date(event.end);
 
-        // Initialize the person in the result object if not already present
-        if (!result[personName]) {
-            result[personName] = { pikett: 0, pikettIntervals: [], pikettPier: 0, pikettPierIntervals: [], ferien: 0, ferienIntervals: [] };
+            // Process only events that fall within the selected year
+            if (eventStartDate.getFullYear() !== selectedYear && eventEndDate.getFullYear() !== selectedYear) return;
+
+            // Initialize the person in the result object if not already present
+            if (!result[personName]) {
+                result[personName] = { pikett: 0, pikettIntervals: [], pikettPier: 0, pikettPierIntervals: [], ferien: 0, ferienIntervals: [] };
+            }
+
+            // Count the events and store the intervals
+            switch (eventType.trim()) {
+                case 'Pikett':
+                    result[personName].pikettIntervals.push({ start: eventStartDate, end: eventEndDate });
+                    break;
+                case 'Pikett-Pier':
+                    result[personName].pikettPierIntervals.push({ start: eventStartDate, end: eventEndDate });
+                    break;
+                case 'Ferien':
+                    result[personName].ferienIntervals.push({ start: eventStartDate, end: eventEndDate });
+                    break;
+            }
         }
 
-        // Count the events and store the intervals
-        switch (eventType.trim()) {
-            case 'Pikett':
-                result[personName].pikettIntervals.push({ start: eventStartDate, end: eventEndDate });
-                break;
-            case 'Pikett-Pier':
-                result[personName].pikettPierIntervals.push({ start: eventStartDate, end: eventEndDate });
-                break;
-            case 'Ferien':
-                result[personName].ferienIntervals.push({ start: eventStartDate, end: eventEndDate });
-                break;
-        }
     });
 
     // Calculate the number of vacation days after processing all events
@@ -519,8 +526,8 @@ function calculateWorkdays(startDate, endDate) {
     let currentDate = new Date(startDate); // Create a copy of the start date
 
     // Ensure times are set correctly to midnight
-    currentDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
+    currentDate.setHours(1, 0, 0, 0);
+    endDate.setHours(23, 0, 0, 0);
 
     // Iterate over each day in the period, including the end date
     while (currentDate.getTime() < endDate.getTime()) {
@@ -567,8 +574,8 @@ function calculatePikettkdays(startDate, endDate) {
     let currentDate = new Date(startDate); // Create a copy of the start date
 
     // Ensure times are set correctly to midnight
-    currentDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
+    currentDate.setHours(10, 0, 0, 0);
+    endDate.setHours(10, 0, 0, 0);
 
     // Iterate over each day in the period, including the end date
     while (currentDate.getTime() < endDate.getTime()) {
@@ -813,18 +820,30 @@ function exportFilteredEvents(events, filterFn, filename, exportFn) {
 function setModalEventData(event) {
 
     const eventStartDate = formatDateToShortISOFormat(event.start);
-    const eventEndDate = formatDateToShortISOFormat(new Date(event.end.setDate(event.end.getDate() - 1))); // remove one day from the end-date
+    //const eventEndDate = formatDateToShortISOFormat(new Date(event.end.setDate(event.end.getDate() - 1))); // remove one day from the end-date
+    const eventEndDate = formatDateToShortISOFormat(event.end); // remove one day from the end-date
+
+    var days = 0;
+    for (const [key, value] of Object.entries(event.extendedProps)) {
+        if(value === 'Pikett'){
+            days = calculatePikettkdays(event.start,event.end)
+        }else{
+            days = calculateWorkdays(event.start,event.end)
+        }
+    };
 
     document.getElementById('id').textContent = `id: ${event.id}`;
-    document.getElementById('title').textContent = `title: ${event.title}`;
+    document.getElementById('title').textContent = `title: ${event.title}, ${days} Tage`;
     document.getElementById('date').textContent = `start: ${eventStartDate} end: ${eventEndDate}`;
     
     // Falls es erweiterte Eigenschaften gibt, hier setzen
+    /*     
     const otherElement = document.getElementById('other');
     otherElement.textContent = '';
     for (const [key, value] of Object.entries(event.extendedProps)) {
         otherElement.textContent += `${key}: ${value}\n`;
     }
+    */
 }
 
 /**

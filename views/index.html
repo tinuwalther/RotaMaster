@@ -52,25 +52,19 @@
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
                 // Get calendarEvents from SQLite and concatenate holidays and events to one Array
-                const calendarEvents = [];
                 const events = await readDBData('/api/event/read');
                 const holidays = await loadApiData('/api/event/get');
+                const calendarEvents = [];
                 if(holidays){
                     calendarEvents.push(...holidays);
                 };
                 if (events && events.length > 0) {
+                    // console.log(events);
                     calendarEvents.push(...events);
-                } else {
+                } else if (events) {
                     calendarEvents.push(events);
                 };
-                /*
-                if(events){
-                    console.log(typeof(events));
-                    console.log(events);
-                    calendarEvents.push(...events);
-                    // Uncaught (in promise) TypeError: events is not iterable
-                };
-                */
+                
                 // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
                     // Fetch person data
@@ -125,6 +119,7 @@
 
                         // Call the function and render the table after the page has loaded
                         getEventSummary(calendarEvents, displayedYear).then(summary => {
+                            // onsole.log('Calculate summary');
                             renderTable(summary); 
                         });
 
@@ -168,6 +163,12 @@
                 });
 
                 calendar.render();
+                
+                // Füge die App-Version zur Navbar-Brand ein
+                const navbarBrandElement = document.getElementById('navbarBrand');
+                if (navbarBrandElement) {
+                    navbarBrandElement.textContent = `»RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
+                };
 
                 // Event-Listener für den Export-Button im Modal multipleEvents
                 const exportButton = document.getElementById('btnExport');
@@ -310,7 +311,7 @@
             <!-- Begin NavBar -->
             <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
                 <div Class="container-fluid"  >
-                    <a Class="navbar-brand" href="/" Target="_self"  >»RotaMaster</a>
+                    <a Class="navbar-brand" id="navbarBrand" href="/" Target="_self"  >»RotaMaster</a>
                     <button Class="navbar-toggler" type="button" title="Navbar" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
                         <span Class="navbar-toggler-icon"  ></span>
                     </button>

@@ -466,7 +466,7 @@ function Initialize-ApiEndpoints {
                         $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
                         $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
                     }
-                    $created = Get-Date -f 'yyyy-MM-dd'
+                    $created = Get-Date -f 'yyyy-MM-dd HH:mm'
     
                     $sql = "INSERT INTO events (person, type, start, end, created) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($created)')"
                     $connection = New-SQLiteConnection -DataSource $dbPath
