@@ -55,9 +55,22 @@
                 const calendarEvents = [];
                 const events = await readDBData('/api/event/read');
                 const holidays = await loadApiData('/api/event/get');
-                calendarEvents.push(...holidays);
-                calendarEvents.push(...events);
-
+                if(holidays){
+                    calendarEvents.push(...holidays);
+                };
+                if (events && events.length > 0) {
+                    calendarEvents.push(...events);
+                } else {
+                    calendarEvents.push(events);
+                };
+                /*
+                if(events){
+                    console.log(typeof(events));
+                    console.log(events);
+                    calendarEvents.push(...events);
+                    // Uncaught (in promise) TypeError: events is not iterable
+                };
+                */
                 // Wait for the result of the getPerson function and fill the datalist element
                 setTimeout(function() {
                     // Fetch person data
@@ -370,6 +383,7 @@
                             <p id="id"></p>
                             <p id="title"></p>
                             <p id="date"></p>
+                            <p id="other"></p>
                             <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
                                 <input type="radio" class="btn-check" name="btnradio" id="btnExportEvent" autocomplete="off" checked>
                                 <label class="btn btn-outline-dark" for="btnExportEvent" data-bs-toggle="tooltip" title="Exportiert den Event als ICS-Datei">Export</label>

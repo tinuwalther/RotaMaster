@@ -54,7 +54,7 @@ Start-PodeServer -Browse -Threads 2 {
         param($username, $password)
     
         # here you'd check a real user storage, this is just for example
-        if ($password -eq '') {
+        if ($password -eq 'VerySecure!') {
             return @{
                 User = @{
                     ID   = New-Guid

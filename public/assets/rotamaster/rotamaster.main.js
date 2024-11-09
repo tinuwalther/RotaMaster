@@ -819,14 +819,12 @@ function setModalEventData(event) {
     document.getElementById('title').textContent = `title: ${event.title}`;
     document.getElementById('date').textContent = `start: ${eventStartDate} end: ${eventEndDate}`;
     
-    /*
     // Falls es erweiterte Eigenschaften gibt, hier setzen
     const otherElement = document.getElementById('other');
     otherElement.textContent = '';
     for (const [key, value] of Object.entries(event.extendedProps)) {
         otherElement.textContent += `${key}: ${value}\n`;
     }
-    */
 }
 
 /**

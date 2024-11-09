@@ -459,8 +459,13 @@ function Initialize-ApiEndpoints {
                 try{
                     $person  = $WebEvent.Data['name']
                     $type    = $WebEvent.Data['type']
-                    $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd')"
-                    $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd')"
+                    if($type -match '^Pikett$'){
+                        $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 10:00"
+                        $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 10:00"
+                    }else{
+                        $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
+                        $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
+                    }
                     $created = Get-Date -f 'yyyy-MM-dd'
     
                     $sql = "INSERT INTO events (person, type, start, end, created) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($created)')"
@@ -494,8 +499,9 @@ function Initialize-ApiEndpoints {
                         id = $item.id
                         title = $title
                         type  = $item.type
-                        start = Get-Date $item.start -f 'yyyy-MM-dd'
-                        end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
+                        start = Get-Date $item.start -f 'yyyy-MM-dd HH:mm'
+                        # end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
+                        end   = Get-Date $item.end -f 'yyyy-MM-dd HH:MM'
                         color = Get-EventColor -type $item.type
                     } 
                 }
