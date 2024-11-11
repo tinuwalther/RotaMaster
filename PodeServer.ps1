@@ -34,8 +34,8 @@ if($CurrentOS -eq [OSType]::Windows){
 }else{
     $Address = '*'
 }
-$Port = 8080
-$Protocol = 'http'
+$Port = 8443
+$Protocol = 'https'
 
 # We'll use 2 threads to handle API requests
 Start-PodeServer -Browse -Threads 2 {
@@ -97,7 +97,7 @@ Start-PodeServer -Browse -Threads 2 {
     New-PodeLoggingMethod -File -Name 'error' -MaxDays 7 | Enable-PodeErrorLogging
 
     # Add listener to Port 8080 for Protocol http
-    Add-PodeEndpoint -Address $Address -Port $Port -Protocol $Protocol
+    Add-PodeEndpoint -Address $Address -Port $Port -Protocol $Protocol -SelfSigned
 
     # Set the engine to use and render .pode files
     Set-PodeViewEngine -Type Pode
