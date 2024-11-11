@@ -364,21 +364,21 @@ async function loadApiData(url) {
 * with the data. It finds the table body by its selector, clears any existing rows, 
 * and iterates over the provided data to create and append new rows. Each person in the data 
 * object will have their own row in the table with details such as name, Pikett count,
-* Pikett-Pier count, and vacation days.
+* Pikett-Peer count, and vacation days.
 * 
 * Main features:
 * - Clears any existing rows in the table body before adding new data.
 * - Iterates over the keys in the data object to populate each row of the table.
-* - Adds columns for each data field: person name, Pikett count, Pikett-Pier count, and vacation days.
+* - Adds columns for each data field: person name, Pikett count, Pikett-Peer count, and vacation days.
 * 
 * @param {Object} data - An object containing event data to populate the table.
-* Each key represents a person's name, and each value contains details about Pikett, Pikett-Pier, and vacation counts.
+* Each key represents a person's name, and each value contains details about Pikett, Pikett-Peer, and vacation counts.
 * @returns {void}
 * 
 * @example
 * const data = {
-*   'Alice': { pikett: 3, pikettPier: 2, ferien: 5 },
-*   'Bob': { pikett: 1, pikettPier: 3, ferien: 4 }
+*   'Alice': { pikett: 3, PikettPeer: 2, ferien: 5 },
+*   'Bob': { pikett: 1, PikettPeer: 3, ferien: 4 }
 * };
 * renderTable(data); // Populates the HTML table with rows for Alice and Bob.
 */
@@ -399,9 +399,9 @@ function renderTable(data) {
         pikettCell.textContent = data[person].pikett; // Set the Pikett count
         row.appendChild(pikettCell);
 
-        const pikettPierCell = document.createElement('td'); // Cell for the Pikett-Pier count
-        pikettPierCell.textContent = data[person].pikettPier; // Set the Pikett-Pier count
-        row.appendChild(pikettPierCell);
+        const PikettPeerCell = document.createElement('td'); // Cell for the Pikett-Peer count
+        PikettPeerCell.textContent = data[person].PikettPeer; // Set the Pikett-Peer count
+        row.appendChild(PikettPeerCell);
 
         const ferienCell = document.createElement('td'); // Cell for the vacation count
         ferienCell.textContent = data[person].ferien; // Set the vacation count
@@ -416,19 +416,19 @@ function renderTable(data) {
  * 
  * This function takes an array of calendar event data and a selected year, and
  * returns a summary of the events categorized by person. It processes different
- * types of events, including Pikett, Pikett-Pier, and vacations, and counts the
+ * types of events, including Pikett, Pikett-Peer, and vacations, and counts the
  * respective days for each type of event for every person.
  * 
  * Main features:
  * - Processes events for a specific year and ignores those that do not fall within the selected year.
- * - Summarizes event details (Pikett, Pikett-Pier, and vacation intervals) for each person.
- * - Calculates total vacation days, Pikett days, and Pikett-Pier days for every person.
+ * - Summarizes event details (Pikett, Pikett-Peer, and vacation intervals) for each person.
+ * - Calculates total vacation days, Pikett days, and Pikett-Peer days for every person.
  * 
  * @async
  * @param {Array} calendarData - The array of calendar events. Each event must have a title, start, and end property.
  * @param {number} selectedYear - The year for which to calculate the summary.
  * @returns {Object} An object containing the summary of events per person.
- * Each key represents a person's name, and each value contains counts for Pikett, Pikett-Pier, and vacation.
+ * Each key represents a person's name, and each value contains counts for Pikett, Pikett-Peer, and vacation.
  * 
  * @example
  * const summary = await getEventSummary(calendarData, 2024); // Returns the summary of events for 2024
@@ -451,7 +451,7 @@ async function getEventSummary(calendarData, selectedYear) {
 
             // Initialize the person in the result object if not already present
             if (!result[personName]) {
-                result[personName] = { pikett: 0, pikettIntervals: [], pikettPier: 0, pikettPierIntervals: [], ferien: 0, ferienIntervals: [] };
+                result[personName] = { pikett: 0, pikettIntervals: [], PikettPeer: 0, PikettPeerIntervals: [], ferien: 0, ferienIntervals: [] };
             }
 
             // Count the events and store the intervals
@@ -459,8 +459,8 @@ async function getEventSummary(calendarData, selectedYear) {
                 case 'Pikett':
                     result[personName].pikettIntervals.push({ start: eventStartDate, end: eventEndDate });
                     break;
-                case 'Pikett-Pier':
-                    result[personName].pikettPierIntervals.push({ start: eventStartDate, end: eventEndDate });
+                case 'Pikett-Peer':
+                    result[personName].PikettPeerIntervals.push({ start: eventStartDate, end: eventEndDate });
                     break;
                 case 'Ferien':
                     result[personName].ferienIntervals.push({ start: eventStartDate, end: eventEndDate });
@@ -474,7 +474,7 @@ async function getEventSummary(calendarData, selectedYear) {
     for (const person in result) {
         let totalVacationDays = 0;
         let totalPikettDays = 0;
-        let totalPikettPierDays = 0;
+        let totalPikettPeerDays = 0;
 
         result[person].ferienIntervals.forEach(interval => {
             totalVacationDays += calculateWorkdays(interval.start, interval.end);
@@ -484,8 +484,8 @@ async function getEventSummary(calendarData, selectedYear) {
             totalPikettDays += calculatePikettkdays(interval.start, interval.end);
         });
 
-        result[person].pikettPierIntervals.forEach(interval => {
-            totalPikettPierDays += calculateWorkdays(interval.start, interval.end);
+        result[person].PikettPeerIntervals.forEach(interval => {
+            totalPikettPeerDays += calculateWorkdays(interval.start, interval.end);
         });
 
         result[person].ferien = totalVacationDays;
@@ -494,8 +494,8 @@ async function getEventSummary(calendarData, selectedYear) {
         result[person].pikett = totalPikettDays;
         // console.log(`Person: ${person}, Pikett Intervals: ${result[person].pikettIntervals}, Total Pikett Days: ${totalPikettDays}`);
 
-        result[person].pikettPier = totalPikettPierDays;
-        // console.log(`Person: ${person}, Pikett-Pier Intervals: ${result[person].pikettIntervals}, Total Pikett-Pier Days: ${totalPikettPierDays}`);
+        result[person].PikettPeer = totalPikettPeerDays;
+        // console.log(`Person: ${person}, Pikett-Peer Intervals: ${result[person].pikettIntervals}, Total Pikett-Peer Days: ${totalPikettPeerDays}`);
     }
 
     return result;
@@ -696,7 +696,7 @@ function formatDateToICS(date) {
 function getEventColors(type) {
     const colorMap = [
         { regex: /^Pikett$/, color: 'red' },
-        { regex: /^Pikett-Pier$/, color: 'orange' },
+        { regex: /^Pikett-Peer$/, color: 'orange' },
         { regex: /^(Kurs|Aus\/Weiterbildung)$/, color: '#A37563' },
         { regex: /^(Militär|ZV\/EO|Zivil)$/, color: '#006400' },
         { regex: /^Ferien$/, color: '#05c27c' },

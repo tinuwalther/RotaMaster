@@ -252,7 +252,7 @@ function Get-EventColor{
         $colorMap = @(
             @{ Regex = '^Patch wave \d{1}$'; Color = '#d8d800' }
             @{ Regex = '^Pikett$'; Color = 'red' }
-            @{ Regex = '^Pikett-Pier$'; Color = 'orange' }
+            @{ Regex = '^Pikett-Peer$'; Color = 'orange' }
             @{ Regex = '^(Kurs|Aus\/Weiterbildung)$'; Color = '#A37563' }
             @{ Regex = '^(Militär|ZV\/EO|Zivil)$'; Color = '#006400' }
             @{ Regex = '^Ferien$'; Color = '#05c27c' }
