@@ -835,8 +835,8 @@ function setModalEventData(event) {
     };
 
     document.getElementById('id').textContent = `id: ${event.id}`;
-    document.getElementById('title').textContent = `title: ${event.title}, ${days} Tage`;
-    document.getElementById('date').textContent = `start: ${eventStartDate} end: ${eventEndDate}`;
+    document.getElementById('title').textContent = `${event.title}, ${days} Tage`;
+    document.getElementById('date').textContent = `von: ${eventStartDate} bis: ${eventEndDate}`;
     
     // Falls es erweiterte Eigenschaften gibt, hier setzen
     /*     
