@@ -12,7 +12,7 @@ param(
 $ApiPath = $($PSScriptRoot).Replace('bin','api')
 
 # Define the created date as today
-$createdDate = (Get-Date).ToString('yyyy-MM-dd')
+$createdDate = (Get-Date).ToString('yyyy-MM-dd HH:mm')
 
 # Create an empty list to hold the patching data
 $patchingData = @()
@@ -23,49 +23,55 @@ $patchingId = 1
 # Loop through each month of the specified year
 for ($month = 1; $month -le 12; $month++) {
     # Get the first day of the month
-    $firstDayOfMonth = Get-Date -Year $year -Month $month -Day 1
+    $firstDayOfMonth = Get-Date -Year $Year -Month $month -Day 1
     
-    # Find the first Wednesday of the month
+    # Find the first Monday of the month
     $dayOfWeek = [int]$firstDayOfMonth.DayOfWeek
-    if ($dayOfWeek -le 2) {
-        $firstWednesday = $firstDayOfMonth.AddDays(2 - $dayOfWeek)
+    if ($dayOfWeek -eq 1) {
+        $firstMonday = $firstDayOfMonth
+    } elseif ($dayOfWeek -eq 0) {
+        $firstMonday = $firstDayOfMonth.AddDays(1)
     } else {
-        $firstWednesday = $firstDayOfMonth.AddDays(9 - $dayOfWeek)
+        $firstMonday = $firstDayOfMonth.AddDays(8 - $dayOfWeek)
     }
-    
-    # Calculate the 1st and 2nd Wednesdays of the month
-    $firstWednesday = $firstWednesday
-    $secondWednesday = $firstWednesday.AddDays(7)
 
-    # Generate patching dates for each Wednesday
-    foreach ($patchingDate in @($firstWednesday, $secondWednesday)) {
+    # Check if the first Monday is part of a complete week (Monday to Friday)
+    if (($firstMonday.AddDays(4)).Month -eq $month) {
+        $firstFullWeekMonday = $firstMonday
+    } else {
+        $firstFullWeekMonday = $firstMonday.AddDays(7)
+    }
+
+    # Calculate the start of the first and second full weeks
+    $secondFullWeekMonday = $firstFullWeekMonday.AddDays(7)
+
+    # Generate patching dates for each week
+    foreach ($monday in @($firstFullWeekMonday, $secondFullWeekMonday)) {
         # Determine if it's Patch wave 1 or 2
-        $week = if ($patchingDate.Day -le 7) { "1" } else { "2" }
+        $week = if ($monday -eq $firstFullWeekMonday) { "1" } else { "2" }
         $type = "Patch wave $week"
 
-        # Generate dates for Monday to Friday of the patching week
-        $monday = $patchingDate.AddDays(-1 * ($patchingDate.DayOfWeek - [DayOfWeek]::Monday))
-        for ($i = 0; $i -lt 5; $i++) {
-            $currentDay = $monday.AddDays($i)
-            
-            # Add the record to the patching data list
-            $patchingData += [PSCustomObject]@{
-                id      = $patchingId
-                title   = $Title
-                type    = $type
-                start   = $currentDay.ToString('yyyy-MM-dd') + " 01:00"
-                end     = $currentDay.ToString('yyyy-MM-dd') + " 23:00"
-                created = $createdDate
-            }
-
-            # Increment the patching ID
-            $patchingId++
+        # Set the start and end time for the week (Monday 01:00 to Friday 23:00)
+        $startDateTime = "$($monday.ToString('yyyy-MM-dd'))T01:00"
+        $endDateTime = "$($monday.AddDays(4).ToString('yyyy-MM-dd'))T23:00"
+        
+        # Add the record to the patching data list
+        $patchingData += [PSCustomObject]@{
+            id      = $patchingId
+            title   = $Title
+            type    = $type
+            start   = $startDateTime
+            end     = $endDateTime
+            created = $createdDate
         }
+
+        # Increment the patching ID
+        $patchingId++
     }
 }
 
 # Define the output CSV file path
-$outputCsvPath = Join-Path -Path $ApiPath -ChildPath "patching$($year).csv"
+$outputCsvPath = Join-Path -Path $ApiPath -ChildPath "patching$($Year).csv"
 
 # Export the patching data to CSV
 $patchingData | Export-Csv -Path $outputCsvPath -NoTypeInformation -Delimiter ';'
