@@ -65,35 +65,30 @@
                     calendarEvents.push(events);
                 };
                 
-                // Wait for the result of the getPerson function and fill the datalist element
-                setTimeout(function() {
-                    // Fetch person data
-                    fetchData('api/events/person', 'person').then(namesArray => {
-                        if (namesArray.length) {
-                            fillDatalistOptions('datalistOptions', namesArray);
-                            // alternatively fillDropdownOptions('person', namesArray);
-                            fillDropdownOptions('nameDropdown', namesArray);
-                        } else {
-                            console.error('No names found.');
-                        }
-                    }).catch(error => {
-                        console.error('Error fetching names:', error);
-                    });
-                }, 200);
+                //Wait for the result of the getPerson function and fill the datalist element
+                const person = await readDBData('/api/person/read');
+                var personNames = new Array;
+                person.map((item) => {
+                    personNames.push(item.fullname);
+                });
+                if (personNames.length) {
+                    fillDatalistOptions('datalistOptions', personNames);
+                    fillDropdownOptions('nameDropdown', personNames);
+                } else {
+                    console.error('No person found.');
+                }
 
-                // Wait for the result of the getAbsence function and fill the dropdown element
-                setTimeout(function() {
-                    // Fetch absence data
-                    fetchData('api/events/absence', 'absence').then(typesArray => {
-                        if (typesArray.length) {
-                            fillDropdownOptions('absenceType', typesArray);
-                        } else {
-                            console.error('No absence types found.');
-                        }
-                    }).catch(error => {
-                        console.error('Error fetching absence types:', error);
-                    });
-                }, 200);
+                // Wait for the result of the API and fill the dropdownoptions
+                const absence = await readDBData('/api/absence/read');
+                var absenceNames = new Array;
+                absence.map((item) => {
+                    absenceNames.push(item.name);
+                });
+                if (absenceNames.length) {
+                    fillDropdownOptions('absenceType', absenceNames);
+                } else {
+                    console.error('No absence found.');
+                }
 
                 var calendarEl = document.getElementById('calendar');
 
