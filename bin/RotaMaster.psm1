@@ -451,6 +451,52 @@ function Initialize-ApiEndpoints {
         }
         #>
 
+        # Read data from SQLiteDB for absence
+        Add-PodeRoute -Method Get -Path 'api/absence/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+            try{
+                $sql = 'SELECT id,name FROM absence ORDER BY name ASC'
+                $connection = New-SQLiteConnection -DataSource $dbPath
+                $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+
+                $absences = foreach($item in $data){
+                    [PSCustomObject]@{
+                        id = $item.id
+                        name = $item.name
+                    } 
+                }
+                $Connection.Close()
+                Write-PodeJsonResponse -Value $($absences | ConvertTo-Json)
+            }catch{
+                $_.Exception.Message | Out-Default
+                Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+            }
+        }
+        
+        # Read data from SQLiteDB for person
+        Add-PodeRoute -Method Get -Path 'api/person/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+            try{
+                $sql = 'SELECT id,name,firstname FROM person ORDER BY firstname ASC'
+                $connection = New-SQLiteConnection -DataSource $dbPath
+                $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+
+                $absences = foreach($item in $data){
+                    [PSCustomObject]@{
+                        id = $item.id
+                        name = $item.name
+                        firstname = $item.firstname
+                        fullname = "$($item.firstname) $($item.name)"
+                    } 
+                }
+                $Connection.Close()
+                Write-PodeJsonResponse -Value $($absences | ConvertTo-Json)
+            }catch{
+                $_.Exception.Message | Out-Default
+                Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+            }
+        }
+        
         # Add new record into the SQLiteDB
         Add-PodeRoute -Method POST -Path '/api/event/insert' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
@@ -513,6 +559,7 @@ function Initialize-ApiEndpoints {
             }
         }
 
+        # Remove data from SQLiteDB for events
         Add-PodeRoute -Method Delete -Path '/api/event/delete/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
 
