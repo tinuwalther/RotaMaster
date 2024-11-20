@@ -2,7 +2,7 @@
  * CalendarConfig
  */
 const calendarConfig = {
-    appVersion: "4.0.0",
+    appVersion: "5.0.0",
     timeZone: 'local',
     locale: 'de-CH',
     initialView: 'multiMonthYear',
@@ -135,84 +135,6 @@ function calcDisplayedYear(info) {
 
     return displayedYear;
 };
-
-/**
-* Fetches person data from the provided API URL.
-* 
-* This asynchronous function makes an HTTP GET request to the provided URL using the Fetch API.
-* It processes the response and extracts the person data as a JSON object. If the request fails,
-* the function logs an error message to the console. The function always returns an array, even
-* if the request fails or there is an error.
-* 
-* Main features:
-* - Fetches person data from the provided API endpoint.
-* - Handles API errors and logs relevant messages to the console.
-* - Returns an array of person data.
-* 
-* @async
-* @param {string} url - The API endpoint from which to fetch person data.
-* @returns {Promise<Array>} person - An array of person data fetched from the API.
-* 
-* @example
-* const personData = await getPerson('/api/persons'); // Fetches person data from the API endpoint
-*/
-async function getPerson(url) {
-    var person = []; // Initialize an empty array to store person data
-    // console.log('Starting to fetch person data from:', url); 
-
-    try {
-        const response = await fetch(url); // Make the fetch request to the provided URL
-        if (response.ok) {
-            person = await response.json(); // Parse the response JSON if the request was successful
-        } else {
-            console.error('Error fetching person:', response.status); // Log error status if the request failed
-        }
-    } catch (error) {
-        console.error('Error:', error); // Log any errors that occurred during the request
-    }
-
-    return person; // Return the person data (an empty array if the fetch failed)
-}
-
-/**
-* Fetches data from the provided API URL.
-* 
-* This asynchronous function makes an HTTP GET request to the provided URL using the Fetch API.
-* It processes the response and extracts the data as a JSON object. If the request fails,
-* the function logs an error message to the console. The function always returns an array,
-* even if the request fails or there is an error.
-* 
-* Main features:
-* - Fetches generic data from the provided API endpoint.
-* - Handles API errors and logs relevant messages to the console.
-* - Returns an array of data.
-* 
-* @async
-* @param {string} url - The API endpoint from which to fetch data.
-* @param {string} [dataType='data'] - A label for the type of data being fetched (e.g., 'person' or 'absence').
-* @returns {Promise<Array>} - An array of data fetched from the API.
-* 
-* @example
-* const personData = await fetchData('/api/persons', 'person'); // Fetches person data from the API endpoint
-* const absenceData = await fetchData('/api/absence', 'absence'); // Fetches absence data from the API endpoint
-*/
-async function fetchData(url, dataType = 'data') {
-    let data = []; // Initialize an empty array to store the fetched data
-    // console.log(`Starting to fetch ${dataType} data from:`, url); 
-
-    try {
-        const response = await fetch(url); // Make the fetch request to the provided URL
-        if (response.ok) {
-            data = await response.json(); // Parse the response JSON if the request was successful
-        } else {
-            console.error(`Error fetching ${dataType}:`, response.status); // Log error status if the request failed
-        }
-    } catch (error) {
-        console.error(`Error fetching ${dataType}:`, error); // Log any errors that occurred during the request
-    }
-
-    return data; // Return the fetched data (an empty array if the fetch failed)
-}
 
 /**
 * Populates a datalist with options from an array of values.
@@ -588,47 +510,6 @@ function calculatePikettkdays(startDate, endDate) {
 
     // console.log('calculatePikettkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of days:', count);
     return count;
-}
-
-/**
- * Converts a date string between different formats.
- * 
- * This function takes a date string in either "dd.MM.yyyy" or "yyyy-MM-dd" format
- * and converts it to the other format. If the date string is in the format "dd.MM.yyyy",
- * it converts it to "yyyy-MM-dd". If the date string is in the format "yyyy-MM-dd",
- * it converts it to "dd.MM.yyyy".
- * 
- * Main features:
- * - Detects the input format by checking for either a period (.) or a dash (-).
- * - Converts between European "dd.MM.yyyy" and ISO "yyyy-MM-dd" formats.
- * - Returns the reformatted date string.
- * 
- * @param {string} dateString - The date string to convert. Expected formats: "dd.MM.yyyy" or "yyyy-MM-dd".
- * @returns {string} - The reformatted date string.
- * 
- * @example
- * const isoDate = convertToISOFormat('15.08.2024'); // Returns "2024-08-15"
- * const europeanDate = convertToISOFormat('2024-08-15'); // Returns "15.08.2024"
- */
-function convertToISOFormat(dateString) {
-    // If the date comes in the format "dd.MM.yyyy", reformat it to "yyyy-MM-dd"
-    if (dateString.includes('.')) {
-        // console.log('convertToISOFormat(.): ' + dateString);
-        const [day, month, year] = dateString.split('.');
-        // console.log('day: ' + day + ', month: ' + month + ', year: ' + year);
-        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-    }
-
-    // If the date comes in the format "yyyy-MM-dd", reformat it to "dd.MM.yyyy"
-    if (dateString.includes('-')) {
-        // console.log('convertToISOFormat(-): ' + dateString);
-        const [year, month, day] = dateString.split('-');
-        // console.log('day: ' + day + ', month: ' + month + ', year: ' + year);
-        return `${day.padStart(2, '0')}.${month.padStart(2, '0')}.${year}`;
-    }
-
-    // If the input format does not match expected patterns, return an empty string or handle appropriately
-    return ''; 
 }
 
 function formatDateToShortISOFormat(date) {
