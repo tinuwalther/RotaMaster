@@ -1,4 +1,4 @@
-# RotaMaster V3
+# RotaMaster V5
 
 Absence and duty scheduling program for teams based on Pode, and [FullCalendar](https://fullcalendar.io/), created with ChatGPT prompt for JavaScript.
 
@@ -90,11 +90,9 @@ This is the root-folder for the web service. Here must be the PodeServer.ps1 loc
 
 ### api
 
-This folder contains the files of the web service. For example, the files for the public holidays, the absence type or the persons.
+This folder contains the files of the web service. The file(s) for holidays or others must be a CSV file.
 
-The files for the absence and people must be JSON files, and the file containing the holidays must be a CSV file.
-
-The events have also been saved in a SQLite database called rotamaster.db in this folder.
+The events, persons, and absences have also been saved in a SQLite database called rotamaster.db in this folder.
 
 ### archiv
 
