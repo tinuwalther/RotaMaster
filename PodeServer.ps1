@@ -50,22 +50,31 @@ Start-PodeServer -Browse -Threads 2 {
     # New-PodeAuthScheme -Form | Add-PodeAuthWindowsAd -Name 'Login' -Groups @('XAAS-vCenter-Administrators-Compute-GS') -FailureUrl '/login' -SuccessUrl '/'
 
     # Setup Form authentication
-    New-PodeAuthScheme -Form | Add-PodeAuth -Name 'Login' -FailureUrl '/login' -SuccessUrl '/' -ScriptBlock {
-        param($username, $password)
+    # New-PodeAuthScheme -Form | Add-PodeAuth -Name 'Login' -FailureUrl '/login' -SuccessUrl '/' -ScriptBlock {
+    #     param($username, $password)
     
-        # here you'd check a real user storage, this is just for example
-        if ($password -eq 'VerySecure!') {
-            return @{
-                User = @{
-                    ID   = New-Guid
-                    Name = $username
-                    Type = 'local'
-                }
-            }
-        }
+    #     # here you'd check a real user storage, this is just for example
+    #     if ($password -eq 'VerySecure!') {
+    #         return @{
+    #             User = @{
+    #                 ID   = New-Guid
+    #                 Name = $username
+    #                 Type = 'local'
+    #             }
+    #         }
+    #     }else{
+    #         return @{ Message = 'Authorisation failed' }
+    #     }
     
-        # No user was found
-        return @{ Message = 'Invalid details supplied!' }
+    #     # No user was found
+    #     return @{ Message = 'Invalid details supplied!' }
+    # }
+
+    $ApiPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'api'
+    New-PodeAuthScheme -Form | Add-PodeAuthUserFile -FilePath (Join-Path -Path $ApiPath -ChildPath 'users.json') -Name 'Login' -FailureUrl '/login' -SuccessUrl '/'-ScriptBlock {
+        param($user)
+        Set-PodeCookie -Name CurrentUser -Value $user.Name
+        return @{ User = $user }
     }
 
     # Redirected to the login page
@@ -89,7 +98,7 @@ Start-PodeServer -Browse -Threads 2 {
     #endregion
 
     Import-Module PSSQLite -Force
-
+    
     $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
     Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'RotaMaster.psd1')
 

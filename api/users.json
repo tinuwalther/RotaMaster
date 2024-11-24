@@ -1,0 +1,13 @@
+[
+    {
+        "Name": "Admin",
+        "Username": "admin",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "Admin"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    }
+]

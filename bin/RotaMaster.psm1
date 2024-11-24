@@ -375,18 +375,18 @@ function Initialize-ApiEndpoints {
         $dbPath = Join-Path -Path $($ApiPath) -ChildPath '/rotamaster.db'
 
         # Get person from JSON-file
-        Add-PodeRoute -Method Get -Path '/api/events/person' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
-            param($ApiPath)
-            $person = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'person.json') | ConvertFrom-Json | Sort-Object
-            Write-PodeJsonResponse -Value $person  
-        }
+        # Add-PodeRoute -Method Get -Path '/api/events/person' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
+        #     param($ApiPath)
+        #     $person = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'person.json') | ConvertFrom-Json | Sort-Object
+        #     Write-PodeJsonResponse -Value $person  
+        # }
 
         # Get absences from JSON-file
-        Add-PodeRoute -Method Get -Path '/api/events/absence' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
-            param($ApiPath)
-            $absence = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'absence.json') | ConvertFrom-Json | Sort-Object
-            Write-PodeJsonResponse -Value $absence  
-        }
+        # Add-PodeRoute -Method Get -Path '/api/events/absence' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
+        #     param($ApiPath)
+        #     $absence = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'absence.json') | ConvertFrom-Json | Sort-Object
+        #     Write-PodeJsonResponse -Value $absence  
+        # }
 
         <# Calculate next month for PS calendar
         Add-PodeRoute -Method Post -Path '/api/month/next' -ContentType 'application/json' -ArgumentList @($BinPath) -ScriptBlock {
@@ -602,5 +602,15 @@ function Initialize-ApiEndpoints {
         Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', "$($MyInvocation.MyCommand.Name)" -Join ' ')
     }
 
+}
+
+function ConvertTo-SHA256{
+    [CmdletBinding()]
+    param($String)
+
+    $SHA256 = New-Object System.Security.Cryptography.SHA256Managed
+    $SHA256Hash = $SHA256.ComputeHash([Text.Encoding]::ASCII.GetBytes($String))
+    $SHA256HashString = [Convert]::ToBase64String($SHA256Hash)
+    return $SHA256HashString
 }
 #endregion
