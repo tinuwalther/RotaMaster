@@ -45,8 +45,8 @@ Start-PodeServer -Browse -Threads 2 {
     New-PodeLoggingMethod -File -Name 'error' -MaxDays 7 | Enable-PodeErrorLogging
     New-PodeLoggingMethod -File -Name 'requests' -MaxDays 7 | Enable-PodeRequestLogging
 
-    # Here our sessions will last for 15 Min, and will be extended on each request
-    Enable-PodeSessionMiddleware -Duration 900 -Extend
+    # Here our sessions will last for 10 Std, and will be extended on each request
+    Enable-PodeSessionMiddleware -Duration 36000 -Extend
 
     # Setup ActiveDirectory authentication
     # https://pode.readthedocs.io/en/latest/Tutorials/Authentication/Inbuilt/WindowsAD/#usage
