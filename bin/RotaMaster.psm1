@@ -529,10 +529,15 @@ function Initialize-ApiEndpoints {
         }
 
         # Read data from SQLiteDB for events
-        Add-PodeRoute -Method Get -Path 'api/event/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+        Add-PodeRoute -Method Get -Path 'api/event/read/:person' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
             try{
-                $sql = 'SELECT id,person,"type",start,end FROM events'
+                $person = $WebEvent.Parameters['person']
+                if($person -eq '*'){
+                    $sql = 'SELECT id,person,"type",start,end FROM events'
+                }else{
+                    $sql = "SELECT id,person,""type"",start,end FROM events WHERE person = '$($person)'"
+                }
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
 
