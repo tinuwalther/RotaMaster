@@ -63,7 +63,7 @@
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
                 // Get calendarEvents from SQLite and concatenate holidays and events to one Array
-                const events = await readDBData('/api/event/read');
+                const events = await readDBData('/api/event/read/*');
                 const holidays = await loadApiData('/api/event/get');
                 const calendarEvents = [];
                 if(holidays){
@@ -106,6 +106,45 @@
                 var calendar = new FullCalendar.Calendar(calendarEl, {
                     // concatenate calendarConfig from rotamaster.js
                     ...calendarConfig,
+
+                    customButtons: {
+                        exportToIcs: {
+                            text: 'Export Events',
+                            click: function() {
+                                // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
+                                const exportModal = new bootstrap.Modal(document.getElementById('multipleEvents'), {
+                                    keyboard: true
+                                });
+                                document.getElementById('btnAllEvents').checked = true;
+                                document.getElementById('personNameInput').value = '';
+                                document.getElementById('eventTypeInput').value = '';
+                                exportModal.show();
+                            }
+                        },
+                        filterEvents: {
+                            text: 'My Events',
+                            click: async function() {
+                                const response = await fetch(`/api/event/read/${username}`);
+                                if (!response.ok) {
+                                    throw new Error(`Failed to fetch user events of ${username}`);
+                                }
+                                const userEvents = await response.json();
+                                const holidays = await loadApiData('/api/event/get');
+                                const calendarEvents = [];
+                                if(holidays){
+                                    calendarEvents.push(...holidays);
+                                };
+                                if (userEvents && userEvents.length > 0) {
+                                    // console.log(events);
+                                    calendarEvents.push(...userEvents);
+                                } else if (userEvents) {
+                                    calendarEvents.push(userEvents);
+                                };
+                                calendar.removeAllEvents();
+                                calendar.addEventSource(calendarEvents);
+                            }
+                        }
+                    },
 
                     // JSON feed that the calendar will fetch Event Objects from.
                     events: calendarEvents,
@@ -259,6 +298,7 @@
                         { selector: '.fc-dayGridMonth-button', tooltip: 'Monatsansicht' },
                         { selector: '.fc-listMonth-button', tooltip: 'Listenansicht' },
                         { selector: '.fc-exportToIcs-button', tooltip: 'Exportiere alle Kalender-Events als iCalendar (.ics) Datei' },
+                        { selector: '.fc-filterEvents-button', tooltip: 'Zeige nur meine Events an' },
                         { selector: '.fc-exportPersonEvents-button', tooltip: 'Exportiere alle Kalender-Events personenspezifisch als iCalendar (.ics) Datei' }
                     ];
                 
