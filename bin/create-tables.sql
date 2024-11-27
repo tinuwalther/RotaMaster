@@ -5,18 +5,24 @@ CREATE TABLE IF NOT EXISTS events(
     type TEXT NOT NULL,
     start TEXT NOT NULL,
     end TEXT NOT NULL,
-    created TEXT NOT NULL
+    created TEXT NOT NULL DEFAULT current_timestamp,
+    author TEXT NOT NULL
 )
 
 -- Create the table person
 CREATE TABLE IF NOT EXISTS person(  
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    login TEXT NOT NULL,
     name TEXT NOT NULL,
-    firstname TEXT NOT NULL
+    firstname TEXT NOT NULL,
+    created TEXT NOT NULL DEFAULT current_timestamp,
+    author TEXT NOT NULL
 );
 
 -- Create the table absence
 CREATE TABLE IF NOT EXISTS absence(  
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    created TEXT NOT NULL DEFAULT current_timestamp,
+    author TEXT NOT NULL
 );
