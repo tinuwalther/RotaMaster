@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <!-- Begin Head -->
+    <head>
+        <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
+        <meta name="description" content="RotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
+        
+        <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
+        <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
+
+        <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
+        <script src="/assets/rotamaster/fullcalendar.main.min.js"></script>
+        <script src="/assets/rotamaster/index.global.min.js"></script>
+        <script src="/assets/rotamaster/rotamaster.main.js"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', async function() {
+    
+                const username = getCookie('CurrentUser');
+                if (username) {
+                    const welcomeElement = document.getElementById('currentUser');
+                    if (welcomeElement) {
+                        welcomeElement.textContent = `${username}`;
+                    } else {
+                        console.error("Element with ID 'welcomeMessage' not found.");
+                    }
+                }
+                
+                // Personen laden und Tabelle füllen
+                loadPersons();
+    
+                // Formular zum Hinzufügen einer neuen Person
+                const personForm = document.getElementById('personForm');
+                personForm.addEventListener('submit', async function(event) {
+                    event.preventDefault(); // Standardformular absenden verhindern
+    
+                    // Formulardaten erfassen
+                    const formData = new FormData(personForm);
+                    const data = {};
+                    formData.forEach((value, key) => {
+                        data[key] = value;
+                    });
+    
+                    // API aufrufen, um die Person hinzuzufügen
+                    try {
+                        const response = await fetch('/api/person/add', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+    
+                        if (response.ok) {
+                            personForm.reset();
+                            loadPersons(); // Tabelle neu laden
+                        } else {
+                            console.error('Error adding person:', response.status);
+                            alert('Failed to add person.');
+                        }
+                    } catch (error) {
+                        console.error('Error occurred:', error);
+                        alert('An error occurred while adding the person.');
+                    }
+                });
+            });
+    
+            // Funktion zum Laden der Personen und Befüllen der Tabelle
+            async function loadPersons() {
+                try {
+                    const response = await fetch('/api/person/read');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch persons');
+                    }
+                    const persons = await response.json();
+    
+                    const personTableBody = document.querySelector('#personTable tbody');
+                    personTableBody.innerHTML = ''; // Bestehende Tabellenzeilen löschen
+    
+                    persons.forEach(person => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${person.login}</td>
+                            <td>${person.firstname}</td>
+                            <td>${person.name}</td>
+                            <td>${person.created}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deletePerson(${person.id})">Delete</button>
+                            </td>
+                        `;
+                        personTableBody.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error('Error fetching persons:', error);
+                }
+            }
+    
+            // Funktion zum Löschen einer Person
+            async function deletePerson(personId) {
+                if (confirm('Are you sure you want to delete this person?')) {
+                    try {
+                        const response = await fetch(`/api/person/delete/${personId}`, {
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            loadPersons(); // Tabelle neu laden
+                        } else {
+                            console.error('Error deleting person:', response.status);
+                            alert('Failed to delete person.');
+                        }
+                    } catch (error) {
+                        console.error('Error occurred:', error);
+                        alert('An error occurred while deleting the person.');
+                    }
+                }
+            }
+
+        </script>
+    
+        <title id="title" >RotaMaster: Person Management</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
+
+    </head>
+    <!-- End Head -->
+
+    <!-- Begin Body -->
+    <body>
+        <Section Id="section"  >
+
+            <!-- Begin NavBar -->
+            <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
+                <div Class="container-fluid"  >
+                    <img src="/assets/img/favicon.png" alt="Bootstrap" width="48" height="48">
+                    <a Class="navbar-brand" id="navbarBrand" href="/" Target="_self"  >RotaMaster</a>
+                    <button Class="navbar-toggler" type="button" title="Navbar" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
+                        <span Class="navbar-toggler-icon"  ></span>
+                    </button>
+                    <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
+                    <ul Class="navbar-nav"  >
+                        <li Class="nav-item"  ><a Class="nav-link" href="/person"  >Personen</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/logout"  >Logoff</a></li>
+                    </ul>
+                    <span class="navbar-text ms-auto" id="currentUser">
+                        <!-- logged-in as Username -->
+                    </span>
+                    </div>
+                </div>
+            </nav>
+            <!-- End NavBar -->
+
+            <div class="container mt-4">
+                <h2>Person Management</h2>
+                <!-- Formular zum Hinzufügen einer Person -->
+                <form id="personForm" class="mb-4">
+                    <div class="mb-3">
+                        <label for="login" class="form-label">Login</label>
+                        <input type="text" id="login" name="login" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="firstname" class="form-label">Firstname</label>
+                        <input type="text" id="firstname" name="firstname" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-dark">Add Person</button>
+                </form>
+
+                <!-- Tabelle zur Darstellung vorhandener Personen -->
+                <table class="table table-striped" id="personTable">
+                    <thead>
+                        <tr>
+                            <th>Login</th>
+                            <th>Firstname</th>
+                            <th>Name</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamisch gefüllte Daten -->
+                    </tbody>
+                </table>
+            </div>
+
+        </Section>
+
+    </body>
+    <!-- End Body -->
+
+</html>
