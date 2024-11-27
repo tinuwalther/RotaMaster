@@ -348,6 +348,10 @@ function Initialize-WebEndpoints {
     }
 
     process{
+        # Absence
+        Add-PodeRoute -Method Get -Path '/absence' -Authentication 'Login' -ScriptBlock {
+            Write-PodeViewResponse -Path 'absence.html'
+        }
         # Person
         Add-PodeRoute -Method Get -Path '/person' -Authentication 'Login' -ScriptBlock {
             Write-PodeViewResponse -Path 'person.html'
@@ -415,54 +419,19 @@ function Initialize-ApiEndpoints {
             }
         }
 
-        <# obsolete
-        Add-PodeRoute -Method Post -Path '/api/event/new' -ArgumentList @($ApiPath) -ScriptBlock {
-            param($ApiPath)
-
-            # Read the data of the formular
-            if((-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['type']))))){
-                $title  = $WebEvent.Data['name']
-                # $descr  = $WebEvent.Data['description']
-                $type   = $WebEvent.Data['type']
-                $start  = $WebEvent.Data['start']
-                $end    = $WebEvent.Data['end']
-                
-                # "new-events: $($title), $($start), $($end)"| Out-Default
-                # $EndSate = Get-Date ([datetime]$end).AddDays(1) -f 'yyyy-MM-dd'
-                $EndSate = "$(Get-Date ([datetime]$end) -f 'yyyy-MM-dd')"
-                $data = [PSCustomObject]@{
-                    # Id    = [guid]::NewGuid()
-                    person  = $title
-                    # Description = $descr
-                    type    = $type
-                    start   = "$(Get-Date ([datetime]$start) -f 'yyyy-MM-dd')"
-                    end     = $EndSate 
-                    created = Get-Date -f 'yyyy-MM-dd'
-                }
-
-                # $data | Export-Csv -Path (Join-Path -Path $ApiPath -ChildPath "calendar.csv") -Delimiter ';' -Encoding utf8 -Append -NoTypeInformation
-
-                Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
-
-            }else{
-                Write-PodeJsonResponse -StatusCode 400 -Value @{ StatusDescription = 'No person or type is selected!' }
-            }
-            
-        }
-        #>
-
         # Read data from SQLiteDB for absence
         Add-PodeRoute -Method Get -Path 'api/absence/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
             try{
-                $sql = 'SELECT id,name FROM absence ORDER BY name ASC'
+                $sql = 'SELECT id,name,created FROM absence ORDER BY name ASC'
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
 
                 $absences = foreach($item in $data){
                     [PSCustomObject]@{
-                        id = $item.id
-                        name = $item.name
+                        id      = $item.id
+                        name    = $item.name
+                        created = $item.created
                     } 
                 }
                 $Connection.Close()
@@ -472,7 +441,46 @@ function Initialize-ApiEndpoints {
                 Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
             }
         }
+
+        # Add new absence into the table absence
+        Add-PodeRoute -Method POST -Path '/api/absence/add' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+
+            if(-not([String]::IsNullOrEmpty($WebEvent.Data['name']))){
+                try{
+                    $name      = $WebEvent.Data['name']
+                    $created   = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+                    
+                    $sql = "INSERT INTO absence (name, created, author) VALUES ('$($name)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+                    $connection = New-SQLiteConnection -DataSource $dbPath
+                    Invoke-SqliteQuery -Connection $connection -Query $sql
+                    $Connection.Close()
+                    Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
+
+                }catch{
+                    $_.Exception.Message | Out-Default
+                    Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+                }
+            }else{
+                Write-PodeJsonResponse -StatusCode 400 -Value @{ StatusDescription = 'No name is given!' }
+            }
+        }
         
+        # Remove absence from table absence
+        Add-PodeRoute -Method DELETE -Path '/api/absence/delete/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+
+            $id = $WebEvent.Parameters['id']
+            $sql = "DELETE FROM absence WHERE id = $id"
+            
+            try {
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully deleted" }
+            } catch {
+                Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to delete record: $_" } -StatusCode 500
+            }
+        }
+
         # Read data from SQLiteDB for person
         Add-PodeRoute -Method Get -Path 'api/person/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
@@ -483,12 +491,12 @@ function Initialize-ApiEndpoints {
 
                 $absences = foreach($item in $data){
                     [PSCustomObject]@{
-                        id = $item.id
-                        login = $item.login
-                        name = $item.name
+                        id        = $item.id
+                        login     = $item.login
+                        name      = $item.name
                         firstname = $item.firstname
-                        fullname = "$($item.firstname) $($item.name)"
-                        created = $item.created
+                        fullname  = "$($item.firstname) $($item.name)"
+                        created   = $item.created
                     } 
                 }
                 $Connection.Close()
