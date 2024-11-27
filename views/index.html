@@ -153,6 +153,8 @@
                     datesSet: function(info) {
                         
                         let displayedYear = calcDisplayedYear(info);
+                        const customTitle = `RotaMaster ${displayedYear}`;
+                        document.querySelector('.fc-toolbar-title').textContent = customTitle;
 
                         // Display the year after the Summary text
                         if (displayedYear) {
@@ -164,7 +166,7 @@
 
                         // Call the function and render the table after the page has loaded
                         getEventSummary(calendarEvents, displayedYear).then(summary => {
-                            // onsole.log('Calculate summary');
+                            // console.log('Calculate summary');
                             renderTable(summary); 
                         });
 
@@ -187,6 +189,7 @@
 
                     // date range is selected
                     select: function(info) {
+
                         // Convert start and end dates to Date objects
                         const eventStartDate = new Date(info.startStr);
                         const eventEndDate = new Date(info.endStr);
@@ -372,6 +375,7 @@
                         <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/RamblingCookieMonster/PSSQLite/" Target="_blank"  >PSSQLite</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/absence" >Absenzen</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="/person"  >Personen</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="/logout"  >Logoff</a></li>
                     </ul>
