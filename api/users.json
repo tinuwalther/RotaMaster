@@ -11,8 +11,19 @@
         }
     },
     {
-        "Name": "Martin Walther",
-        "Username": "mwalther",
+        "Name": "Alice Cooper",
+        "Username": "acooper",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "Admin"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
+        "Name": "Freddie Mercury",
+        "Username": "fmercury",
         "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
         "Groups": [
             "Admin"
