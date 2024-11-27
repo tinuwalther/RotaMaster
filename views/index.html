@@ -47,6 +47,16 @@
             */
             document.addEventListener('DOMContentLoaded', async function() {
 
+                const username = getCookie('CurrentUser');
+                if (username) {
+                    const welcomeElement = document.getElementById('currentUser');
+                    if (welcomeElement) {
+                        welcomeElement.textContent = `${username}`;
+                    } else {
+                        console.error("Element with ID 'welcomeMessage' not found.");
+                    }
+                }
+
                 // Refresh footer datetime
                 const d = new Date();
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
@@ -321,12 +331,16 @@
                         <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/RamblingCookieMonster/PSSQLite/" Target="_blank"  >PSSQLite</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/logout"  >Logoff</a></li>
                     </ul>
+                    <span class="navbar-text ms-auto" id="currentUser">
+                        <!-- logged-in as Username -->
+                    </span>
                     </div>
                 </div>
             </nav>
             <!-- End NavBar -->
-        
+
             <!-- Begin Modal multipleEvents -->
             <div class="modal fade" id="multipleEvents" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
@@ -411,7 +425,6 @@
 
                 <!-- Begin Events -->
                 <div id="events-log">
-
                     <!-- Begin Form -->
                     <form action="/api/event/new" method="POST" id="eventForm">
 
@@ -508,7 +521,7 @@
 
                 <div Class="col-md"  >
                     <p Style="color:#f8f9fa">
-                        <a Class="btn-sm btn btn-outline-success" href="#" Target="_self"  >I ♥ PS ></a>
+                        <a Class="btn-sm btn btn-outline-success" href="#" Target="_self"  >TOP</a>
                     </p>
                 </div>
                     
