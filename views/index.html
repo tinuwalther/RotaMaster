@@ -52,6 +52,7 @@
                     const welcomeElement = document.getElementById('currentUser');
                     if (welcomeElement) {
                         welcomeElement.textContent = `${username}`;
+                        document.getElementById('datalistName').value = username;
                     } else {
                         console.error("Element with ID 'welcomeMessage' not found.");
                     }
