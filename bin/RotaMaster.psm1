@@ -348,9 +348,9 @@ function Initialize-WebEndpoints {
     }
 
     process{
-        # Index
-        Add-PodeRoute -Method Get -Path '/' -Authentication 'Login' -ScriptBlock {
-            Write-PodeViewResponse -Path 'index.html'
+        # Person
+        Add-PodeRoute -Method Get -Path '/person' -Authentication 'Login' -ScriptBlock {
+            Write-PodeViewResponse -Path 'person.html'
         }
     }
 
@@ -477,16 +477,18 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method Get -Path 'api/person/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
             try{
-                $sql = 'SELECT id,name,firstname FROM person ORDER BY firstname ASC'
+                $sql = 'SELECT id,login,name,firstname,created FROM person ORDER BY firstname ASC'
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
 
                 $absences = foreach($item in $data){
                     [PSCustomObject]@{
                         id = $item.id
+                        login = $item.login
                         name = $item.name
                         firstname = $item.firstname
                         fullname = "$($item.firstname) $($item.name)"
+                        created = $item.created
                     } 
                 }
                 $Connection.Close()
@@ -497,6 +499,47 @@ function Initialize-ApiEndpoints {
             }
         }
         
+        # Add new person into the table person
+        Add-PodeRoute -Method POST -Path '/api/person/add' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+
+            if((-not([String]::IsNullOrEmpty($WebEvent.Data['login'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['firstname'])))))){
+                try{
+                    $login     = $WebEvent.Data['login']
+                    $firstname = $WebEvent.Data['firstname']
+                    $lastname  = $WebEvent.Data['name']
+                    $created   = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+                    
+                    $sql = "INSERT INTO person (login, firstname, name, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+                    $connection = New-SQLiteConnection -DataSource $dbPath
+                    Invoke-SqliteQuery -Connection $connection -Query $sql
+                    $Connection.Close()
+                    Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
+
+                }catch{
+                    $_.Exception.Message | Out-Default
+                    Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+                }
+            }else{
+                Write-PodeJsonResponse -StatusCode 400 -Value @{ StatusDescription = 'No login, firstname, name is given!' }
+            }
+        }
+
+        # Remove person from table person
+        Add-PodeRoute -Method DELETE -Path '/api/person/delete/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+
+            $id = $WebEvent.Parameters['id']
+            $sql = "DELETE FROM person WHERE id = $id"
+            
+            try {
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully deleted" }
+            } catch {
+                Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to delete record: $_" } -StatusCode 500
+            }
+        }
+
         # Add new record into the SQLiteDB
         Add-PodeRoute -Method POST -Path '/api/event/insert' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
@@ -512,7 +555,7 @@ function Initialize-ApiEndpoints {
                         $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
                         $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
                     }
-                    $created = Get-Date -f 'yyyy-MM-dd HH:mm'
+                    $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
     
                     $sql = "INSERT INTO events (person, type, start, end, created, author) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($created)', '$($WebEvent.Auth.User.Name)')"
                     $connection = New-SQLiteConnection -DataSource $dbPath
