@@ -13,14 +13,14 @@ INSERT INTO 'absence' ('name') VALUES
     ('Pikett-Peer');
 
 -- Insert some person
-INSERT INTO 'person' ('firstname','name') VALUES
-    ('Freddie','Mercury'),
-    ('Ozzy','Osbourne'),
-    ('Robert','Plant'),
-    ('Kurt','Cobain'),
-    ('Alice','Cooper'),
-    ('Ronnie James','Dio'),
-    ('Bruce','Dickinson'),
-    ('Till','Lindemann'),
-    ('Marilyn','Manson'),
-    ('Jim','Morrison');
+INSERT INTO 'person' ('login','firstname','name','author') VALUES
+    ('fmercury','Freddie','Mercury','Administrator'),
+    ('oosbourne','Ozzy','Osbourne','Administrator'),
+    ('rplant','Robert','Plant','Administrator'),
+    ('kcobain','Kurt','Cobain','Administrator'),
+    ('acooper','Alice','Cooper','Administrator'),
+    ('rjdio','Ronnie James','Dio','Administrator'),
+    ('bdickinso','Bruce','Dickinson','Administrator'),
+    ('tlindeman','Till','Lindemann','Administrator'),
+    ('mmanson','Marilyn','Manson','Administrator'),
+    ('jmorrison','Jim','Morrison','Administrator');
