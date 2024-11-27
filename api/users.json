@@ -9,5 +9,16 @@
         "Metadata": {
             "Created": "2024-11-24"
         }
+    },
+    {
+        "Name": "Martin Walther",
+        "Username": "mwalther",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "Admin"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
     }
 ]
