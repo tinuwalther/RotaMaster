@@ -1,16 +1,16 @@
 -- Inser some absences
-INSERT INTO 'absence' ('name') VALUES
-    ('Blockiert'),
-    ('Ferien'),
-    ('bez. Absenz'),
-    ('unbz. Urlaub'),
-    ('GLZ Kompensation'),
-    ('Aus/Weiterbildung'),
-    ('Militär/ZV/EO'),
-    ('Krankheit'),
-    ('Unfall'),
-    ('Pikett'),
-    ('Pikett-Peer');
+INSERT INTO 'absence' ('name','author') VALUES
+    ('Blockiert','Administrator'),
+    ('Ferien','Administrator'),
+    ('bez. Absenz','Administrator'),
+    ('unbz. Urlaub','Administrator'),
+    ('GLZ Kompensation','Administrator'),
+    ('Aus/Weiterbildung','Administrator'),
+    ('Militär/ZV/EO','Administrator'),
+    ('Krankheit','Administrator'),
+    ('Unfall','Administrator'),
+    ('Pikett','Administrator'),
+    ('Pikett-Peer','Administrator');
 
 -- Insert some person
 INSERT INTO 'person' ('login','firstname','name','author') VALUES
