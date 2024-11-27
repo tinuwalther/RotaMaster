@@ -514,7 +514,7 @@ function Initialize-ApiEndpoints {
                     }
                     $created = Get-Date -f 'yyyy-MM-dd HH:mm'
     
-                    $sql = "INSERT INTO events (person, type, start, end, created) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($created)')"
+                    $sql = "INSERT INTO events (person, type, start, end, created, author) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($created)', '$($WebEvent.Auth.User.Name)')"
                     $connection = New-SQLiteConnection -DataSource $dbPath
                     Invoke-SqliteQuery -Connection $connection -Query $sql
                     $Connection.Close()
