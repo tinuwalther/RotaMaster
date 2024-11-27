@@ -766,3 +766,16 @@ function getFormData(form) {
     console.log('Formulardaten extrahiert:', data);
     return data;
 }
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+
+    if (parts.length === 2) {
+        const cookieValue = parts.pop().split(';').shift(); // Extrahiere den Cookie-Wert einmal
+        // console.log("getCookie:", cookieValue);
+        return cookieValue; // Gib den Cookie-Wert zurück
+    }
+
+    return null; // Wenn kein Cookie gefunden wird, gib null zurück
+}
