@@ -11,7 +11,7 @@ const calendarConfig = {
     headerToolbar: {
         left: 'prevYear,prev,today,next,nextYear',
         center: 'title',
-        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs'
+        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs,filterEvents'
     },
     buttonText: {
         today: 'Heute',
@@ -27,22 +27,7 @@ const calendarConfig = {
     selectable: true,
     editable: true,
     displayEventTime: false,
-    navLinks: true,
-    customButtons: {
-        exportToIcs: {
-            text: 'Export Events',
-            click: function() {
-                // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
-                const exportModal = new bootstrap.Modal(document.getElementById('multipleEvents'), {
-                    keyboard: true
-                });
-                document.getElementById('btnAllEvents').checked = true;
-                document.getElementById('personNameInput').value = '';
-                document.getElementById('eventTypeInput').value = '';
-                exportModal.show();
-            }
-        }
-    }
+    navLinks: true
 };
 
 
