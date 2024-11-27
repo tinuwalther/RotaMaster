@@ -118,7 +118,7 @@ Start-PodeServer -Browse -Threads 2 {
     Set-PodeViewEngine -Type Pode
     
     # Set Pode endpoints for the web pages
-    # Initialize-WebEndpoints
+    Initialize-WebEndpoints
 
     # Set Pode endpoints for the api
     Initialize-ApiEndpoints
