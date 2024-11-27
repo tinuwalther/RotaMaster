@@ -41,6 +41,10 @@ $Protocol = 'https'
 Start-PodeServer -Browse -Threads 2 {
     Write-Host "Press Ctrl. + C to terminate the Pode server" -ForegroundColor Yellow
 
+    # Enables Logging
+    New-PodeLoggingMethod -File -Name 'error' -MaxDays 7 | Enable-PodeErrorLogging
+    New-PodeLoggingMethod -File -Name 'requests' -MaxDays 7 | Enable-PodeRequestLogging
+
     # Here our sessions will last for 15 Min, and will be extended on each request
     Enable-PodeSessionMiddleware -Duration 900 -Extend
 
@@ -71,18 +75,16 @@ Start-PodeServer -Browse -Threads 2 {
     # }
 
     $ApiPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'api'
-    New-PodeAuthScheme -Form | Add-PodeAuthUserFile -FilePath (Join-Path -Path $ApiPath -ChildPath 'users.json') -Name 'Login' -FailureUrl '/login' -SuccessUrl '/'-ScriptBlock {
+    New-PodeAuthScheme -Form | Add-PodeAuthUserFile -FilePath (Join-Path -Path $ApiPath -ChildPath 'users.json') -Name 'Login' -FailureUrl '/login' -SuccessUrl '/' -ScriptBlock {
         param($user)
-        Set-PodeCookie -Name CurrentUser -Value $user.Name
+        Set-PodeCookie -Name 'CurrentUser' -Value $user.Name
         return @{ User = $user }
     }
 
     # Redirected to the login page
     Add-PodeRoute -Method Get -Path '/' -Authentication 'Login' -ScriptBlock {
-        $WebEvent.Session.Data.Views++
-        Write-PodeViewResponse -Path 'index.html' -Data @{
-            Username = $WebEvent.Auth.User.Name;
-        }
+        $username = $WebEvent.Auth.User.Name
+        Write-PodeViewResponse -Path 'index.html' -Data @{ Username = $username }
     }
 
     # the login page itself
@@ -95,15 +97,19 @@ Start-PodeServer -Browse -Threads 2 {
     
     # the logout Route
     Add-PodeRoute -Method Post -Path '/logout' -Authentication 'Login' -Logout
+    Add-PodeRoute -Method Get -Path '/logout' -Authentication 'Login' -Logout -ScriptBlock {
+        # Beende die aktuelle Sitzung, um den Benutzer auszuloggen
+        Remove-PodeAuth -Name 'Login'
+    
+        # Leite den Benutzer auf die Login-Seite weiter (oder eine andere Seite)
+        Redirect-PodeRoute -Location '/login'
+    }
     #endregion
 
     Import-Module PSSQLite -Force
     
     $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
     Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'RotaMaster.psd1')
-
-    # Enables Error Logging
-    New-PodeLoggingMethod -File -Name 'error' -MaxDays 7 | Enable-PodeErrorLogging
 
     # Add listener to Port 8080 for Protocol http
     Add-PodeEndpoint -Address $Address -Port $Port -Protocol $Protocol -SelfSigned
