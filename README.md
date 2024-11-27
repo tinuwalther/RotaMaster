@@ -8,6 +8,12 @@ If you want to create the holidays for a different year, you can call the API wi
 
 ````Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025````
 
+## Login
+
+At first, you have to login.
+
+![RotaMasterLogin](./img/RotaMasterLogin.png)
+
 ## Year view
 
 In this calendar view, you can view the events of the current month, scroll to another month, and add new events.
@@ -26,6 +32,12 @@ Or if you prefere a list of the events of the current month, click on the right 
 
 ![RotaMasterList](./img/RotaMasterList.png)
 
+## Show my events
+
+To show only your own events, press the button 'My Events'.
+
+![RotaMasterMyEvents](./img/RotaMasterMyEvents.png)
+
 ## Add a range with form dates
 
 Type, or select the person and select absence-type, choose the start- and end date, and press the button to submit the new event.
@@ -42,11 +54,23 @@ Select a range fills the selected start- and end date into the formular. Type or
 
 It's possible to export all events, or events of a specified person or type,
 
-![RotaMasterSingleICS](./img/RotaMasterPerson.png)
+![RotaMasterSingleICS](./img/RotaMasterExportPerson.png)
 
 or a single event as an ics-file.
 
 ![RotaMasterSingleICS](./img/RotaMasterSingleICS.png)
+
+## Absence Management
+
+To manage your absences, click on the link in the navbar 'Absenzen'.
+
+![RotaMasterAbsenceMgmt](./img/RotaMasterAbsenceMgmt.png)
+
+## Person Management
+
+To manage your persons, click on the link in the navbar 'Personen'.
+
+![RotaMasterPersonMgmt](./img/RotaMasterPersonMgmt.png)
 
 ## Functionality
 
