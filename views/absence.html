@@ -75,9 +75,7 @@
                     if (!response.ok) {
                         throw new Error('Failed to fetch absence');
                     }
-                    const absences = await response.json();
-                    console.log(absences)
-    
+                    const absences = await response.json();    
                     const absenceTableBody = document.querySelector('#absenceTable tbody');
                     absenceTableBody.innerHTML = ''; // Bestehende Tabellenzeilen löschen
     
