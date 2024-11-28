@@ -700,9 +700,14 @@ function setModalEventData(event) {
         }
     };
 
-    document.getElementById('id').textContent = `id: ${event.id}`;
-    document.getElementById('title').textContent = `${event.title}, ${days} Tage`;
-    document.getElementById('date').textContent = `von: ${eventStartDate} bis: ${eventEndDate}`;
+    // const eventTitle = event.title.split(' - ');
+    // document.getElementById('updateExportEventTitle').textContent = eventTitle[0];
+
+    if(event.id){
+        document.getElementById('singleEvent-id').textContent = `id: ${event.id}`;
+    }
+    document.getElementById('singleEvent-title').textContent = `${event.title}, ${days} Tage`;
+    document.getElementById('singleEvent-date').textContent = `von: ${eventStartDate} bis: ${eventEndDate}`;
     
     // Falls es erweiterte Eigenschaften gibt, hier setzen
     /*     
