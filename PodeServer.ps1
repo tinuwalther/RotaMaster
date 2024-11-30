@@ -34,7 +34,7 @@ if($CurrentOS -eq [OSType]::Windows){
 }else{
     $Address = '*'
 }
-$Port = 8443
+$Port     = 8443
 $Protocol = 'https'
 
 # We'll use 2 threads to handle API requests
@@ -50,30 +50,14 @@ Start-PodeServer -Browse -Threads 2 {
 
     # Setup ActiveDirectory authentication
     # https://pode.readthedocs.io/en/latest/Tutorials/Authentication/Inbuilt/WindowsAD/#usage
-    # New-PodeAuthScheme -Form | Add-PodeAuthWindowsAd -Name 'Login' -DirectGroups
-    # New-PodeAuthScheme -Form | Add-PodeAuthWindowsAd -Name 'Login' -Groups @('XAAS-vCenter-Administrators-Compute-GS') -FailureUrl '/login' -SuccessUrl '/'
-
-    # Setup Form authentication
-    # New-PodeAuthScheme -Form | Add-PodeAuth -Name 'Login' -FailureUrl '/login' -SuccessUrl '/' -ScriptBlock {
-    #     param($username, $password)
-    
-    #     # here you'd check a real user storage, this is just for example
-    #     if ($password -eq 'VerySecure!') {
-    #         return @{
-    #             User = @{
-    #                 ID   = New-Guid
-    #                 Name = $username
-    #                 Type = 'local'
-    #             }
-    #         }
-    #     }else{
-    #         return @{ Message = 'Authorisation failed' }
-    #     }
-    
-    #     # No user was found
-    #     return @{ Message = 'Invalid details supplied!' }
+    # New-PodeAuthScheme -Form | Add-PodeAuthWindowsAd -Name 'Login' -DirectGroups or
+    # New-PodeAuthScheme -Form | Add-PodeAuthWindowsAd -Name 'Login' -Groups @('RotaMaster-App-GS') -FailureUrl '/login' -SuccessUrl '/' -KeepCredential -ScriptBlock {
+    #     param($user)
+    #     Set-PodeCookie -Name 'CurrentUser' -Value $user.Name
+    #     return @{ User = $user }
     # }
 
+    # Setup File authentication
     $ApiPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'api'
     New-PodeAuthScheme -Form | Add-PodeAuthUserFile -FilePath (Join-Path -Path $ApiPath -ChildPath 'users.json') -Name 'Login' -FailureUrl '/login' -SuccessUrl '/' -ScriptBlock {
         param($user)
@@ -112,6 +96,7 @@ Start-PodeServer -Browse -Threads 2 {
     Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'RotaMaster.psd1')
 
     # Add listener to Port 8080 for Protocol http
+    # Add-PodeEndpoint -Hostname example.pode.com -Port $Port -Protocol $Protocol -LookupHostname
     Add-PodeEndpoint -Address $Address -Port $Port -Protocol $Protocol -SelfSigned
 
     # Set the engine to use and render .pode files
