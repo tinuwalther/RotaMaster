@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <!-- Begin Head -->
+    <head>
+        <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
+        <meta name="description" content="RotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
+        
+        <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
+        <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
+
+        <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
+        <script src="/assets/rotamaster/fullcalendar.main.min.js"></script>
+        <script src="/assets/rotamaster/index.global.min.js"></script>
+        <script src="/assets/rotamaster/rotamaster.main.js"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', async function() {
+    
+                const username = getCookie('CurrentUser');
+                if (username) {
+                    const welcomeElement = document.getElementById('currentUser');
+                    if (welcomeElement) {
+                        welcomeElement.textContent = `${username}`;
+                    } else {
+                        console.error("Element with ID 'welcomeMessage' not found.");
+                    }
+                }
+                
+                // Absence laden und Tabelle füllen
+                loadAbsences();
+    
+                // Formular zum Hinzufügen einer neuen Person
+                const absenceForm = document.getElementById('absenceForm');
+                absenceForm.addEventListener('submit', async function(event) {
+                    event.preventDefault(); // Standardformular absenden verhindern
+    
+                    // Formulardaten erfassen
+                    const formData = new FormData(absenceForm);
+                    const data = {};
+                    formData.forEach((value, key) => {
+                        data[key] = value;
+                    });
+    
+                    // API aufrufen, um die Absenz hinzuzufügen
+                    try {
+                        const response = await fetch('/api/absence/add', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+    
+                        if (response.ok) {
+                            absenceForm.reset();
+                            loadAbsences(); // Tabelle neu laden
+                        } else {
+                            console.error('Error adding absence:', response.status);
+                            alert('Failed to add absence.');
+                        }
+                    } catch (error) {
+                        console.error('Error occurred:', error);
+                        alert('An error occurred while adding the absence.');
+                    }
+                });
+            });
+    
+            // Funktion zum Laden der Absence und Befüllen der Tabelle
+            async function loadAbsences() {
+                try {
+                    const response = await fetch('/api/absence/read');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch absence');
+                    }
+                    const absences = await response.json();    
+                    const absenceTableBody = document.querySelector('#absenceTable tbody');
+                    absenceTableBody.innerHTML = ''; // Bestehende Tabellenzeilen löschen
+    
+                    absences.forEach(absence => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${absence.name}</td>
+                            <td>${absence.created}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteAbsence(${absence.id})">Delete</button>
+                            </td>
+                        `;
+                        absenceTableBody.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error('Error fetching absences:', error);
+                }
+            }
+    
+            // Funktion zum Löschen einer Absenz
+            async function deleteAbsence(absenceId) {
+                if (confirm('Are you sure you want to delete this absence?')) {
+                    try {
+                        const response = await fetch(`/api/absence/delete/${absenceId}`, {
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            loadAbsences(); // Tabelle neu laden
+                        } else {
+                            console.error('Error deleting absence:', response.status);
+                            alert('Failed to delete absence.');
+                        }
+                    } catch (error) {
+                        console.error('Error occurred:', error);
+                        alert('An error occurred while deleting the absence.');
+                    }
+                }
+            }
+
+        </script>
+    
+        <title id="title" >RotaMaster: Absence Management</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
+
+    </head>
+    <!-- End Head -->
+
+    <!-- Begin Body -->
+    <body>
+        <Section Id="section"  >
+
+            <!-- Begin NavBar -->
+            <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
+                <div Class="container-fluid"  >
+                    <img src="/assets/img/favicon.png" alt="Bootstrap" width="48" height="48">
+                    <a Class="navbar-brand" id="navbarBrand" href="/" Target="_self"  >RotaMaster</a>
+                    <button Class="navbar-toggler" type="button" title="Navbar" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
+                        <span Class="navbar-toggler-icon"  ></span>
+                    </button>
+                    <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
+                    <ul Class="navbar-nav"  >
+                        <li Class="nav-item"  ><a Class="nav-link" href="/absence" >Absenzen</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/person"  >Personen</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/logout"  >Logoff</a></li>
+                    </ul>
+                    <span class="navbar-text ms-auto" id="currentUser">
+                        <!-- logged-in as Username -->
+                    </span>
+                    </div>
+                </div>
+            </nav>
+            <!-- End NavBar -->
+
+            <div class="container mt-4">
+                <h2>Absence Management</h2>
+                <!-- Formular zum Hinzufügen einer Absenz -->
+                <form id="absenceForm" class="mb-4">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-dark">Add Absence</button>
+                </form>
+
+                <!-- Tabelle zur Darstellung vorhandener Absence -->
+                <table class="table table-striped" id="absenceTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamisch gefüllte Daten -->
+                    </tbody>
+                </table>
+            </div>
+
+        </Section>
+
+    </body>
+    <!-- End Body -->
+
+</html>

@@ -1,4 +1,4 @@
-# RotaMaster V3
+# RotaMaster V5
 
 Absence and duty scheduling program for teams based on Pode, and [FullCalendar](https://fullcalendar.io/), created with ChatGPT prompt for JavaScript.
 
@@ -7,6 +7,12 @@ Each time the page is loaded, the system checks whether the file for the next ye
 If you want to create the holidays for a different year, you can call the API with the desired year. For example with PowerShell:
 
 ````Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025````
+
+## Login
+
+At first, you have to login.
+
+![RotaMasterLogin](./img/RotaMasterLogin.png)
 
 ## Year view
 
@@ -26,6 +32,12 @@ Or if you prefere a list of the events of the current month, click on the right 
 
 ![RotaMasterList](./img/RotaMasterList.png)
 
+## Show my events
+
+To show only your own events, press the button 'My Events'.
+
+![RotaMasterMyEvents](./img/RotaMasterMyEvents.png)
+
 ## Add a range with form dates
 
 Type, or select the person and select absence-type, choose the start- and end date, and press the button to submit the new event.
@@ -40,9 +52,25 @@ Select a range fills the selected start- and end date into the formular. Type or
 
 ## Export
 
-It's possible to export all events, or events of a specified person, or a single event as an ics-file.
+It's possible to export all events, or events of a specified person or type,
+
+![RotaMasterSingleICS](./img/RotaMasterExportPerson.png)
+
+or a single event as an ics-file.
 
 ![RotaMasterSingleICS](./img/RotaMasterSingleICS.png)
+
+## Absence Management
+
+To manage your absences, click on the link in the navbar 'Absenzen'.
+
+![RotaMasterAbsenceMgmt](./img/RotaMasterAbsenceMgmt.png)
+
+## Person Management
+
+To manage your persons, click on the link in the navbar 'Personen'.
+
+![RotaMasterPersonMgmt](./img/RotaMasterPersonMgmt.png)
 
 ## Functionality
 
@@ -86,11 +114,9 @@ This is the root-folder for the web service. Here must be the PodeServer.ps1 loc
 
 ### api
 
-This folder contains the files of the web service. For example, the files for the public holidays, the absence type or the persons.
+This folder contains the files of the web service. The file(s) for holidays or others must be a CSV file.
 
-The files for the absence and people must be JSON files, and the file containing the holidays must be a CSV file.
-
-The events have also been saved in a SQLite database called rotamaster.db in this folder.
+The events, persons, and absences have also been saved in a SQLite database called rotamaster.db in this folder.
 
 ### archiv
 

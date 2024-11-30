@@ -18,7 +18,7 @@
             });
         </script>
 
-        <title >#RotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
+        <title >RotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
 
         <style>
             footer {
@@ -38,7 +38,7 @@
 
 		<header >
             <!--div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
-                <h1 >#RotaMaster - V2</h1>
+                <h1 >RotaMaster - V2</h1>
             </div-->
 		</header>
 
@@ -47,17 +47,20 @@
             <!-- Begin NavBar -->
             <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
                 <div Class="container-fluid"  >
-                    <a Class="navbar-brand" href="/" Target="_self"  >»RotaMaster</a>
+                    <img src="/assets/img/favicon.png" alt="Bootstrap" width="48" height="48">
+                    <a Class="navbar-brand" href="/" Target="_self"  >RotaMaster</a>
                     <button Class="navbar-toggler" type="button" title="Navbar" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
                         <span Class="navbar-toggler-icon"  ></span>
                     </button>
                     <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
                     <ul Class="navbar-nav"  >
+                        <!--
                         <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/tinuwalther/" Target="_blank"  >GitLab</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/RamblingCookieMonster/PSSQLite/" Target="_blank"  >PSSQLite</a></li>
+                        -->
                     </ul>
                     </div>
                 </div>
@@ -76,12 +79,12 @@
                     <form action="/login" method="post">
                         <div class="col-auto">
                             <label class="form-label">Username:</label><br>
-                            <input type="text" name="username" placeholder="Your Active Directory Account"/>
+                            <input type="text" name="username" placeholder="Your account name"/>
                         </div><br>
                         
                         <div class="col-auto">
                             <label class="form-label">Password:</label><br>
-                            <input type="password" name="password" placeholder="Your strong password"/>
+                            <input type="password" name="password" placeholder="Your password"/>
                         </div><br>
                         
                         <div class="col-auto">

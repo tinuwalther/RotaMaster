@@ -47,52 +47,104 @@
             */
             document.addEventListener('DOMContentLoaded', async function() {
 
+                const username = getCookie('CurrentUser');
+                if (username) {
+                    const welcomeElement = document.getElementById('currentUser');
+                    if (welcomeElement) {
+                        welcomeElement.textContent = `${username}`;
+                        document.getElementById('datalistName').value = username;
+                    } else {
+                        console.error("Element with ID 'welcomeMessage' not found.");
+                    }
+                }
+
                 // Refresh footer datetime
                 const d = new Date();
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
                 // Get calendarEvents from SQLite and concatenate holidays and events to one Array
-                const calendarEvents = [];
-                const events = await readDBData('/api/event/read');
+                const events = await readDBData('/api/event/read/*');
                 const holidays = await loadApiData('/api/event/get');
-                calendarEvents.push(...holidays);
-                calendarEvents.push(...events);
+                const calendarEvents = [];
+                if(holidays){
+                    calendarEvents.push(...holidays);
+                };
+                if (events && events.length > 0) {
+                    // console.log(events);
+                    calendarEvents.push(...events);
+                } else if (events) {
+                    calendarEvents.push(events);
+                };
+                
+                //Wait for the result of the getPerson function and fill the datalist element
+                const person = await readDBData('/api/person/read');
+                var personNames = new Array;
+                person.map((item) => {
+                    personNames.push(item.fullname);
+                });
+                if (personNames.length) {
+                    fillDatalistOptions('datalistOptions', personNames);
+                    fillDropdownOptions('nameDropdown', personNames);
+                } else {
+                    console.error('No person found.');
+                }
 
-                // Wait for the result of the getPerson function and fill the datalist element
-                setTimeout(function() {
-                    // Fetch person data
-                    fetchData('api/events/person', 'person').then(namesArray => {
-                        if (namesArray.length) {
-                            fillDatalistOptions('datalistOptions', namesArray);
-                            // alternatively fillDropdownOptions('person', namesArray);
-                            fillDropdownOptions('nameDropdown', namesArray);
-                        } else {
-                            console.error('No names found.');
-                        }
-                    }).catch(error => {
-                        console.error('Error fetching names:', error);
-                    });
-                }, 200);
-
-                // Wait for the result of the getAbsence function and fill the dropdown element
-                setTimeout(function() {
-                    // Fetch absence data
-                    fetchData('api/events/absence', 'absence').then(typesArray => {
-                        if (typesArray.length) {
-                            fillDropdownOptions('absenceType', typesArray);
-                        } else {
-                            console.error('No absence types found.');
-                        }
-                    }).catch(error => {
-                        console.error('Error fetching absence types:', error);
-                    });
-                }, 200);
+                // Wait for the result of the API and fill the dropdownoptions
+                const absence = await readDBData('/api/absence/read');
+                var absenceNames = new Array;
+                absence.map((item) => {
+                    absenceNames.push(item.name);
+                });
+                if (absenceNames.length) {
+                    fillDropdownOptions('absenceType', absenceNames);
+                } else {
+                    console.error('No absence found.');
+                }
 
                 var calendarEl = document.getElementById('calendar');
 
                 var calendar = new FullCalendar.Calendar(calendarEl, {
                     // concatenate calendarConfig from rotamaster.js
                     ...calendarConfig,
+
+                    customButtons: {
+                        exportToIcs: {
+                            text: 'Export Events',
+                            click: function() {
+                                // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
+                                const exportModal = new bootstrap.Modal(document.getElementById('multipleEvents'), {
+                                    keyboard: true
+                                });
+                                document.getElementById('btnAllEvents').checked = true;
+                                document.getElementById('personNameInput').value = '';
+                                document.getElementById('eventTypeInput').value = '';
+                                exportModal.show();
+                            }
+                        },
+                        filterEvents: {
+                            text: 'My Events',
+                            click: async function() {
+                                const response = await fetch(`/api/event/read/${username}`);
+                                if (!response.ok) {
+                                    throw new Error(`Failed to fetch user events of ${username}`);
+                                }
+                                const userEvents = await response.json();
+                                const holidays = await loadApiData('/api/event/get');
+                                const calendarEvents = [];
+                                if(holidays){
+                                    calendarEvents.push(...holidays);
+                                };
+                                if (userEvents && userEvents.length > 0) {
+                                    // console.log(events);
+                                    calendarEvents.push(...userEvents);
+                                } else if (userEvents) {
+                                    calendarEvents.push(userEvents);
+                                };
+                                calendar.removeAllEvents();
+                                calendar.addEventSource(calendarEvents);
+                            }
+                        }
+                    },
 
                     // JSON feed that the calendar will fetch Event Objects from.
                     events: calendarEvents,
@@ -101,6 +153,8 @@
                     datesSet: function(info) {
                         
                         let displayedYear = calcDisplayedYear(info);
+                        // const customTitle = `Planning ${displayedYear}`;
+                        //document.querySelector('.fc-toolbar-title').textContent = customTitle;
 
                         // Display the year after the Summary text
                         if (displayedYear) {
@@ -112,6 +166,7 @@
 
                         // Call the function and render the table after the page has loaded
                         getEventSummary(calendarEvents, displayedYear).then(summary => {
+                            // console.log('Calculate summary');
                             renderTable(summary); 
                         });
 
@@ -134,6 +189,7 @@
 
                     // date range is selected
                     select: function(info) {
+
                         // Convert start and end dates to Date objects
                         const eventStartDate = new Date(info.startStr);
                         const eventEndDate = new Date(info.endStr);
@@ -155,6 +211,15 @@
                 });
 
                 calendar.render();
+                
+                // Füge die App-Version zur Navbar-Brand ein
+                const pageTitle = `RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
+                const navbarBrandElement = document.getElementById('navbarBrand');
+                if (navbarBrandElement) {
+                    navbarBrandElement.textContent = pageTitle;
+                };
+
+                document.getElementById('title').textContent = pageTitle;
 
                 // Event-Listener für den Export-Button im Modal multipleEvents
                 const exportButton = document.getElementById('btnExport');
@@ -236,6 +301,7 @@
                         { selector: '.fc-dayGridMonth-button', tooltip: 'Monatsansicht' },
                         { selector: '.fc-listMonth-button', tooltip: 'Listenansicht' },
                         { selector: '.fc-exportToIcs-button', tooltip: 'Exportiere alle Kalender-Events als iCalendar (.ics) Datei' },
+                        { selector: '.fc-filterEvents-button', tooltip: 'Zeige nur meine Events an' },
                         { selector: '.fc-exportPersonEvents-button', tooltip: 'Exportiere alle Kalender-Events personenspezifisch als iCalendar (.ics) Datei' }
                     ];
                 
@@ -279,7 +345,7 @@
 
         </script>
 
-        <title >#RotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
+        <title id="title" >RotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
 
     </head>
     <!-- End Head -->
@@ -288,7 +354,7 @@
     <Body >
         <header >
             <!--div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
-                <h1 >#RotaMaster - V2</h1>
+                <h1 >RotaMaster</h1>
             </div-->
         </header>
     
@@ -297,29 +363,38 @@
             <!-- Begin NavBar -->
             <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
                 <div Class="container-fluid"  >
-                    <a Class="navbar-brand" href="/" Target="_self"  >»RotaMaster</a>
+                    <img src="/assets/img/favicon.png" alt="Bootstrap" width="48" height="48">
+                    <a Class="navbar-brand" id="navbarBrand" href="/" Target="_self"  >RotaMaster</a>
                     <button Class="navbar-toggler" type="button" title="Navbar" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
                         <span Class="navbar-toggler-icon"  ></span>
                     </button>
                     <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
                     <ul Class="navbar-nav"  >
+                        <!--
                         <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/tinuwalther/" Target="_blank"  >GitLab</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://www.w3schools.com/html/" Target="_blank"  >HTML</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://getbootstrap.com/" Target="_blank"  >Bootstrap</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://fullcalendar.io/" Target="_blank"  >Full calendar</a></li>
                         <li Class="nav-item"  ><a Class="nav-link" href="https://github.com/RamblingCookieMonster/PSSQLite/" Target="_blank"  >PSSQLite</a></li>
+                        -->
+                        <li Class="nav-item"  ><a Class="nav-link" href="/absence" >Absenzen</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/person"  >Personen</a></li>
+                        <li Class="nav-item"  ><a Class="nav-link" href="/logout"  >Logoff</a></li>
                     </ul>
+                    <span class="navbar-text ms-auto" id="currentUser">
+                        <!-- logged-in as Username -->
+                    </span>
                     </div>
                 </div>
             </nav>
             <!-- End NavBar -->
-        
+
             <!-- Begin Modal multipleEvents -->
             <div class="modal fade" id="multipleEvents" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">#RotaMaster - Export multiple Events</h1>
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">RotaMaster - Export multiple Events</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -363,13 +438,14 @@
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="updateExportEventTitle">#RotaMaster - Single Event</h1>
+                            <h1 class="modal-title fs-5" id="updateExportEventTitle">RotaMaster - Single Event</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <p id="id"></p>
-                            <p id="title"></p>
-                            <p id="date"></p>
+                            <p id="singleEvent-id"></p>
+                            <p id="singleEvent-title"></p>
+                            <p id="singleEvent-date"></p>
+                            <p id="singleEvent-other"></p>
                             <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
                                 <input type="radio" class="btn-check" name="btnradio" id="btnExportEvent" autocomplete="off" checked>
                                 <label class="btn btn-outline-dark" for="btnExportEvent" data-bs-toggle="tooltip" title="Exportiert den Event als ICS-Datei">Export</label>
@@ -397,7 +473,6 @@
 
                 <!-- Begin Events -->
                 <div id="events-log">
-
                     <!-- Begin Form -->
                     <form action="/api/event/new" method="POST" id="eventForm">
 
@@ -459,7 +534,7 @@
                                 <tr>
                                     <th>Person</th>
                                     <th>Pikett</th>
-                                    <th>Pier</th>
+                                    <th>Peer</th>
                                     <th>Ferien</th>
                                 </tr>
                             </thead>
@@ -494,7 +569,7 @@
 
                 <div Class="col-md"  >
                     <p Style="color:#f8f9fa">
-                        <a Class="btn-sm btn btn-outline-success" href="#" Target="_self"  >I ♥ PS ></a>
+                        <a Class="btn-sm btn btn-outline-success" href="#" Target="_self"  >TOP</a>
                     </p>
                 </div>
                     

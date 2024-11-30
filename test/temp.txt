@@ -11,12 +11,34 @@ CREATE TABLE events(
  created TEXT NOT NULL
 )
 
+UPDATE events
+ SET start = start || " 10:00",
+  [end] = [end] || " 10:00",
+  created = created || " 14:00"
+WHERE
+ type = 'Pikett';
 
+UPDATE events
+ SET start = start || " 01:00",
+  [end] = [end] || " 23:00",
+  created = created || " 14:00"
+WHERE
+ type NOT LIKE 'Pikett';
+
+ 
+Import from CSV:
 sqlite3
 .open /Users/Tinu/git/RotaMaster/api/rotamaster.db 
-
 .mode csv
 .separator ";"
 .import /Users/Tinu/git/RotaMaster/db/import.txt events
 
-select * from events;
+
+Export as CSV:
+sqlite3 /Users/Tinu/git/RotaMaster/api/rotamaster.db
+sqlite> .headers on
+sqlite> .mode csv
+sqlite> .separator ";"
+sqlite> .output /Users/Tinu/git/RotaMaster/archiv/export.csv
+sqlite> select * from events;
+sqlite> .quit

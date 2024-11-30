@@ -2,6 +2,7 @@
  * CalendarConfig
  */
 const calendarConfig = {
+    appVersion: "5.1.0",
     timeZone: 'local',
     locale: 'de-CH',
     initialView: 'multiMonthYear',
@@ -10,7 +11,7 @@ const calendarConfig = {
     headerToolbar: {
         left: 'prevYear,prev,today,next,nextYear',
         center: 'title',
-        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs'
+        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs,filterEvents'
     },
     buttonText: {
         today: 'Heute',
@@ -25,22 +26,8 @@ const calendarConfig = {
     weekNumberCalculation: 'ISO',
     selectable: true,
     editable: true,
-    navLinks: true,
-    customButtons: {
-        exportToIcs: {
-            text: 'Export Events',
-            click: function() {
-                // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
-                const exportModal = new bootstrap.Modal(document.getElementById('multipleEvents'), {
-                    keyboard: true
-                });
-                document.getElementById('btnAllEvents').checked = true;
-                document.getElementById('personNameInput').value = '';
-                document.getElementById('eventTypeInput').value = '';
-                exportModal.show();
-            }
-        }
-    }
+    displayEventTime: false,
+    navLinks: true
 };
 
 
@@ -133,84 +120,6 @@ function calcDisplayedYear(info) {
 
     return displayedYear;
 };
-
-/**
-* Fetches person data from the provided API URL.
-* 
-* This asynchronous function makes an HTTP GET request to the provided URL using the Fetch API.
-* It processes the response and extracts the person data as a JSON object. If the request fails,
-* the function logs an error message to the console. The function always returns an array, even
-* if the request fails or there is an error.
-* 
-* Main features:
-* - Fetches person data from the provided API endpoint.
-* - Handles API errors and logs relevant messages to the console.
-* - Returns an array of person data.
-* 
-* @async
-* @param {string} url - The API endpoint from which to fetch person data.
-* @returns {Promise<Array>} person - An array of person data fetched from the API.
-* 
-* @example
-* const personData = await getPerson('/api/persons'); // Fetches person data from the API endpoint
-*/
-async function getPerson(url) {
-    var person = []; // Initialize an empty array to store person data
-    // console.log('Starting to fetch person data from:', url); 
-
-    try {
-        const response = await fetch(url); // Make the fetch request to the provided URL
-        if (response.ok) {
-            person = await response.json(); // Parse the response JSON if the request was successful
-        } else {
-            console.error('Error fetching person:', response.status); // Log error status if the request failed
-        }
-    } catch (error) {
-        console.error('Error:', error); // Log any errors that occurred during the request
-    }
-
-    return person; // Return the person data (an empty array if the fetch failed)
-}
-
-/**
-* Fetches data from the provided API URL.
-* 
-* This asynchronous function makes an HTTP GET request to the provided URL using the Fetch API.
-* It processes the response and extracts the data as a JSON object. If the request fails,
-* the function logs an error message to the console. The function always returns an array,
-* even if the request fails or there is an error.
-* 
-* Main features:
-* - Fetches generic data from the provided API endpoint.
-* - Handles API errors and logs relevant messages to the console.
-* - Returns an array of data.
-* 
-* @async
-* @param {string} url - The API endpoint from which to fetch data.
-* @param {string} [dataType='data'] - A label for the type of data being fetched (e.g., 'person' or 'absence').
-* @returns {Promise<Array>} - An array of data fetched from the API.
-* 
-* @example
-* const personData = await fetchData('/api/persons', 'person'); // Fetches person data from the API endpoint
-* const absenceData = await fetchData('/api/absence', 'absence'); // Fetches absence data from the API endpoint
-*/
-async function fetchData(url, dataType = 'data') {
-    let data = []; // Initialize an empty array to store the fetched data
-    // console.log(`Starting to fetch ${dataType} data from:`, url); 
-
-    try {
-        const response = await fetch(url); // Make the fetch request to the provided URL
-        if (response.ok) {
-            data = await response.json(); // Parse the response JSON if the request was successful
-        } else {
-            console.error(`Error fetching ${dataType}:`, response.status); // Log error status if the request failed
-        }
-    } catch (error) {
-        console.error(`Error fetching ${dataType}:`, error); // Log any errors that occurred during the request
-    }
-
-    return data; // Return the fetched data (an empty array if the fetch failed)
-}
 
 /**
 * Populates a datalist with options from an array of values.
@@ -339,7 +248,7 @@ function fillDropdownOptions(selectId, values) {
 */
 async function loadApiData(url) {
     var calendarData = []; // Initialize an empty array to store calendar event data
-    // // console.log('Starting to fetch calendar data from:', url); 
+    // console.log('Starting to fetch calendar data from:', url); 
 
     try {
         const response = await fetch(url); // Send a GET request to the provided URL
@@ -362,26 +271,26 @@ async function loadApiData(url) {
 * with the data. It finds the table body by its selector, clears any existing rows, 
 * and iterates over the provided data to create and append new rows. Each person in the data 
 * object will have their own row in the table with details such as name, Pikett count,
-* Pikett-Pier count, and vacation days.
+* Pikett-Peer count, and vacation days.
 * 
 * Main features:
 * - Clears any existing rows in the table body before adding new data.
 * - Iterates over the keys in the data object to populate each row of the table.
-* - Adds columns for each data field: person name, Pikett count, Pikett-Pier count, and vacation days.
+* - Adds columns for each data field: person name, Pikett count, Pikett-Peer count, and vacation days.
 * 
 * @param {Object} data - An object containing event data to populate the table.
-* Each key represents a person's name, and each value contains details about Pikett, Pikett-Pier, and vacation counts.
+* Each key represents a person's name, and each value contains details about Pikett, Pikett-Peer, and vacation counts.
 * @returns {void}
 * 
 * @example
 * const data = {
-*   'Alice': { pikett: 3, pikettPier: 2, ferien: 5 },
-*   'Bob': { pikett: 1, pikettPier: 3, ferien: 4 }
+*   'Alice': { pikett: 3, PikettPeer: 2, ferien: 5 },
+*   'Bob': { pikett: 1, PikettPeer: 3, ferien: 4 }
 * };
 * renderTable(data); // Populates the HTML table with rows for Alice and Bob.
 */
 function renderTable(data) {
-    // // console.log('renderTable:', data);
+    // console.log('renderTable:', data);
     const tableBody = document.querySelector('#pikettTable tbody');
     tableBody.innerHTML = ''; // Clear the table to ensure no old data is present
 
@@ -397,9 +306,9 @@ function renderTable(data) {
         pikettCell.textContent = data[person].pikett; // Set the Pikett count
         row.appendChild(pikettCell);
 
-        const pikettPierCell = document.createElement('td'); // Cell for the Pikett-Pier count
-        pikettPierCell.textContent = data[person].pikettPier; // Set the Pikett-Pier count
-        row.appendChild(pikettPierCell);
+        const PikettPeerCell = document.createElement('td'); // Cell for the Pikett-Peer count
+        PikettPeerCell.textContent = data[person].PikettPeer; // Set the Pikett-Peer count
+        row.appendChild(PikettPeerCell);
 
         const ferienCell = document.createElement('td'); // Cell for the vacation count
         ferienCell.textContent = data[person].ferien; // Set the vacation count
@@ -414,60 +323,65 @@ function renderTable(data) {
  * 
  * This function takes an array of calendar event data and a selected year, and
  * returns a summary of the events categorized by person. It processes different
- * types of events, including Pikett, Pikett-Pier, and vacations, and counts the
+ * types of events, including Pikett, Pikett-Peer, and vacations, and counts the
  * respective days for each type of event for every person.
  * 
  * Main features:
  * - Processes events for a specific year and ignores those that do not fall within the selected year.
- * - Summarizes event details (Pikett, Pikett-Pier, and vacation intervals) for each person.
- * - Calculates total vacation days, Pikett days, and Pikett-Pier days for every person.
+ * - Summarizes event details (Pikett, Pikett-Peer, and vacation intervals) for each person.
+ * - Calculates total vacation days, Pikett days, and Pikett-Peer days for every person.
  * 
  * @async
  * @param {Array} calendarData - The array of calendar events. Each event must have a title, start, and end property.
  * @param {number} selectedYear - The year for which to calculate the summary.
  * @returns {Object} An object containing the summary of events per person.
- * Each key represents a person's name, and each value contains counts for Pikett, Pikett-Pier, and vacation.
+ * Each key represents a person's name, and each value contains counts for Pikett, Pikett-Peer, and vacation.
  * 
  * @example
  * const summary = await getEventSummary(calendarData, 2024); // Returns the summary of events for 2024
  */
 async function getEventSummary(calendarData, selectedYear) {
     const result = {};
-
     calendarData.forEach(event => {
-        const [personName, eventType] = event.title.split(' - ');
-        if (!personName || !eventType) return;
 
-        let eventStartDate = new Date(event.start + 'T00:00:00');
-        let eventEndDate = new Date(event.end + 'T00:00:00');
+        if(event.type !== 'Feiertag'){
+            // console.log('Calculate summary', event);
+            const [personName, eventType] = event.title.split(' - ');
+            if (!personName || !eventType) return;
 
-        // Process only events that fall within the selected year
-        if (eventStartDate.getFullYear() !== selectedYear && eventEndDate.getFullYear() !== selectedYear) return;
+            // console.log(event.start,event.end);
+            let eventStartDate = new Date(event.start);
+            let eventEndDate = new Date(event.end);
 
-        // Initialize the person in the result object if not already present
-        if (!result[personName]) {
-            result[personName] = { pikett: 0, pikettIntervals: [], pikettPier: 0, pikettPierIntervals: [], ferien: 0, ferienIntervals: [] };
+            // Process only events that fall within the selected year
+            if (eventStartDate.getFullYear() !== selectedYear && eventEndDate.getFullYear() !== selectedYear) return;
+
+            // Initialize the person in the result object if not already present
+            if (!result[personName]) {
+                result[personName] = { pikett: 0, pikettIntervals: [], PikettPeer: 0, PikettPeerIntervals: [], ferien: 0, ferienIntervals: [] };
+            }
+
+            // Count the events and store the intervals
+            switch (eventType.trim()) {
+                case 'Pikett':
+                    result[personName].pikettIntervals.push({ start: eventStartDate, end: eventEndDate });
+                    break;
+                case 'Pikett-Peer':
+                    result[personName].PikettPeerIntervals.push({ start: eventStartDate, end: eventEndDate });
+                    break;
+                case 'Ferien':
+                    result[personName].ferienIntervals.push({ start: eventStartDate, end: eventEndDate });
+                    break;
+            }
         }
 
-        // Count the events and store the intervals
-        switch (eventType.trim()) {
-            case 'Pikett':
-                result[personName].pikettIntervals.push({ start: eventStartDate, end: eventEndDate });
-                break;
-            case 'Pikett-Pier':
-                result[personName].pikettPierIntervals.push({ start: eventStartDate, end: eventEndDate });
-                break;
-            case 'Ferien':
-                result[personName].ferienIntervals.push({ start: eventStartDate, end: eventEndDate });
-                break;
-        }
     });
 
     // Calculate the number of vacation days after processing all events
     for (const person in result) {
         let totalVacationDays = 0;
         let totalPikettDays = 0;
-        let totalPikettPierDays = 0;
+        let totalPikettPeerDays = 0;
 
         result[person].ferienIntervals.forEach(interval => {
             totalVacationDays += calculateWorkdays(interval.start, interval.end);
@@ -477,8 +391,8 @@ async function getEventSummary(calendarData, selectedYear) {
             totalPikettDays += calculatePikettkdays(interval.start, interval.end);
         });
 
-        result[person].pikettPierIntervals.forEach(interval => {
-            totalPikettPierDays += calculateWorkdays(interval.start, interval.end);
+        result[person].PikettPeerIntervals.forEach(interval => {
+            totalPikettPeerDays += calculateWorkdays(interval.start, interval.end);
         });
 
         result[person].ferien = totalVacationDays;
@@ -487,8 +401,8 @@ async function getEventSummary(calendarData, selectedYear) {
         result[person].pikett = totalPikettDays;
         // console.log(`Person: ${person}, Pikett Intervals: ${result[person].pikettIntervals}, Total Pikett Days: ${totalPikettDays}`);
 
-        result[person].pikettPier = totalPikettPierDays;
-        // console.log(`Person: ${person}, Pikett-Pier Intervals: ${result[person].pikettIntervals}, Total Pikett-Pier Days: ${totalPikettPierDays}`);
+        result[person].PikettPeer = totalPikettPeerDays;
+        // console.log(`Person: ${person}, Pikett-Peer Intervals: ${result[person].pikettIntervals}, Total Pikett-Peer Days: ${totalPikettPeerDays}`);
     }
 
     return result;
@@ -519,8 +433,8 @@ function calculateWorkdays(startDate, endDate) {
     let currentDate = new Date(startDate); // Create a copy of the start date
 
     // Ensure times are set correctly to midnight
-    currentDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
+    currentDate.setHours(1, 0, 0, 0);
+    endDate.setHours(23, 0, 0, 0);
 
     // Iterate over each day in the period, including the end date
     while (currentDate.getTime() < endDate.getTime()) {
@@ -567,8 +481,8 @@ function calculatePikettkdays(startDate, endDate) {
     let currentDate = new Date(startDate); // Create a copy of the start date
 
     // Ensure times are set correctly to midnight
-    currentDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
+    currentDate.setHours(10, 0, 0, 0);
+    endDate.setHours(10, 0, 0, 0);
 
     // Iterate over each day in the period, including the end date
     while (currentDate.getTime() < endDate.getTime()) {
@@ -583,52 +497,13 @@ function calculatePikettkdays(startDate, endDate) {
     return count;
 }
 
-/**
- * Converts a date string between different formats.
- * 
- * This function takes a date string in either "dd.MM.yyyy" or "yyyy-MM-dd" format
- * and converts it to the other format. If the date string is in the format "dd.MM.yyyy",
- * it converts it to "yyyy-MM-dd". If the date string is in the format "yyyy-MM-dd",
- * it converts it to "dd.MM.yyyy".
- * 
- * Main features:
- * - Detects the input format by checking for either a period (.) or a dash (-).
- * - Converts between European "dd.MM.yyyy" and ISO "yyyy-MM-dd" formats.
- * - Returns the reformatted date string.
- * 
- * @param {string} dateString - The date string to convert. Expected formats: "dd.MM.yyyy" or "yyyy-MM-dd".
- * @returns {string} - The reformatted date string.
- * 
- * @example
- * const isoDate = convertToISOFormat('15.08.2024'); // Returns "2024-08-15"
- * const europeanDate = convertToISOFormat('2024-08-15'); // Returns "15.08.2024"
- */
-function convertToISOFormat(dateString) {
-    // If the date comes in the format "dd.MM.yyyy", reformat it to "yyyy-MM-dd"
-    if (dateString.includes('.')) {
-        // console.log('convertToISOFormat(.): ' + dateString);
-        const [day, month, year] = dateString.split('.');
-        // console.log('day: ' + day + ', month: ' + month + ', year: ' + year);
-        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-    }
-
-    // If the date comes in the format "yyyy-MM-dd", reformat it to "dd.MM.yyyy"
-    if (dateString.includes('-')) {
-        // console.log('convertToISOFormat(-): ' + dateString);
-        const [year, month, day] = dateString.split('-');
-        // console.log('day: ' + day + ', month: ' + month + ', year: ' + year);
-        return `${day.padStart(2, '0')}.${month.padStart(2, '0')}.${year}`;
-    }
-
-    // If the input format does not match expected patterns, return an empty string or handle appropriately
-    return ''; 
-}
-
 function formatDateToShortISOFormat(date) {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
+    const hours = String(date.getHours()).toString().padStart(2, '0');
+    const minutes = String(date.getMinutes()).toString().padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
 
 // Export events per person or all events
@@ -687,7 +562,7 @@ function formatDateToICS(date) {
 function getEventColors(type) {
     const colorMap = [
         { regex: /^Pikett$/, color: 'red' },
-        { regex: /^Pikett-Pier$/, color: 'orange' },
+        { regex: /^Pikett-Peer$/, color: 'orange' },
         { regex: /^(Kurs|Aus\/Weiterbildung)$/, color: '#A37563' },
         { regex: /^(Militär|ZV\/EO|Zivil)$/, color: '#006400' },
         { regex: /^Ferien$/, color: '#05c27c' },
@@ -813,14 +688,29 @@ function exportFilteredEvents(events, filterFn, filename, exportFn) {
 function setModalEventData(event) {
 
     const eventStartDate = formatDateToShortISOFormat(event.start);
-    const eventEndDate = formatDateToShortISOFormat(new Date(event.end.setDate(event.end.getDate() - 1))); // remove one day from the end-date
+    //const eventEndDate = formatDateToShortISOFormat(new Date(event.end.setDate(event.end.getDate() - 1))); // remove one day from the end-date
+    const eventEndDate = formatDateToShortISOFormat(event.end); // remove one day from the end-date
 
-    document.getElementById('id').textContent = `id: ${event.id}`;
-    document.getElementById('title').textContent = `title: ${event.title}`;
-    document.getElementById('date').textContent = `start: ${eventStartDate} end: ${eventEndDate}`;
+    var days = 0;
+    for (const [key, value] of Object.entries(event.extendedProps)) {
+        if(value === 'Pikett'){
+            days = calculatePikettkdays(event.start,event.end)
+        }else{
+            days = calculateWorkdays(event.start,event.end)
+        }
+    };
+
+    // const eventTitle = event.title.split(' - ');
+    // document.getElementById('updateExportEventTitle').textContent = eventTitle[0];
+
+    if(event.id){
+        document.getElementById('singleEvent-id').textContent = `id: ${event.id}`;
+    }
+    document.getElementById('singleEvent-title').textContent = `${event.title}, ${days} Tage`;
+    document.getElementById('singleEvent-date').textContent = `von: ${eventStartDate} bis: ${eventEndDate}`;
     
-    /*
     // Falls es erweiterte Eigenschaften gibt, hier setzen
+    /*     
     const otherElement = document.getElementById('other');
     otherElement.textContent = '';
     for (const [key, value] of Object.entries(event.extendedProps)) {
@@ -865,4 +755,17 @@ function getFormData(form) {
 
     console.log('Formulardaten extrahiert:', data);
     return data;
+}
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+
+    if (parts.length === 2) {
+        const cookieValue = parts.pop().split(';').shift(); // Extrahiere den Cookie-Wert einmal
+        // console.log("getCookie:", cookieValue);
+        return cookieValue; // Gib den Cookie-Wert zurück
+    }
+
+    return null; // Wenn kein Cookie gefunden wird, gib null zurück
 }
