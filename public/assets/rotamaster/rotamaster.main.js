@@ -705,6 +705,8 @@ function setModalEventData(event) {
 
     if(event.id){
         document.getElementById('singleEvent-id').textContent = `id: ${event.id}`;
+    }else{
+        document.getElementById('singleEvent-id').textContent = 'id: n/a, this event is form a file!';
     }
     document.getElementById('singleEvent-title').textContent = `${event.title}, ${days} Tage`;
     document.getElementById('singleEvent-date').textContent = `von: ${eventStartDate} bis: ${eventEndDate}`;
