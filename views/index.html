@@ -65,17 +65,12 @@
                 // Get calendarEvents from SQLite and concatenate holidays and events to one Array
                 const events = await readDBData('/api/event/read/*');
                 const holidays = await loadApiData('/api/event/get');
-                const calendarEvents = [];
-                if(holidays){
-                    calendarEvents.push(...holidays);
-                };
-                if (events && events.length > 0) {
-                    // console.log(events);
-                    calendarEvents.push(...events);
-                } else if (events) {
-                    calendarEvents.push(events);
-                };
-                
+                let calendarEvents = [];
+                calendarEvents = [
+                    ...(holidays || []), // Feiertage (falls vorhanden)
+                    ...(Array.isArray(events) ? events : [events] || []) // User Events als Array
+                ];
+                            
                 // Wait for the result of the getPerson function and fill the datalist element
                 const person = await readDBData('/api/person/read');
                 var personNames = new Array;
@@ -107,6 +102,9 @@
                     // concatenate calendarConfig from rotamaster.js
                     ...calendarConfig,
 
+                    // JSON feed that the calendar will fetch Event Objects from.
+                    events: calendarEvents,
+
                     customButtons: {
                         exportToIcs: {
                             // Create a Bootstrap-Modal-Instance for multipleEvents and open it
@@ -122,40 +120,42 @@
                             }
                         },
                         filterEvents: {
-                            // Filter events to the current user
                             text: 'My Events',
                             click: async function() {
-                                const response = await fetch(`/api/event/read/${username}`);
-                                if (!response.ok) {
-                                    throw new Error(`Failed to fetch user events of ${username}`);
-                                }
-                                const userEvents = await response.json();
+                                const button = document.querySelector('.fc-filterEvents-button');
                                 const holidays = await loadApiData('/api/event/get');
-                                const calendarEvents = [];
-                                if(holidays){
-                                    calendarEvents.push(...holidays);
-                                };
-                                if (userEvents && userEvents.length > 0) {
-                                    // console.log(events);
-                                    calendarEvents.push(...userEvents);
-                                } else if (userEvents) {
-                                    calendarEvents.push(userEvents);
-                                };
+                                let currentEvents = [];
+                                let calendarEvents = [];
+
+                                if (isMyEvents = button.textContent === 'My Events') {
+                                    // Filter events to the current user
+                                    const response = await fetch(`/api/event/read/${username}`);
+                                    if (!response.ok) {
+                                        throw new Error(`Failed to fetch user events of ${username}`);
+                                    }
+                                    currentEvents = await response.json();
+                                    button.textContent = 'All Events';
+                                }else{
+                                    // Fetch all events
+                                    currentEvents = await loadApiData('/api/event/read/*');
+                                    button.textContent = 'My Events';
+                                }
+
+                                calendarEvents = [
+                                    ...(holidays || []), // Feiertage (falls vorhanden)
+                                    ...(Array.isArray(currentEvents) ? currentEvents : [currentEvents] || []) // User Events als Array
+                                ];
+
                                 calendar.removeAllEvents();
                                 calendar.addEventSource(calendarEvents);
                             }
                         }
                     },
 
-                    // JSON feed that the calendar will fetch Event Objects from.
-                    events: calendarEvents,
-
                     // view is changed or the date changes
                     datesSet: function(info) {
                         
                         let displayedYear = calcDisplayedYear(info);
-                        // const customTitle = `Planning ${displayedYear}`;
-                        //document.querySelector('.fc-toolbar-title').textContent = customTitle;
 
                         // Display the year after the Summary text
                         if (displayedYear) {
@@ -185,8 +185,10 @@
                         singleEvent.show();
 
                         const exportButton = document.getElementById('btnUpdateExport'); 
-                        exportButton.onclick = handleModalButtonClick.bind(null, event);
-
+                        // exportButton.onclick = handleModalButtonClick.bind(null, event, calendar);
+                        exportButton.onclick = function() {
+                            handleModalButtonClick(event, calendar);
+                        };
                     },
 
                     // date range is selected
@@ -328,10 +330,23 @@
                     }
 
                     try {
-                        // Perform the API call using fetch
+                        // Perform the API call using fetch add data
                         const newevent = await createDBData('/api/event/insert', data);
                         if (newevent === 200) {
-                            window.location.reload(); // Reload the page to show updated data
+                            // window.location.reload(); // Reload the page to show updated data
+                            /*
+                            const events = await readDBData('/api/event/read/*');
+                            let calendarEvents = [];
+                            calendarEvents = [
+                                ...(holidays || []), // Feiertage (falls vorhanden)
+                                ...(Array.isArray(events) ? events : [events] || []) // User Events als Array
+                            ];
+                            calendar.removeAllEvents();
+                            calendar.addEventSource(calendarEvents);
+                            */
+                            refreshCalendarData(calendar);
+                            const button = document.querySelector('.fc-filterEvents-button');
+                            button.textContent = 'My Events';
                         } else {
                             alert(newevent);
                         }

@@ -1,8 +1,37 @@
 /**
- * CalendarConfig
+ * Configuration object for the FullCalendar instance.
+ * 
+ * This constant defines the default configuration settings for a FullCalendar instance, 
+ * including the application version, time zone, locale, initial view, toolbar layout, 
+ * button labels, and various display preferences. It centralizes the calendar setup 
+ * to ensure consistency across the application.
+ *
+ * @constant
+ * @type {Object}
+ * @property {string} appVersion - The version of the application.
+ * @property {string} timeZone - The time zone setting for the calendar (e.g., 'local').
+ * @property {string} locale - The locale for date and time formatting (e.g., 'de-CH').
+ * @property {string} initialView - The default view when the calendar is loaded (e.g., 'multiMonthYear').
+ * @property {number} multiMonthMinWidth - The minimum width for multi-month views in pixels.
+ * @property {number} multiMonthMaxColumns - The maximum number of columns in multi-month views.
+ * @property {Object} headerToolbar - Defines the layout of the toolbar, including buttons for navigation and views.
+ * @property {Object} buttonText - Custom labels for calendar buttons (e.g., 'Heute' for 'today').
+ * @property {boolean} weekNumbers - Whether to display week numbers in the calendar.
+ * @property {boolean} dayMaxEvents - Whether to limit the number of events displayed per day.
+ * @property {boolean} showNonCurrentDates - Whether to show dates from adjacent months in the current view.
+ * @property {boolean} fixedWeekCount - Whether each month should be displayed with a fixed number of weeks.
+ * @property {string} weekNumberCalculation - The method for calculating week numbers (e.g., 'ISO').
+ * @property {boolean} selectable - Whether users can select date ranges in the calendar.
+ * @property {boolean} editable - Whether events can be edited directly in the calendar.
+ * @property {boolean} displayEventTime - Whether to display the time of events in the calendar.
+ * @property {boolean} navLinks - Whether navigation links are enabled for days and weeks.
+ *
+ * @example
+ * const calendar = new FullCalendar.Calendar(calendarElement, calendarConfig);
+ * calendar.render();
  */
 const calendarConfig = {
-    appVersion: "5.1.0",
+    appVersion: "5.2.0",
     timeZone: 'local',
     locale: 'de-CH',
     initialView: 'multiMonthYear',
@@ -582,7 +611,28 @@ function getEventColors(type) {
     return '#378006';
 }
 
-// CRUD Functions
+/**
+ * Sends data to a database using a POST request and returns the response status.
+ * 
+ * This asynchronous function performs a POST request to the specified API endpoint, 
+ * sending the provided data as a JSON payload. If the request is successful, the HTTP 
+ * status code is returned. Otherwise, an error message including the response status 
+ * and status text is returned.
+ *
+ * @async
+ * @param {string} url - The API endpoint URL where the data will be sent.
+ * @param {Object} data - The data object to be sent to the server.
+ * @returns {number|string} - The HTTP status code if the request is successful; otherwise, an error message.
+ *
+ * @example
+ * const data = { name: "John", type: "Meeting", start: "2024-12-01", end: "2024-12-02" };
+ * const status = await createDBData('/api/event/insert', data);
+ * if (status === 200) {
+ *     console.log('Data successfully inserted into the database.');
+ * } else {
+ *     console.error('Failed to insert data:', status);
+ * }
+ */
 async function createDBData(url, data){
     const response = await fetch(url, {
         method: 'POST',
@@ -598,6 +648,26 @@ async function createDBData(url, data){
     }
 }
 
+/**
+ * Fetches data from a database via an API and returns the result as JSON.
+ * 
+ * This asynchronous function performs a GET request to the specified API endpoint,
+ * retrieves the data, and converts it into a JSON object. If the request is successful,
+ * the parsed JSON data is returned. If the request fails, an error message containing 
+ * the response status and status text is returned.
+ *
+ * @async
+ * @param {string} url - The API endpoint URL to fetch data from.
+ * @returns {Object|string} - The JSON data if the request is successful; otherwise, an error message.
+ *
+ * @example
+ * const data = await readDBData('/api/event/get');
+ * if (typeof data === 'object') {
+ *     console.log('Retrieved data:', data);
+ * } else {
+ *     console.error('Failed to fetch data:', data);
+ * }
+ */
 async function readDBData(url) {
     const response = await fetch(url);
     if (response.ok) {
@@ -641,7 +711,7 @@ async function deleteDBData(eventId){
             const responseData = await response.json();
             console.log(responseData.message); // Ausgabe: "Record successfully deleted"
             // Aktualisiere den Kalender oder die UI, nachdem der Record gelöscht wurde
-            window.location.reload();
+            // window.location.reload();
         } else {
             console.error('Failed to delete event:', response.status);
             alert('Fehler beim Löschen des Events');
@@ -722,26 +792,88 @@ function setModalEventData(event) {
 }
 
 /**
- * Verarbeitet den Klick auf die Schaltflächen im Modal.
+ * Handles actions triggered by modal buttons for an event.
+ * 
+ * This function determines which action to perform based on the selected button in the modal:
+ * - If the "Export Event" button is selected, it exports the event as an ICS file.
+ * - If the "Remove Event" button is selected, it confirms the deletion of the event and removes it 
+ *   from the database if an event ID is present. If no ID exists, an alert is displayed.
  *
- * @param {Object} event - Das Event-Objekt.
+ * @param {Object} event - The event object containing details about the calendar event.
+ * @param {string} event.id - The unique identifier of the event.
+ * @param {string} event.title - The title of the event.
+ *
+ * @example
+ * // Example usage triggered by a modal button:
+ * handleModalButtonClick(event);
  */
-function handleModalButtonClick(event) {
+function handleModalButtonClick(event, calendar) {
     if (btnExportEvent.checked) {
         exportCalendarEvents(event, `${event.title}.ics`);
     }
     if (btnRemoveEvent.checked) {
         if(event.id){
             if (confirm(`Event ${event.id}, ${event.title} wirklich löschen?`)) {
-                deleteDBData(event.id);
+                deleteDBData(event.id)
+                .then(() => {
+                    // Fetch new data and refresh the calendar
+                    refreshCalendarData(calendar);
+                })
+                .catch(error => {
+                    console.error('Error deleting event:', error);
+                    alert('Fehler beim Löschen des Events.');
+                });
             }
         }else{
             alert (`${event.title} kann nicht gelöscht werden!`)
         }
     }
+    const exportModal = bootstrap.Modal.getInstance(document.getElementById('singleEvent'));
+    exportModal.hide();
 }
 
-// Funktion zum Extrahieren und Validieren der Formulardaten
+/**
+ * Refreshes the calendar by fetching updated event data.
+ */
+async function refreshCalendarData(calendar) {
+    try {
+        const holidays = await loadApiData('/api/event/get');
+        const events = await readDBData('/api/event/read/*');
+        let calendarEvents = [];
+        calendarEvents = [
+            ...(holidays || []), // Feiertage (falls vorhanden)
+            ...(Array.isArray(events) ? events : [events] || []) // User Events als Array
+        ];
+        calendar.removeAllEvents();
+        calendar.addEventSource(calendarEvents);
+        const button = document.querySelector('.fc-filterEvents-button');
+        button.textContent = 'My Events';
+    } catch (error) {
+        console.error('Error refreshing calendar data:', error);
+        alert('Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
+    }
+}
+
+/**
+ * Extracts and validates data from an HTML form.
+ * 
+ * This function retrieves all form inputs using the FormData API,
+ * converts them into a JavaScript object, and validates the presence 
+ * of required fields (`name`, `type`, `start`, and `end`). If any 
+ * required field is missing, the function logs an error and returns `null`.
+ *
+ * @param {HTMLFormElement} form - The form element to extract data from.
+ * @returns {Object|null} - A JavaScript object containing the form data if all required fields are present, otherwise `null`.
+ *
+ * @example
+ * const form = document.querySelector('#eventForm');
+ * const formData = getFormData(form);
+ * if (formData) {
+ *     console.log('Valid form data:', formData);
+ * } else {
+ *     console.error('Invalid form data.');
+ * }
+ */
 function getFormData(form) {
     const formData = new FormData(form);
     const data = {};
@@ -755,19 +887,34 @@ function getFormData(form) {
         return null;
     }
 
-    console.log('Formulardaten extrahiert:', data);
+    // console.log('Formulardaten extrahiert:', data);
     return data;
 }
 
+/**
+ * Retrieves the value of a specific cookie by name.
+ * 
+ * This function searches through the document's cookies, locates the cookie
+ * with the specified name, and returns its value. If the cookie is not found,
+ * the function returns `null`.
+ *
+ * @param {string} name - The name of the cookie to retrieve.
+ * @returns {string|null} - The value of the cookie if found, otherwise `null`.
+ *
+ * @example
+ * // Assuming a cookie 'username=JohnDoe' exists:
+ * const username = getCookie('username');
+ * console.log(username); // Output: 'JohnDoe'
+ */
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
 
     if (parts.length === 2) {
-        const cookieValue = parts.pop().split(';').shift(); // Extrahiere den Cookie-Wert einmal
+        const cookieValue = parts.pop().split(';').shift();
         // console.log("getCookie:", cookieValue);
-        return cookieValue; // Gib den Cookie-Wert zurück
+        return cookieValue;
     }
 
-    return null; // Wenn kein Cookie gefunden wird, gib null zurück
+    return null;
 }
