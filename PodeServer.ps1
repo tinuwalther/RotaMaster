@@ -34,19 +34,24 @@ if($CurrentOS -eq [OSType]::Windows){
 }else{
     $Address = '*'
 }
-$Port     = 8443
-$Protocol = 'https'
 
 # We'll use 2 threads to handle API requests
 Start-PodeServer -Browse -Threads 2 {
     Write-Host "Press Ctrl. + C to terminate the Pode server" -ForegroundColor Yellow
 
     # Enables Logging
-    New-PodeLoggingMethod -File -Name 'error' -MaxDays 7 | Enable-PodeErrorLogging
-    New-PodeLoggingMethod -File -Name 'requests' -MaxDays 7 | Enable-PodeRequestLogging
+    # [System.Diagnostics.EventLog]::CreateEventSource('RotaMaster', 'Application')
+    # New-PodeLoggingMethod -EventViewer -EventLogName 'Application' -Source 'RotaMaster' -Batch 10
+    # try {...}catch {$_ | Write-PodeErrorLog}
+    New-PodeLoggingMethod -File -Name 'error'    -MaxDays 7 -Batch 10 | Enable-PodeErrorLogging
+    New-PodeLoggingMethod -File -Name 'requests' -MaxDays 7 -Batch 10 | Enable-PodeRequestLogging
 
     # Here our sessions will last for 10 Std, and will be extended on each request
     Enable-PodeSessionMiddleware -Duration 36000 -Extend
+
+    # Rate limit
+    Add-PodeLimitRule -Type IP -Values * -Limit 100 -Seconds 60
+    Add-PodeLimitRule -Type Route -Values '/api' -Limit 10 -Seconds 1
 
     # Setup ActiveDirectory authentication
     # https://pode.readthedocs.io/en/latest/Tutorials/Authentication/Inbuilt/WindowsAD/#usage
@@ -57,7 +62,7 @@ Start-PodeServer -Browse -Threads 2 {
     #     return @{ User = $user }
     # }
 
-    # Setup File authentication
+    # Setup File authentication -> Initialize-WebEndpoints in RotaMaster.psm1
     $ApiPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'api'
     New-PodeAuthScheme -Form | Add-PodeAuthUserFile -FilePath (Join-Path -Path $ApiPath -ChildPath 'users.json') -Name 'Login' -FailureUrl '/login' -SuccessUrl '/' -ScriptBlock {
         param($user)
@@ -65,37 +70,14 @@ Start-PodeServer -Browse -Threads 2 {
         return @{ User = $user }
     }
 
-    # Redirected to the login page
-    Add-PodeRoute -Method Get -Path '/' -Authentication 'Login' -ScriptBlock {
-        $username = $WebEvent.Auth.User.Name
-        Write-PodeViewResponse -Path 'index.html' -Data @{ Username = $username }
-    }
-
-    # the login page itself
-    Add-PodeRoute -Method Get -Path '/login' -Authentication 'Login' -Login -ScriptBlock {
-        Write-PodeViewResponse -Path 'login.pode' -FlashMessages
-    }
-
-    # the POST action for the <form>
-    Add-PodeRoute -Method Post -Path '/login' -Authentication 'Login' -Login
-    
-    # the logout Route
-    Add-PodeRoute -Method Post -Path '/logout' -Authentication 'Login' -Logout
-    Add-PodeRoute -Method Get -Path '/logout' -Authentication 'Login' -Logout -ScriptBlock {
-        # Beende die aktuelle Sitzung, um den Benutzer auszuloggen
-        Remove-PodeAuth -Name 'Login'
-    
-        # Leite den Benutzer auf die Login-Seite weiter (oder eine andere Seite)
-        Redirect-PodeRoute -Location '/login'
-    }
-    #endregion
-
     Import-Module PSSQLite -Force
     
     $BinPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
     Import-Module -FullyQualifiedName (Join-Path -Path $BinPath -ChildPath 'RotaMaster.psd1')
 
-    # Add listener to Port 8080 for Protocol http
+    # Add listener
+    $Port     = (Get-PodeConfig).Port
+    $Protocol = (Get-PodeConfig).Protocol
     # Add-PodeEndpoint -Hostname example.pode.com -Port $Port -Protocol $Protocol -LookupHostname
     Add-PodeEndpoint -Address $Address -Port $Port -Protocol $Protocol -SelfSigned
 
