@@ -348,6 +348,33 @@ function Initialize-WebEndpoints {
     }
 
     process{
+        # Redirected to the login page
+        Add-PodeRoute -Method Get -Path '/' -Authentication 'Login' -ScriptBlock {
+            $username = $WebEvent.Auth.User.Name
+            Write-PodeViewResponse -Path 'index.html' -Data @{ Username = $username }
+        }
+
+        # the login page itself
+        Add-PodeRoute -Method Get -Path '/login' -Authentication 'Login' -Login -ScriptBlock {
+            Write-PodeViewResponse -Path 'login.pode' -FlashMessages
+        }
+
+        # the POST action for the <form>
+        Add-PodeRoute -Method Post -Path '/login' -Authentication 'Login' -Login
+        
+        # the logout Route
+        Add-PodeRoute -Method Post -Path '/logout' -Authentication 'Login' -Logout
+
+        Add-PodeRoute -Method Get -Path '/logout' -Authentication 'Login' -Logout -ScriptBlock {
+            # Beende die aktuelle Sitzung, um den Benutzer auszuloggen
+            Remove-PodeAuth -Name 'Login'
+            if(Test-PodeCookie  -Name 'CurrentUser'){
+                Remove-PodeCookie -Name 'CurrentUser'
+            }
+            # Leite den Benutzer auf die Login-Seite weiter (oder eine andere Seite)
+            Redirect-PodeRoute -Location '/login'
+        }
+
         # Absence
         Add-PodeRoute -Method Get -Path '/absence' -Authentication 'Login' -ScriptBlock {
             Write-PodeViewResponse -Path 'absence.html'
