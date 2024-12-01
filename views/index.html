@@ -76,7 +76,7 @@
                     calendarEvents.push(events);
                 };
                 
-                //Wait for the result of the getPerson function and fill the datalist element
+                // Wait for the result of the getPerson function and fill the datalist element
                 const person = await readDBData('/api/person/read');
                 var personNames = new Array;
                 person.map((item) => {
@@ -109,9 +109,9 @@
 
                     customButtons: {
                         exportToIcs: {
+                            // Create a Bootstrap-Modal-Instance for multipleEvents and open it
                             text: 'Export Events',
                             click: function() {
-                                // Erstelle eine Bootstrap-Modal-Instanz und öffne das Modal
                                 const exportModal = new bootstrap.Modal(document.getElementById('multipleEvents'), {
                                     keyboard: true
                                 });
@@ -122,6 +122,7 @@
                             }
                         },
                         filterEvents: {
+                            // Filter events to the current user
                             text: 'My Events',
                             click: async function() {
                                 const response = await fetch(`/api/event/read/${username}`);
@@ -174,6 +175,7 @@
 
                     // event is clicked
                     eventClick: function(info) {
+                        // Create a Bootstrap-Modal-Instance for singleEvent and open it
                         const event = info.event;
                         const singleEvent = new bootstrap.Modal(document.getElementById('singleEvent'), {
                             keyboard: true
