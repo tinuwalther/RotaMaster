@@ -124,10 +124,11 @@
                             click: async function() {
                                 const button = document.querySelector('.fc-filterEvents-button');
                                 const holidays = await loadApiData('/api/event/get');
+                                isMyEvents = button.textContent;
                                 let currentEvents = [];
                                 let calendarEvents = [];
 
-                                if (isMyEvents = button.textContent === 'My Events') {
+                                if (isMyEvents.includes('My Events')) {
                                     // Filter events to the current user
                                     const response = await fetch(`/api/event/read/${username}`);
                                     if (!response.ok) {
@@ -135,7 +136,7 @@
                                     }
                                     currentEvents = await response.json();
                                     button.textContent = 'All Events';
-                                }else{
+                                }else if(isMyEvents.includes('All Events')) {
                                     // Fetch all events
                                     currentEvents = await loadApiData('/api/event/read/*');
                                     button.textContent = 'My Events';
@@ -171,6 +172,7 @@
                             renderTable(summary); 
                         });
 
+                        document.querySelector('.fc-filterEvents-button').textContent = 'My Events';
                     },
 
                     // event is clicked
@@ -211,7 +213,7 @@
                         document.getElementById('start').value = formattedStartDate;
                         document.getElementById('end').value = formattedEndDate;
                     }
-
+                    
                 });
 
                 calendar.render();
