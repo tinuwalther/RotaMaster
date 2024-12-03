@@ -172,6 +172,7 @@
                             renderTable(summary); 
                         });
 
+                        refreshCalendarData(calendar);
                         document.querySelector('.fc-filterEvents-button').textContent = 'My Events';
                     },
 
@@ -336,16 +337,6 @@
                         const newevent = await createDBData('/api/event/insert', data);
                         if (newevent === 200) {
                             // window.location.reload(); // Reload the page to show updated data
-                            /*
-                            const events = await readDBData('/api/event/read/*');
-                            let calendarEvents = [];
-                            calendarEvents = [
-                                ...(holidays || []), // Feiertage (falls vorhanden)
-                                ...(Array.isArray(events) ? events : [events] || []) // User Events als Array
-                            ];
-                            calendar.removeAllEvents();
-                            calendar.addEventSource(calendarEvents);
-                            */
                             refreshCalendarData(calendar);
                             const button = document.querySelector('.fc-filterEvents-button');
                             button.textContent = 'My Events';
