@@ -31,7 +31,7 @@
  * calendar.render();
  */
 const calendarConfig = {
-    appVersion: "5.2.0",
+    appVersion: "5.2.2",
     timeZone: 'local',
     locale: 'de-CH',
     initialView: 'multiMonthYear',
@@ -48,7 +48,7 @@ const calendarConfig = {
         month: 'Monat',
         list: 'Liste'
     },
-    weekNumbers: false,
+    weekNumbers: true,
     dayMaxEvents: true,
     showNonCurrentDates: false,
     fixedWeekCount: false,
