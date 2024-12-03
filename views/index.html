@@ -213,6 +213,18 @@
                         // Set values in form elements
                         document.getElementById('start').value = formattedStartDate;
                         document.getElementById('end').value = formattedEndDate;
+                    },
+
+                    // event is moved
+                    eventDrop: function(info) {
+                        message = `${info.event.title} was moved to ${formatDateToShortISOFormat(info.event.start)}`;
+                        if (!confirm("Are you sure about this change?\n" + message)) {
+                            console.log(`I forgot it for id ${info.event.id}`)
+                            info.revert();
+                        }else{
+                            console.log(`I did it for id ${info.event.id}`)
+                            // update table
+                        }
                     }
                     
                 });
