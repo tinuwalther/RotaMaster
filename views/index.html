@@ -216,14 +216,18 @@
                     },
 
                     // event is moved
-                    eventDrop: function(info) {
-                        message = `${info.event.title} was moved to ${formatDateToShortISOFormat(info.event.start)}`;
-                        if (!confirm("Are you sure about this change?\n" + message)) {
-                            console.log(`I forgot it for id ${info.event.id}`)
-                            info.revert();
+                    eventDrop: async function(info) {
+                        message = `'${info.event.title}' verschieben nach ${formatDateToShortISOFormat(info.event.start).substring(0,10)}?`;
+                        if (confirm(message)) {
+                            const updatedEvent = {
+                                id: info.event.id,
+                                type: info.type,
+                                start: info.event.start,
+                                end: info.event.end
+                            };
+                            await updateDBData(updatedEvent);
                         }else{
-                            console.log(`I did it for id ${info.event.id}`)
-                            // update table
+                            info.revert();
                         }
                     }
                     
@@ -348,10 +352,10 @@
                         // Perform the API call using fetch add data
                         const newevent = await createDBData('/api/event/insert', data);
                         if (newevent === 200) {
-                            // window.location.reload(); // Reload the page to show updated data
-                            refreshCalendarData(calendar);
-                            const button = document.querySelector('.fc-filterEvents-button');
-                            button.textContent = 'My Events';
+                            window.location.reload(); // Reload the page to show updated data
+                            // refreshCalendarData(calendar);
+                            // const button = document.querySelector('.fc-filterEvents-button');
+                            // button.textContent = 'My Events';
                         } else {
                             alert(newevent);
                         }

@@ -31,7 +31,7 @@
  * calendar.render();
  */
 const calendarConfig = {
-    appVersion: "5.2.2",
+    appVersion: "5.2.3",
     timeZone: 'local',
     locale: 'de-CH',
     initialView: 'multiMonthYear',
@@ -678,8 +678,31 @@ async function readDBData(url) {
     }
 }
 
-function updateDBData(query, dbFile, elementId){
-    console.log('Not implemented yet:', query)
+async function updateDBData(event){
+    try {
+        // Sende UPDATE-Anfrage an die PowerShell API
+        const response = await fetch(`/api/event/update/${event.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(event)
+        });
+
+        // Überprüfe, ob die Anfrage erfolgreich war
+        if (response.ok) {
+            const responseData = await response.json();
+            console.log(responseData.message); // Ausgabe: "Record successfully updated"
+            // Aktualisiere den Kalender oder die UI, nachdem der Record gelöscht wurde
+            // window.location.reload();
+        } else {
+            console.error('Failed to update event:', response);
+            alert('Fehler beim Aktualisieren des Events: ' + response.status);
+        }
+    } catch (error) {
+        console.error('Error occurred while updating event:', error);
+        alert('Ein Fehler ist beim Aktualisieren des Events aufgetreten');
+    }
 }
 
 /**

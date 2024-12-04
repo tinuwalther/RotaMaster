@@ -642,6 +642,40 @@ function Initialize-ApiEndpoints {
             }
         }
 
+        # Update data from SQLiteDB for events
+        Add-PodeRoute -Method Put -Path '/api/event/update/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+
+            $id      = $WebEvent.Parameters['id']
+            $type    = $WebEvent.Data['type']
+            if($type -match '^Pikett$'){
+                $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 10:00"
+                $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 10:00"
+            }else{
+                $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
+                $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
+            }
+            $created = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $author  = $WebEvent.Auth.User.Name
+
+            $sql = @"
+        UPDATE events
+        SET 
+            start = '$start',
+            end = '$end',
+            created = '$created',
+            author = '$author'
+        WHERE id = '$id';
+"@
+
+            try {
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
+            } catch {
+                Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to update record: $_" } -StatusCode 500
+            }
+        }
+
         # Remove data from SQLiteDB for events
         Add-PodeRoute -Method Delete -Path '/api/event/delete/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
