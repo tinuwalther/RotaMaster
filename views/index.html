@@ -217,17 +217,22 @@
 
                     // event is moved
                     eventDrop: async function(info) {
-                        message = `'${info.event.title}' verschieben nach ${formatDateToShortISOFormat(info.event.start).substring(0,10)}?`;
-                        if (confirm(message)) {
-                            const updatedEvent = {
-                                id: info.event.id,
-                                type: info.type,
-                                start: info.event.start,
-                                end: info.event.end
-                            };
-                            await updateDBData(updatedEvent);
+                        if(info.event.id){
+                            message = `'${info.event.title}' verschieben nach ${formatDateToShortISOFormat(info.event.start).substring(0,10)}?`;
+                            if (confirm(message)) {
+                                const updatedEvent = {
+                                    id: info.event.id,
+                                    type: info.type,
+                                    start: info.event.start,
+                                    end: info.event.end
+                                };
+                                await updateDBData(updatedEvent);
+                            }else{
+                                info.revert();
+                            }
                         }else{
                             info.revert();
+                            alert(`'${info.event.title}' ist von einem CSV und kann nicht verschoben werden!`)
                         }
                     }
                     
