@@ -31,7 +31,7 @@
  * calendar.render();
  */
 const calendarConfig = {
-    appVersion: "5.2.3",
+    appVersion: "5.3.0",
     timeZone: 'local',
     locale: 'de-CH',
     initialView: 'multiMonthYear',
@@ -97,7 +97,7 @@ async function getNextYear(url) {
         // Check if the request was successful
         if (response.ok) {
             const result = await response.text(); // Read the response as plain text
-            // console.log('Success:', result); // Log the successful response
+            // console.log('DEBUG', 'Success:', result); // Log the successful response
         } else {
             console.error('Request failed with status:', response.status); // Log if the request failed
         }
@@ -136,15 +136,15 @@ function calcDisplayedYear(info) {
         // Extract the year and month
         displayedYear = centralDate.getFullYear();
         const displayedMonth = centralDate.getMonth() + 1; // Month is zero-based
-        // console.log('Month view - Displayed year:', displayedYear);
-        // console.log('Month view - Displayed month:', displayedMonth);
+        // console.log('DEBUG', 'Month view - Displayed year:', displayedYear);
+        // console.log('DEBUG', 'Month view - Displayed month:', displayedMonth);
     } else if (info.view.type === 'multiMonthYear') {
         const centralDate = new Date(
             (info.start.getTime() + info.end.getTime()) / 2
         );
         // Extract the year
         displayedYear = centralDate.getFullYear();
-        // console.log('Year view - Displayed year:', displayedYear);
+        // console.log('DEBUG', 'Year view - Displayed year:', displayedYear);
     }
 
     return displayedYear;
@@ -272,12 +272,12 @@ function fillDropdownOptions(selectId, values) {
 * If the request fails, the function returns an empty array.
 * 
 * @example
-* const events = await loadApiData('/api/event/get'); 
+* const events = await loadApiData('/api/event/read/*'); 
 * // console.log(events); // Logs the calendar event data or an empty array if an error occurs.
 */
 async function loadApiData(url) {
     var calendarData = []; // Initialize an empty array to store calendar event data
-    // console.log('Starting to fetch calendar data from:', url); 
+    // console.log('DEBUG', 'Starting to fetch calendar data from:', url); 
 
     try {
         const response = await fetch(url); // Send a GET request to the provided URL
@@ -319,7 +319,7 @@ async function loadApiData(url) {
 * renderTable(data); // Populates the HTML table with rows for Alice and Bob.
 */
 function renderTable(data) {
-    // console.log('renderTable:', data);
+    // console.log('DEBUG', 'renderTable:', data);
     const tableBody = document.querySelector('#pikettTable tbody');
     tableBody.innerHTML = ''; // Clear the table to ensure no old data is present
 
@@ -374,11 +374,11 @@ async function getEventSummary(calendarData, selectedYear) {
     calendarData.forEach(event => {
 
         if(event.type !== 'Feiertag'){
-            // console.log('Calculate summary', event);
+            // console.log('DEBUG', 'Calculate summary', event);
             const [personName, eventType] = event.title.split(' - ');
             if (!personName || !eventType) return;
 
-            // console.log(event.start,event.end);
+            // console.log('DEBUG', event.start,event.end);
             let eventStartDate = new Date(event.start);
             let eventEndDate = new Date(event.end);
 
@@ -425,13 +425,13 @@ async function getEventSummary(calendarData, selectedYear) {
         });
 
         result[person].ferien = totalVacationDays;
-        // console.log(`Person: ${person}, Vacation Intervals: ${result[person].ferienIntervals}, Total Vacation Days: ${totalVacationDays}`);
+        // console.log('DEBUG', `Person: ${person}, Vacation Intervals: ${result[person].ferienIntervals}, Total Vacation Days: ${totalVacationDays}`);
 
         result[person].pikett = totalPikettDays;
-        // console.log(`Person: ${person}, Pikett Intervals: ${result[person].pikettIntervals}, Total Pikett Days: ${totalPikettDays}`);
+        // console.log('DEBUG', `Person: ${person}, Pikett Intervals: ${result[person].pikettIntervals}, Total Pikett Days: ${totalPikettDays}`);
 
         result[person].PikettPeer = totalPikettPeerDays;
-        // console.log(`Person: ${person}, Pikett-Peer Intervals: ${result[person].pikettIntervals}, Total Pikett-Peer Days: ${totalPikettPeerDays}`);
+        // console.log('DEBUG', `Person: ${person}, Pikett-Peer Intervals: ${result[person].pikettIntervals}, Total Pikett-Peer Days: ${totalPikettPeerDays}`);
     }
 
     return result;
@@ -473,15 +473,15 @@ function calculateWorkdays(startDate, endDate) {
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
             count++; // Count only weekdays
         } else {
-            // console.log(`calculateWorkdays - Skipping weekend: ${currentDate.toDateString()}`);
+            // console.log('DEBUG', `calculateWorkdays - Skipping weekend: ${currentDate.toDateString()}`);
         }
-        // console.log(`calculateWorkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
+        // console.log('DEBUG', `calculateWorkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
 
         // Move to the next day
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // console.log('calculateWorkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of weekdays:', count);
+    // console.log('DEBUG', 'calculateWorkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of weekdays:', count);
     return count;
 }
 
@@ -516,13 +516,13 @@ function calculatePikettkdays(startDate, endDate) {
     // Iterate over each day in the period, including the end date
     while (currentDate.getTime() < endDate.getTime()) {
         count++; // Count each day
-        // console.log(`calculatePikettkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
+        // console.log('DEBUG', `calculatePikettkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
 
         // Move to the next day
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // console.log('calculatePikettkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of days:', count);
+    // console.log('DEBUG', 'calculatePikettkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of days:', count);
     return count;
 }
 
@@ -626,7 +626,7 @@ function getEventColors(type) {
  *
  * @example
  * const data = { name: "John", type: "Meeting", start: "2024-12-01", end: "2024-12-02" };
- * const status = await createDBData('/api/event/insert', data);
+ * const status = await createDBData('/api/event/create', data);
  * if (status === 200) {
  *     console.log('Data successfully inserted into the database.');
  * } else {
@@ -642,9 +642,13 @@ async function createDBData(url, data){
         body: JSON.stringify(data) // Convert form data to JSON string
     });
     if (response.ok) {
-        return response.status;
+        // console.log('DEBUG', response.status, response.statusText, `${data.name} - ${data.type}`); // Ausgabe: "Record successfully updated"
+        if(data.title.includes('Pikett') || data.title.includes('Ferien')){
+            window.location.reload();
+        }
     } else {
-        return 'Request failed with status:', response.status, response.statusText;
+        console.error('Failed to create event:', response, data);
+        alert(`Fehler beim Erstellen des Events ${data.name} - ${data.type}: ${response.status}, ${response.statusText}`);
     }
 }
 
@@ -661,7 +665,7 @@ async function createDBData(url, data){
  * @returns {Object|string} - The JSON data if the request is successful; otherwise, an error message.
  *
  * @example
- * const data = await readDBData('/api/event/get');
+ * const data = await readDBData('/api/event/read');
  * if (typeof data === 'object') {
  *     console.log('Retrieved data:', data);
  * } else {
@@ -674,14 +678,15 @@ async function readDBData(url) {
         const json = await response.json(); // Convert form data to JSON string
         return json
     } else {
+        console.error('Failed to read event:', response);
         return 'Request failed with status:', response.status, response.statusText;
     }
 }
 
-async function updateDBData(event){
+async function updateDBData(url, event){
     try {
         // Sende UPDATE-Anfrage an die PowerShell API
-        const response = await fetch(`/api/event/update/${event.id}`, {
+        const response = await fetch(`${url}/${event.id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -692,12 +697,12 @@ async function updateDBData(event){
         // Überprüfe, ob die Anfrage erfolgreich war
         if (response.ok) {
             const responseData = await response.json();
-            console.log(responseData.message); // Ausgabe: "Record successfully updated"
+            console.log('DEBUG', responseData.message); // Ausgabe: "Record successfully updated"
             // Aktualisiere den Kalender oder die UI, nachdem der Record gelöscht wurde
             // window.location.reload();
         } else {
-            console.error('Failed to update event:', response);
-            alert('Fehler beim Aktualisieren des Events: ' + response.status);
+            console.error('Failed to update event:', response, event);
+            alert(`Fehler beim Aktualisieren des Events ${event.name} - ${event.type}: ${response.status}, ${response.statusText}`);
         }
     } catch (error) {
         console.error('Error occurred while updating event:', error);
@@ -719,10 +724,10 @@ async function updateDBData(event){
  * @example
  * await deleteDBData('12345'); // Deletes the event with ID '12345' and reloads the page if successful.
  */
-async function deleteDBData(eventId){
+async function deleteDBData(url, event){
     try {
         // Sende DELETE-Anfrage an die PowerShell API
-        const response = await fetch(`/api/event/delete/${eventId}`, {
+        const response = await fetch(`${url}/${event.id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -732,12 +737,14 @@ async function deleteDBData(eventId){
         // Überprüfe, ob die Anfrage erfolgreich war
         if (response.ok) {
             const responseData = await response.json();
-            console.log(responseData.message); // Ausgabe: "Record successfully deleted"
+            console.log('DEBUG', responseData.message, event); // Ausgabe: "Record successfully deleted"
             // Aktualisiere den Kalender oder die UI, nachdem der Record gelöscht wurde
-            // window.location.reload();
+            if(event.title.includes('Pikett') || event.title.includes('Ferien')){
+                window.location.reload();
+            }
         } else {
-            console.error('Failed to delete event:', response.status);
-            alert('Fehler beim Löschen des Events');
+            console.error('Failed to delete event:', response, event);
+            alert(`Fehler beim Löschen des Events ${event.name} - ${event.type}: ${response.status}, ${response.statusText}`);
         }
     } catch (error) {
         console.error('Error occurred while deleting event:', error);
@@ -837,7 +844,7 @@ function handleModalButtonClick(event, calendar) {
     if (btnRemoveEvent.checked) {
         if(event.id){
             if (confirm(`Event ${event.id}, ${event.title} wirklich löschen?`)) {
-                deleteDBData(event.id)
+                deleteDBData('/api/event/delete', event)
                 .then(() => {
                     // Fetch new data and refresh the calendar
                     refreshCalendarData(calendar);
@@ -860,7 +867,7 @@ function handleModalButtonClick(event, calendar) {
  */
 async function refreshCalendarData(calendar) {
     try {
-        const holidays = await loadApiData('/api/event/get');
+        const holidays = await loadApiData('/api/csv/read');
         const events = await readDBData('/api/event/read/*');
         let calendarEvents = [];
         calendarEvents = [
@@ -910,7 +917,7 @@ function getFormData(form) {
         return null;
     }
 
-    // console.log('Formulardaten extrahiert:', data);
+    // console.log('DEBUG', 'Formulardaten extrahiert:', data);
     return data;
 }
 
@@ -935,7 +942,7 @@ function getCookie(name) {
 
     if (parts.length === 2) {
         const cookieValue = parts.pop().split(';').shift();
-        // console.log("getCookie:", cookieValue);
+        // console.log('DEBUG', "getCookie:", cookieValue);
         return cookieValue;
     }
 

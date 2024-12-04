@@ -35,7 +35,7 @@
             * for creating new events is included, where form submissions are intercepted, and data is sent to the API.
             *
             * Main features:
-            * - Loads calendar events from the API endpoint '/api/event/get'.
+            * - Loads calendar events from the API endpoint '/api/csv/read'.
             * - Initializes a FullCalendar instance with various configuration options (locale, views, toolbars, etc.).
             * - Handles 'dateClick' and 'select' interactions in the calendar.
             * - Intercepts form submissions to create new events by sending form data to the API endpoint '/api/event/new'.
@@ -64,7 +64,7 @@
 
                 // Get calendarEvents from SQLite and concatenate holidays and events to one Array
                 const events = await readDBData('/api/event/read/*');
-                const holidays = await loadApiData('/api/event/get');
+                const holidays = await loadApiData('/api/csv/read');
                 let calendarEvents = [];
                 calendarEvents = [
                     ...(holidays || []), // Feiertage (falls vorhanden)
@@ -163,12 +163,12 @@
                             const summaryElement = document.getElementById('eventSummary');
                             summaryElement.textContent = 'Summary ' + displayedYear;
                         } else {
-                            // console.log('No year found:', displayedYear);
+                            // console.log('DEBUG', 'No year found:', displayedYear);
                         }
 
                         // Call the function and render the table after the page has loaded
                         getEventSummary(calendarEvents, displayedYear).then(summary => {
-                            // console.log('Calculate summary');
+                            // console.log('DEBUG', 'Calculate summary');
                             renderTable(summary); 
                         });
 
@@ -200,7 +200,7 @@
                         // Convert start and end dates to Date objects
                         const eventStartDate = new Date(info.startStr);
                         const eventEndDate = new Date(info.endStr);
-                        // console.log('Filling data in event form', eventStartDate, eventEndDate);
+                        // console.log('DEBUG', 'Filling data in event form', eventStartDate, eventEndDate);
 
                         // Subtract one day from the end date because the endDate is not correctly passed from the calendar
                         eventEndDate.setDate(eventEndDate.getDate() - 1);
@@ -208,7 +208,7 @@
                         // Create formatted dates in the format yyyy-MM-dd
                         const formattedStartDate = eventStartDate.toISOString().split('T')[0];
                         const formattedEndDate = eventEndDate.toISOString().split('T')[0];
-                        // console.log('Formatted:', formattedStartDate, formattedEndDate);
+                        // console.log('DEBUG', 'Formatted:', formattedStartDate, formattedEndDate);
 
                         // Set values in form elements
                         document.getElementById('start').value = formattedStartDate;
@@ -226,7 +226,7 @@
                                     start: info.event.start,
                                     end: info.event.end
                                 };
-                                await updateDBData(updatedEvent);
+                                await updateDBData('/api/event/update', updatedEvent);
                             }else{
                                 info.revert();
                             }
@@ -354,16 +354,18 @@
                     }
 
                     try {
+                        console.log('DEBUG', data.type, data);
                         // Perform the API call using fetch add data
-                        const newevent = await createDBData('/api/event/insert', data);
-                        if (newevent === 200) {
-                            window.location.reload(); // Reload the page to show updated data
-                            // refreshCalendarData(calendar);
-                            // const button = document.querySelector('.fc-filterEvents-button');
-                            // button.textContent = 'My Events';
-                        } else {
-                            alert(newevent);
+                        if(data.type === 'Pikett'){
+                            const username = data.name;
+                            const response = await fetch(`/api/event/read/${username}`);
+                            if (!response.ok) {
+                                throw new Error(`Failed to fetch user events of ${username}`);
+                            }
+                            currentEvents = await response.json();
+                            console.log('DEBUG', currentEvents);
                         }
+                        await createDBData('/api/event/create', data);
                     } catch (error) {
                         console.error('Error occurred:', error);
                         alert('An error occurred while adding the event.');

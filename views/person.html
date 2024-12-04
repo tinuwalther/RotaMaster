@@ -30,7 +30,7 @@
                 }
                 
                 // Personen laden und Tabelle füllen
-                loadPersons();
+                readPersons();
     
                 // Formular zum Hinzufügen einer neuen Person
                 const personForm = document.getElementById('personForm');
@@ -46,7 +46,7 @@
     
                     // API aufrufen, um die Person hinzuzufügen
                     try {
-                        const response = await fetch('/api/person/add', {
+                        const response = await fetch('/api/person/create', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -56,7 +56,7 @@
     
                         if (response.ok) {
                             personForm.reset();
-                            loadPersons(); // Tabelle neu laden
+                            readPersons(); // Tabelle neu laden
                         } else {
                             console.error('Error adding person:', response.status);
                             alert('Failed to add person.');
@@ -69,7 +69,7 @@
             });
     
             // Funktion zum Laden der Personen und Befüllen der Tabelle
-            async function loadPersons() {
+            async function readPersons() {
                 try {
                     const response = await fetch('/api/person/read');
                     if (!response.ok) {
@@ -106,7 +106,7 @@
                             method: 'DELETE'
                         });
                         if (response.ok) {
-                            loadPersons(); // Tabelle neu laden
+                            readPersons(); // Tabelle neu laden
                         } else {
                             console.error('Error deleting person:', response.status);
                             alert('Failed to delete person.');

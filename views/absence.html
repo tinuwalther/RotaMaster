@@ -30,7 +30,7 @@
                 }
                 
                 // Absence laden und Tabelle füllen
-                loadAbsences();
+                readAbsences();
     
                 // Formular zum Hinzufügen einer neuen Person
                 const absenceForm = document.getElementById('absenceForm');
@@ -46,7 +46,7 @@
     
                     // API aufrufen, um die Absenz hinzuzufügen
                     try {
-                        const response = await fetch('/api/absence/add', {
+                        const response = await fetch('/api/absence/create', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -56,7 +56,7 @@
     
                         if (response.ok) {
                             absenceForm.reset();
-                            loadAbsences(); // Tabelle neu laden
+                            readAbsences(); // Tabelle neu laden
                         } else {
                             console.error('Error adding absence:', response.status);
                             alert('Failed to add absence.');
@@ -69,7 +69,7 @@
             });
     
             // Funktion zum Laden der Absence und Befüllen der Tabelle
-            async function loadAbsences() {
+            async function readAbsences() {
                 try {
                     const response = await fetch('/api/absence/read');
                     if (!response.ok) {
@@ -103,7 +103,7 @@
                             method: 'DELETE'
                         });
                         if (response.ok) {
-                            loadAbsences(); // Tabelle neu laden
+                            readAbsences(); // Tabelle neu laden
                         } else {
                             console.error('Error deleting absence:', response.status);
                             alert('Failed to delete absence.');
