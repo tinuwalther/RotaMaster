@@ -50,7 +50,7 @@ Start-PodeServer -Browse -Threads 2 {
     Enable-PodeSessionMiddleware -Duration 36000 -Extend
 
     # Rate limit
-    Add-PodeLimitRule -Type IP -Values * -Limit 100 -Seconds 10
+    Add-PodeLimitRule -Type IP -Values * -Limit 200 -Seconds 10
     Add-PodeLimitRule -Type Route -Values '/api' -Limit 10 -Seconds 1
 
     # Setup ActiveDirectory authentication

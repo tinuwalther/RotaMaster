@@ -643,7 +643,7 @@ async function createDBData(url, data){
     });
     if (response.ok) {
         // console.log('DEBUG', response.status, response.statusText, `${data.name} - ${data.type}`); // Ausgabe: "Record successfully updated"
-        if(data.title.includes('Pikett') || data.title.includes('Ferien')){
+        if(data.type.includes('Pikett') || data.type.includes('Ferien')){
             window.location.reload();
         }
     } else {
