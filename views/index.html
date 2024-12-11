@@ -123,7 +123,7 @@
                             text: 'My Events',
                             click: async function() {
                                 const button = document.querySelector('.fc-filterEvents-button');
-                                const holidays = await loadApiData('/api/event/get');
+                                const holidays = await loadApiData('/api/csv/read');
                                 isMyEvents = button.textContent;
                                 let currentEvents = [];
                                 let calendarEvents = [];
@@ -138,7 +138,12 @@
                                     button.textContent = 'All Events';
                                 }else if(isMyEvents.includes('All Events')) {
                                     // Fetch all events
-                                    currentEvents = await loadApiData('/api/event/read/*');
+                                    // currentEvents = await loadApiData('/api/event/read/*');
+                                    const response = await fetch('/api/event/read/*');
+                                    if (!response.ok) {
+                                        throw new Error('Failed to fetch user events of all users');
+                                    }
+                                    currentEvents = await response.json();
                                     button.textContent = 'My Events';
                                 }
 
