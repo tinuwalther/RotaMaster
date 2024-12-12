@@ -520,9 +520,10 @@ function Initialize-ApiEndpoints {
                     $login     = $WebEvent.Data['login']
                     $firstname = $WebEvent.Data['firstname']
                     $lastname  = $WebEvent.Data['name']
+                    $email     = $WebEvent.Data['email']
                     $created   = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
                     
-                    $sql = "INSERT INTO person (login, firstname, name, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+                    $sql = "INSERT INTO person (login, firstname, name, email, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($email)', '$($created)', '$($WebEvent.Auth.User.Name)')"
                     $connection = New-SQLiteConnection -DataSource $dbPath
                     Invoke-SqliteQuery -Connection $connection -Query $sql
                     $Connection.Close()
@@ -541,7 +542,7 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method Get -Path 'api/person/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
             try{
-                $sql = 'SELECT id,login,name,firstname,created FROM person ORDER BY firstname ASC'
+                $sql = 'SELECT id,login,name,firstname,email,created FROM person ORDER BY firstname ASC'
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
 
@@ -551,6 +552,7 @@ function Initialize-ApiEndpoints {
                         login     = $item.login
                         name      = $item.name
                         firstname = $item.firstname
+                        email     = $item.email
                         fullname  = "$($item.firstname) $($item.name)"
                         created   = $item.created
                     } 

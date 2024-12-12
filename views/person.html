@@ -86,6 +86,7 @@
                             <td>${person.login}</td>
                             <td>${person.firstname}</td>
                             <td>${person.name}</td>
+                            <td>${person.email}</td>
                             <td>${person.created}</td>
                             <td>
                                 <button class="btn btn-danger btn-sm" onclick="deletePerson(${person.id})">Delete</button>
@@ -168,6 +169,10 @@
                         <label for="name" class="form-label">Name</label>
                         <input type="text" id="name" name="name" class="form-control" required>
                     </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="text" id="email" name="email" class="form-control" required>
+                    </div>
                     <button type="submit" class="btn btn-dark">Add Person</button>
                 </form>
 
@@ -178,6 +183,7 @@
                             <th>Login</th>
                             <th>Firstname</th>
                             <th>Name</th>
+                            <th>Email</th>
                             <th>Created</th>
                             <th>Actions</th>
                         </tr>
