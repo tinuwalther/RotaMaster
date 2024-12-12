@@ -25,6 +25,18 @@ UPDATE events
 WHERE
  type NOT LIKE 'Pikett';
 
+
+ALTER TABLE person 
+  ADD email TEXT NOT NULL 
+  DEFAULT "undefined";
+
+UPDATE person
+SET email = LOWER(
+	firstname || '.' || name || '@company.com'
+);
+
+SELECT * FROM person;
+
  
 Import from CSV:
 sqlite3
