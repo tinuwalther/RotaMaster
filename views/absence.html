@@ -85,7 +85,7 @@
                             <td>${absence.name}</td>
                             <td>${absence.created}</td>
                             <td>
-                                <button class="btn btn-danger btn-sm" onclick="deleteAbsence(${absence.id})">Delete</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteAbsence(${absence.id}, '${absence.name}')">Delete</button>
                             </td>
                         `;
                         absenceTableBody.appendChild(row);
@@ -96,8 +96,8 @@
             }
     
             // Funktion zum Löschen einer Absenz
-            async function deleteAbsence(absenceId) {
-                if (confirm('Are you sure you want to delete this absence?')) {
+            async function deleteAbsence(absenceId, name) {
+                if (confirm(`Are you sure you want to delete "${name}"?`)) {
                     try {
                         const response = await fetch(`/api/absence/delete/${absenceId}`, {
                             method: 'DELETE'
