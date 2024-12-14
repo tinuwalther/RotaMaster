@@ -89,7 +89,7 @@
                             <td>${person.email}</td>
                             <td>${person.created}</td>
                             <td>
-                                <button class="btn btn-danger btn-sm" onclick="deletePerson(${person.id})">Delete</button>
+                                <button class="btn btn-danger btn-sm" onclick="deletePerson(${person.id}, '${person.login}')">Delete</button>
                             </td>
                         `;
                         personTableBody.appendChild(row);
@@ -100,8 +100,8 @@
             }
     
             // Funktion zum Löschen einer Person
-            async function deletePerson(personId) {
-                if (confirm('Are you sure you want to delete this person?')) {
+            async function deletePerson(personId, login) {
+                if (confirm(`Are you sure you want to delete "${login}"?`)) {
                     try {
                         const response = await fetch(`/api/person/delete/${personId}`, {
                             method: 'DELETE'
