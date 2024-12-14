@@ -648,7 +648,7 @@ async function createDBData(url, data){
         }
     } else {
         console.error('Failed to create event:', response, data);
-        alert(`Fehler beim Erstellen des Events ${data.name} - ${data.type}: ${response.status}, ${response.statusText}`);
+        alert(`Fehler beim Erstellen des Events ${data.name}, ggf. OpsGenie prüfen - ${data.type}: ${response.status}, ${response.statusText}`);
     }
 }
 
@@ -702,7 +702,7 @@ async function updateDBData(url, event){
             // window.location.reload();
         } else {
             console.error('Failed to update event:', response, event);
-            alert(`Fehler beim Aktualisieren des Events ${event.name} - ${event.type}: ${response.status}, ${response.statusText}`);
+            alert(`Fehler beim Aktualisieren des Events ${event.name}, ggf. OpsGenie prüfen! - ${event.type}: ${response.status}, ${response.statusText}`);
         }
     } catch (error) {
         console.error('Error occurred while updating event:', error);
@@ -848,10 +848,14 @@ function handleModalButtonClick(event, calendar) {
                 .then(() => {
                     // Fetch new data and refresh the calendar
                     refreshCalendarData(calendar);
+                    if(event.title.includes('Pikett')){
+                        // Remove Override form OpsGenie
+                        console.log('Remove Override form OpsGenie');
+                    }
                 })
                 .catch(error => {
                     console.error('Error deleting event:', error);
-                    alert('Fehler beim Löschen des Events.');
+                    alert('Fehler beim Löschen des Events, ggf. OpsGenie prüfen!');
                 });
             }
         }else{

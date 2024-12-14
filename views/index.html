@@ -223,6 +223,7 @@
                     // event is moved
                     eventDrop: async function(info) {
                         if(info.event.id){
+                            // Send update to OpsGenie as Override
                             message = `'${info.event.title}' verschieben nach ${formatDateToShortISOFormat(info.event.start).substring(0,10)}?`;
                             if (confirm(message)) {
                                 const updatedEvent = {
@@ -232,6 +233,7 @@
                                     end: info.event.end
                                 };
                                 await updateDBData('/api/event/update', updatedEvent);
+                                console.log('Send update to OpsGenie as Override');
                             }else{
                                 info.revert();
                             }
@@ -371,6 +373,8 @@
                             console.log('DEBUG', currentEvents);
                         }
                         await createDBData('/api/event/create', data);
+                        // Create Override in OpsGenie
+                        console.log('Create Override in OpsGenie');
                     } catch (error) {
                         console.error('Error occurred:', error);
                         alert('An error occurred while adding the event.');
