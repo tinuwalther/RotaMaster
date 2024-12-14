@@ -2,6 +2,7 @@
     {
         "Name": "Administrator",
         "Username": "admin",
+        "Email": "admin@company.com",
         "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
         "Groups": [
             "Admin"
@@ -13,9 +14,10 @@
     {
         "Name": "Alice Cooper",
         "Username": "acooper",
+        "Email": "alice.cooper@company.com",
         "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
         "Groups": [
-            "Admin"
+            "User"
         ],
         "Metadata": {
             "Created": "2024-11-24"
@@ -23,6 +25,7 @@
     },
     {
         "Name": "Freddie Mercury",
+        "Email": "freddie.mercury@company.com",
         "Username": "fmercury",
         "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
         "Groups": [
