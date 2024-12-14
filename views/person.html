@@ -157,22 +157,25 @@
                 <h2>Person Management</h2>
                 <!-- Formular zum Hinzufügen einer Person -->
                 <form id="personForm" class="mb-4">
-                    <div class="mb-3">
-                        <label for="login" class="form-label">Login</label>
-                        <input type="text" id="login" name="login" class="form-control" required>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Login</span>
+                        <label for="login" class="form-label"></label>
+                        <input type="text" id="login" name="login" placeholder="Shortname" class="form-control" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="firstname" class="form-label">Firstname</label>
-                        <input type="text" id="firstname" name="firstname" class="form-control" required>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Name</span>
+                        <input type="text" id="firstname" name="firstname" placeholder="Firstname" class="form-control" required>
+                        <input type="text" id="name" name="name" placeholder="Name" class="form-control" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" id="name" name="name" class="form-control" required>
+                    
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Email</span>
+                        <label for="email" class="form-label"></label>
+                        <input type="text" id="email" name="email" placeholder="firstname.name@company.com" class="form-control" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="text" id="email" name="email" class="form-control" required>
-                    </div>
+
                     <button type="submit" class="btn btn-dark">Add Person</button>
                 </form>
 
