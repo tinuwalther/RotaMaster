@@ -17,4 +17,4 @@ FROM
   events e
   INNER JOIN person p ON (p.firstname || " " || p.name) = e.person
 ORDER BY 
-  e.start ASC;
+  e.id ASC;
