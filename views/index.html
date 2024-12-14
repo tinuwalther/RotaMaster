@@ -48,20 +48,26 @@
             document.addEventListener('DOMContentLoaded', async function() {
 
                 const userCookie = getCookie('CurrentUser');
+                let username = null;
                 if (userCookie) {
                     console.log(`Name: ${userCookie.name}`);
                     console.log(`Login: ${userCookie.login}`);
                     console.log(`Email: ${userCookie.email}`);
-                    const username = userCookie.name;
-                    const welcomeElement = document.getElementById('currentUser');
-                    if (welcomeElement) {
-                        welcomeElement.textContent = `${username}`;
-                        document.getElementById('datalistName').value = username;
-                    } else {
-                        console.error("Element with ID 'welcomeMessage' not found.");
+                    username = userCookie.name;
+                    if (username) {
+                        const welcomeElement = document.getElementById('currentUser');
+                        if (welcomeElement) {
+                            welcomeElement.textContent = `${username}`;
+                            document.getElementById('datalistName').value = username;
+                        } else {
+                            console.error("Element with ID 'welcomeMessage' not found.");
+                        }
+                    }else{
+                        alert("No username found!");
                     }
                 }else{
                     console.log('User cookie not found or invalid');
+                    alert('User cookie not found or invalid');
                 }
 
                 // Refresh footer datetime

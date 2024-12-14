@@ -24,6 +24,18 @@
         }
     },
     {
+        "Name": "Ronnie James Dio",
+        "Username": "rjdio",
+        "Email": "ronnie.james.dio@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
         "Name": "Freddie Mercury",
         "Email": "freddie.mercury@company.com",
         "Username": "fmercury",

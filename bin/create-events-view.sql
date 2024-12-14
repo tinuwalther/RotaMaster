@@ -15,6 +15,6 @@ SELECT
   e.author
 FROM
   events e
-  INNER JOIN person p ON (p.firstname || " " || p.name) = e.person
+  INNER JOIN person p ON (p.firstname || ' ' || p.name) = e.person
 ORDER BY 
   e.id ASC;
