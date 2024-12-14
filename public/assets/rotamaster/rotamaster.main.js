@@ -939,16 +939,27 @@ function getFormData(form) {
  * // Assuming a cookie 'username=JohnDoe' exists:
  * const username = getCookie('username');
  * console.log(username); // Output: 'JohnDoe'
- */
+ *
+*/
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
 
     if (parts.length === 2) {
-        const cookieValue = parts.pop().split(';').shift();
-        // console.log('DEBUG', "getCookie:", cookieValue);
-        return cookieValue;
+        let cookieValue = parts.pop().split(';').shift();
+        try {
+            // Entferne unerwartete Zeichen (z. B. überflüssige Leerzeichen)
+            cookieValue = cookieValue.trim();
+            // JSON parsen
+            const parsedValue = JSON.parse(cookieValue);
+            // Optional: Debugging
+            // console.log('DEBUG', "getCookie parsed value:", parsedValue);
+            return parsedValue;
+        } catch (error) {
+            console.error('Error parsing cookie value:', error, cookieValue);
+            return null; // Gebe null zurück, wenn das Parsen fehlschlägt
+        }
     }
 
-    return null;
+    return null; // Gebe null zurück, wenn der Cookie nicht gefunden wird
 }

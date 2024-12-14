@@ -66,7 +66,14 @@ Start-PodeServer -Browse -Threads 2 {
     $ApiPath = Join-Path -Path $($PSScriptRoot) -ChildPath 'api'
     New-PodeAuthScheme -Form | Add-PodeAuthUserFile -FilePath (Join-Path -Path $ApiPath -ChildPath 'users.json') -Name 'Login' -FailureUrl '/login' -SuccessUrl '/' -ScriptBlock {
         param($user)
-        Set-PodeCookie -Name 'CurrentUser' -Value $user.Name
+        # Set-PodeCookie -Name 'CurrentUser' -Value $user.Name
+        $cookieData = @{
+            name  = $user.Name
+            login = $user.Username
+            email = $user.Email
+        }
+        $jsonData = $cookieData | ConvertTo-Json -Depth 10 -Compress
+        Set-PodeCookie -Name 'CurrentUser' -Value $jsonData
         return @{ User = $user }
     }
 
