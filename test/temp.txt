@@ -31,9 +31,7 @@ ALTER TABLE person
   DEFAULT "undefined";
 
 UPDATE person
-SET email = LOWER(
-	firstname || '.' || name || '@company.com'
-);
+SET email = LOWER(firstname || '.' || name || '@company.com');
 
 SELECT * FROM person;
 
