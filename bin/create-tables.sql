@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS person(
     login TEXT NOT NULL,
     name TEXT NOT NULL,
     firstname TEXT NOT NULL,
+    email TEXT NOT NULL,
     created TEXT NOT NULL DEFAULT current_timestamp,
     author TEXT NOT NULL
 );
@@ -23,6 +24,16 @@ CREATE TABLE IF NOT EXISTS person(
 CREATE TABLE IF NOT EXISTS absence(  
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    created TEXT NOT NULL DEFAULT current_timestamp,
+    author TEXT NOT NULL
+);
+
+-- Create the table configuration
+CREATE TABLE IF NOT EXISTS config(  
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    opsgenie_apikey TEXT NOT NULL,
+    opsgenie_schedname TEXT NOT NULL,
+    opsgenie_rotaname TEXT NOT NULL,
     created TEXT NOT NULL DEFAULT current_timestamp,
     author TEXT NOT NULL
 );
