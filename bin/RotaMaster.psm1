@@ -717,4 +717,25 @@ function ConvertTo-SHA256{
     $SHA256HashString = [Convert]::ToBase64String($SHA256Hash)
     return $SHA256HashString
 }
+
+function ConvertTo-SaltedSHA256 {
+    param (
+        [Parameter(Mandatory)]
+        [string]$ApiKey,
+
+        [string]$Salt = "default-salt" # Optionaler Salt-Parameter mit Standardwert
+    )
+
+    try {
+        $salted = $Salt + $ApiKey
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        $hashBytes = $sha256.ComputeHash([Text.Encoding]::ASCII.GetBytes($salted))
+        $hashString = -join ($hashBytes | ForEach-Object { "{0:x2}" -f $_ })
+        return $hashString
+    } catch {
+        Write-Error "An error occurred: $_"
+    }
+}
+
+
 #endregion
