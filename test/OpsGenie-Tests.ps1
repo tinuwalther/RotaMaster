@@ -1,6 +1,96 @@
-# RotaMaster OpsGenie Integration
+# ix.RotaMaster OpsGenie Integration
 
 #region functions
+function Get-OpsGenieSchedule {
+    <#
+    .SYNOPSIS
+        A short one-line action-based description, e.g. 'Tests if a function is valid'
+    .DESCRIPTION
+        A longer description of the function, its purpose, common use cases, etc.
+    .NOTES
+        Information or caveats about the function e.g. 'This function is not supported in Linux'
+    .EXAMPLE
+        New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
+        Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+    #>
+    [CmdletBinding(SupportsShouldProcess=$True)]
+    param(
+        # Test-Compute_schedule
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 0
+        )]
+        [String] $Schedule,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 1
+        )]
+        [String] $ApiKey
+    )
+
+    begin{
+        #region Do not change this region
+        $StartTime = Get-Date
+        $function = $($MyInvocation.MyCommand.Name)
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
+        #endregion
+    }
+
+    process{
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
+        foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
+        if ($PSCmdlet.ShouldProcess($params.Trim())){
+            try{
+                # Define variables
+                # $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule?identifierType=name"
+                $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules"
+
+                # Create headers for the API request
+                $Headers = @{
+                    Authorization = "GenieKey $ApiKey"
+                }
+
+                # Construct the URL for the specific rotation
+                #$Url = "$BaseUrl/$RotationId"
+
+                # Send the GET request to OpsGenie API
+                try {
+                    $Response = Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method Get
+                    #$Response | ConvertTo-Json -Depth 10 | Write-Output
+                    if($Response){
+                        $Response.data
+                    }else{
+                        $Response
+                    }
+                }
+                catch {
+                    Write-Warning "Failed to retrieve ."
+                    Write-Warning $_.Exception.Message
+                }
+            }catch{
+                Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
+                $Error.Clear()
+            }
+        }
+    }
+
+    end{
+        #region Do not change this region
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
+        $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
+        $Formatted = $TimeSpan | ForEach-Object {
+            '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
+        }
+        Write-Verbose $('Finished in:', $Formatted -Join ' ')
+        #endregion
+    }
+}
+
 function Get-OpsGenieRotation {
     <#
     .SYNOPSIS
@@ -15,7 +105,7 @@ function Get-OpsGenieRotation {
     #>
     [CmdletBinding(SupportsShouldProcess=$True)]
     param(
-        # Name of the schedule
+        # Test-Compute_schedule
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -54,9 +144,13 @@ function Get-OpsGenieRotation {
                     Authorization = "GenieKey $ApiKey"
                 }
 
+                # Construct the URL for the specific rotation
+                #$Url = "$BaseUrl/$RotationId"
+
                 # Send the GET request to OpsGenie API
                 try {
                     $Response = Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method Get
+                    #$Response | ConvertTo-Json -Depth 10 | Write-Output
                     if($Response){
                         $Response.data
                     }else{
@@ -100,7 +194,7 @@ function New-OpsGenieRotation {
     #>
     [CmdletBinding(SupportsShouldProcess=$True)]
     param(
-        # Name of the schedule
+        # Test-Compute_schedule
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -109,7 +203,6 @@ function New-OpsGenieRotation {
         )]
         [String] $Schedule,
 
-        # Name of the Rotation
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -118,7 +211,6 @@ function New-OpsGenieRotation {
         )]
         [String] $Rotation,
 
-        # Start date as 2024-12-24 10:00
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -127,7 +219,6 @@ function New-OpsGenieRotation {
         )]
         [String] $startDate,
 
-        # End date as 2024-12-31 10:00
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -136,7 +227,6 @@ function New-OpsGenieRotation {
         )]
         [String] $endDate,
 
-        # Participants as Array of PSCustomObject
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -145,7 +235,6 @@ function New-OpsGenieRotation {
         )]
         [Object] $participants,
 
-        # API Key
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -227,7 +316,7 @@ function Get-OpsGenieOverride {
     #>
     [CmdletBinding(SupportsShouldProcess=$True)]
     param(
-        # Name of the schedule
+        # Test-Compute_schedule
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -236,14 +325,21 @@ function Get-OpsGenieOverride {
         )]
         [String] $Schedule,
 
-        # API Key
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
             ValueFromPipelineByPropertyName=$true,
             Position = 1
         )]
-        [String] $ApiKey
+        [String] $ApiKey,
+
+        [Parameter(
+            Mandatory=$false,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 2
+        )]
+        [String] $Alias
     )
 
     begin{
@@ -260,7 +356,13 @@ function Get-OpsGenieOverride {
         if ($PSCmdlet.ShouldProcess($params.Trim())){
             try{
                 # Define variables
-                $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule/overrides?scheduleIdentifierType=name"
+                if([String]::IsNullOrEmpty($Alias)){
+                    $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule/overrides?scheduleIdentifierType=name"
+                }else{
+                    # $ScheduleId = Get-IXOpsGenieSchedule -Schedule $Schedule -ApiKey $ApiKey | Select-Object -ExpandProperty Id
+                    # $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$($ScheduleId)/overrides/$($Alias)"
+                    $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$($Schedule)/overrides/$($Alias)"
+                }
 
                 # Create headers for the API request
                 $Headers = @{
@@ -312,7 +414,7 @@ function New-OpsGenieOverride {
     #>
     [CmdletBinding(SupportsShouldProcess=$True)]
     param(
-        # Name of the schedule
+        # Test-Compute_schedule
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -321,7 +423,6 @@ function New-OpsGenieOverride {
         )]
         [String] $Schedule,
 
-        # Name of the Rotation
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -330,7 +431,6 @@ function New-OpsGenieOverride {
         )]
         [Object] $Rotation,
 
-        # Start date as 2024-12-24 10:00
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -339,7 +439,6 @@ function New-OpsGenieOverride {
         )]
         [String] $startDate,
 
-        # End date as 2024-12-31 10:00
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -348,7 +447,6 @@ function New-OpsGenieOverride {
         )]
         [String] $endDate,
 
-        # Participants as Array of PSCustomObject
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -357,7 +455,6 @@ function New-OpsGenieOverride {
         )]
         [Object] $participants,
 
-        # API Key
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -438,7 +535,7 @@ function Remove-OpsGenieOverride {
     #>
     [CmdletBinding(SupportsShouldProcess=$True)]
     param(
-        # Name of the schedule
+        # Test-Compute_schedule
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -455,7 +552,6 @@ function Remove-OpsGenieOverride {
         )]
         [String] $Alias,
 
-        # API Key
         [Parameter(
             Mandatory=$true,
             ValueFromPipeline=$true,
@@ -523,21 +619,25 @@ function Remove-OpsGenieOverride {
 # - Remove single event 'Pikett' deletes also the Override in OpsGenie
 # - Move single event 'Pikett' deletes also the Override and create a new Override in OpsGenie
 #
-################################################################################################
+################################################################################################ 
 
-# Year Rotation
+#region Year/Initial Rotation
 $ScheduleName       = 'Test_schedule'
 $ScheduleApiKey     = 'Salted SHA256 ApiKey'
+$Schedule           = Get-OpsGenieSchedule -Schedule $ScheduleName -ApiKey $ScheduleApiKey -Verbose
+$Schedule | Format-Table id,name,enabled,rotations
 
 $RotationNameYear   = 'OnCall 2025'
 $RotationStartYear  = '2025-01-01 10:00'
 $RotationEndYear    = '2025-12-31 10:00'
 
-$AllOpsGenieRotations = Get-OpsGenieRotation -Schedule $ScheduleName -ApiKey $ScheduleApiKey
+$AllOpsGenieRotations  = Get-OpsGenieRotation -Schedule $ScheduleName -ApiKey $ScheduleApiKey -Verbose
+$AllOpsGenieRotations | Format-Table id,name,startDate,endDate,type,@{N='participants';E={$_.participants.username}}
 
 # Initial OpsGenie Rotation
 if($AllOpsGenieRotations.name -contains $RotationNameYear){
     Write-Warning "$RotationNameYear already exists!"
+    # make an override or add members?
 }else {
     $participants = @(
         [PSCustomObject]@{
@@ -547,14 +647,19 @@ if($AllOpsGenieRotations.name -contains $RotationNameYear){
     $InitialOpsGenieRotation = New-OpsGenieRotation -Schedule $ScheduleName -Rotation $RotationNameYear -startDate $RotationStartYear -endDate $RotationEndYear -participants $participants -ApiKey $ScheduleApiKey -Verbose
     $InitialOpsGenieRotation
 }
+#endregion
 
-# Write next Override -> Button Eintragen/Move event
-$RotationStart  = '2025-01-06 10:00'
-$RotationEnd    = (Get-Date $RotationStart).AddDays(7) #'2025-01-13 10:00'
+#region List all Overrides
+$AllOpsGenieOverrides = Get-OpsGenieOverride -Schedule $ScheduleName -ApiKey $ScheduleApiKey
+$AllOpsGenieOverrides | Format-Table alias,@{N='username';E={$_.user.username}},startDate,endDate,@{N='rotations';E={$_.rotations.name}}
+#endregion
+
+#region Write next Override -> Button Eintragen/Move event
+$Username  = 'one.user@company.com'
 $participants = @(
     [PSCustomObject]@{
         type = 'user'
-        username = 'tim.stampfli@inventx.ch'
+        username = $Username
     }
 )
 
@@ -564,15 +669,27 @@ $rotations = @(
     }
 )
 
-$NewOpsGenieOverride = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $RotationStart -endDate $RotationEnd -participants $participants -ApiKey $ScheduleApiKey -Verbose
-$NewOpsGenieOverride
+$OnCallStart = '2025-03-17 10:00'
+$OnCallEnd   = Get-Date (Get-Date $OnCallStart).AddDays(7) -f 'yyyy-MM-dd HH:mm' #'2025-02-24 12:00'
+$NewOpsGenieOverride  = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey -Verbose
+$LastOpsGenieOverride = Get-OpsGenieOverride -Schedule $ScheduleName -ApiKey $ScheduleApiKey -Alias $($NewOpsGenieOverride.data.alias) -Verbose
+$LastOpsGenieOverride | Format-Table alias,@{N='username';E={$_.user.username}},startDate,endDate,@{N='rotations';E={$_.rotations.name}}
+#endregion
 
-# Delete Override -> Remove event/Move event
+#region Delete Override -> Remove event/Move event
+$Username  = 'one.user@company.com'
+$StartDate = '13.01.2025 10:00:00'
+
 $AllOpsGenieOverrides = Get-OpsGenieOverride -Schedule $ScheduleName -ApiKey $ScheduleApiKey
-$Alias = $AllOpsGenieOverrides.Where({$_.user -match 'tim.stampfli'}) | Select-Object -ExpandProperty alias
-# How to find the correct alias for the Override?
-if($Alias){
-    Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $Alias -ApiKey $ScheduleApiKey
-}else {
-    Write-Host "No Override found for user"
+$UserOverride = $AllOpsGenieOverrides.Where({$_.user.username -match $Username})
+$UserOverride | Format-Table @{N='Username';E={$_.user.username}},@{N='Rotation';E={$_.rotations.name}},startDate,endDate
+
+if($UserOverride){
+    $alias = $UserOverride.Where({$_.startDate.ToShortDateString() -match (Get-Date $StartDate).ToShortDateString()}) | Select-Object -ExpandProperty alias
+    if($alias){
+        Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $alias -ApiKey $ScheduleApiKey -Verbose
+    }else {
+        Write-Host "No Override found for $($Username)"
+    }
 }
+#endregion
