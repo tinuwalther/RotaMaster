@@ -19,14 +19,31 @@
         <script>
             document.addEventListener('DOMContentLoaded', async function() {
     
-                const username = getCookie('CurrentUser');
-                if (username) {
-                    const welcomeElement = document.getElementById('currentUser');
-                    if (welcomeElement) {
-                        welcomeElement.textContent = `${username}`;
-                    } else {
-                        console.error("Element with ID 'welcomeMessage' not found.");
+                const userCookie = getCookie('CurrentUser');
+                let username = null;
+                if (userCookie) {
+                    // console.log(`Name: ${userCookie.name}`);
+                    // console.log(`Login: ${userCookie.login}`);
+                    // console.log(`Email: ${userCookie.email}`);
+                    try {
+                        username = userCookie.name;
+                        if (username) {
+                            const welcomeElement = document.getElementById('currentUser');
+                            if (welcomeElement) {
+                                welcomeElement.textContent = `${username}`;
+                            } else {
+                                console.error("Element with ID 'welcomeMessage' not found.");
+                            }
+                        }else{
+                            alert("No username found!");
+                        }
+                    } catch (error) {
+                        alert("There is something wrong with the userCookie!");
+                        console.log("There is something wrong with the userCookie!" + error);
                     }
+                }else{
+                    console.log('User cookie not found or invalid');
+                    alert('User cookie not found or invalid');
                 }
                 
                 // Personen laden und Tabelle füllen
@@ -71,7 +88,7 @@
             // Funktion zum Laden der Personen und Befüllen der Tabelle
             async function readPersons() {
                 try {
-                    const response = await fetch('/api/person/read');
+                    const response = await fetch('/api/person/read/*');
                     if (!response.ok) {
                         throw new Error('Failed to fetch persons');
                     }
