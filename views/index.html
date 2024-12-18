@@ -50,20 +50,25 @@
                 const userCookie = getCookie('CurrentUser');
                 let username = null;
                 if (userCookie) {
-                    console.log(`Name: ${userCookie.name}`);
-                    console.log(`Login: ${userCookie.login}`);
-                    console.log(`Email: ${userCookie.email}`);
-                    username = userCookie.name;
-                    if (username) {
-                        const welcomeElement = document.getElementById('currentUser');
-                        if (welcomeElement) {
-                            welcomeElement.textContent = `${username}`;
-                            document.getElementById('datalistName').value = username;
-                        } else {
-                            console.error("Element with ID 'welcomeMessage' not found.");
+                    // console.log(`Name: ${userCookie.name}`);
+                    // console.log(`Login: ${userCookie.login}`);
+                    // console.log(`Email: ${userCookie.email}`);
+                    try {
+                        username = userCookie.name;
+                        if (username) {
+                            const welcomeElement = document.getElementById('currentUser');
+                            if (welcomeElement) {
+                                welcomeElement.textContent = `${username}`;
+                                document.getElementById('datalistName').value = username;
+                            } else {
+                                console.error("Element with ID 'welcomeMessage' not found.");
+                            }
+                        }else{
+                            alert("No username found!");
                         }
-                    }else{
-                        alert("No username found!");
+                    } catch (error) {
+                        alert("There is something wrong with the userCookie!");
+                        console.log("There is something wrong with the userCookie!" + error);
                     }
                 }else{
                     console.log('User cookie not found or invalid');
@@ -84,7 +89,7 @@
                 ];
                             
                 // Wait for the result of the getPerson function and fill the datalist element
-                const person = await readDBData('/api/person/read');
+                const person = await readDBData('/api/person/read/*');
                 var personNames = new Array;
                 person.map((item) => {
                     personNames.push(item.fullname);
@@ -344,7 +349,7 @@
                 // Add Tooltip to the Buttons
                 setTimeout(function() {
                     const buttons = [
-                        { selector: '.fc-multiMonthYear-button', tooltip: 'Jahressansicht' },
+                        { selector: '.fc-multiMonthYear-button', tooltip: 'Jahressansicht', },
                         { selector: '.fc-dayGridMonth-button', tooltip: 'Monatsansicht' },
                         { selector: '.fc-listMonth-button', tooltip: 'Listenansicht' },
                         { selector: '.fc-exportToIcs-button', tooltip: 'Exportiere alle Kalender-Events als iCalendar (.ics) Datei' },
@@ -373,20 +378,26 @@
                     }
 
                     try {
-                        console.log('DEBUG', data.type, data);
+                        // console.log('DEBUG', data.type, data);
                         // Perform the API call using fetch add data
                         if(data.type === 'Pikett'){
+                            // Create Override in OpsGenie
                             const username = data.name;
-                            const response = await fetch(`/api/event/read/${username}`);
+                            const response = await fetch(`/api/person/read/${username}`);
                             if (!response.ok) {
-                                throw new Error(`Failed to fetch user events of ${username}`);
+                                throw new Error(`Failed to fetch user ${username}`);
                             }
-                            currentEvents = await response.json();
-                            console.log('DEBUG', currentEvents);
+                            const currentUser = await response.json();
+                            if(currentUser){
+                                console.log('DEBUG','Create Override in OpsGenie', data);
+                                console.log('DEBUG','Participant',currentUser.email);
+                                console.log('DEBUG','OnCallStart',data.start);
+                                console.log('DEBUG','OnCallEnd ',data.end);
+                            }else{
+                                throw new Error(`Failed to create Override in OpsGenie for user ${username}`);
+                            }
                         }
-                        await createDBData('/api/event/create', data);
-                        // Create Override in OpsGenie
-                        console.log('Create Override in OpsGenie');
+                        await createDBData('/api/event/create', data, currentUser);
                     } catch (error) {
                         console.error('Error occurred:', error);
                         alert('An error occurred while adding the event.');
