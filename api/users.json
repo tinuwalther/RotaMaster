@@ -12,7 +12,7 @@
         }
     },
     {
-        "Name": "Alice Cooper",
+        "Name": "Cooper Alice",
         "Username": "acooper",
         "Email": "alice.cooper@company.com",
         "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
@@ -24,7 +24,7 @@
         }
     },
     {
-        "Name": "Ronnie James Dio",
+        "Name": "Dio Ronnie James",
         "Username": "rjdio",
         "Email": "ronnie.james.dio@company.com",
         "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
@@ -36,7 +36,7 @@
         }
     },
     {
-        "Name": "Freddie Mercury",
+        "Name": "Mercury Freddie",
         "Email": "freddie.mercury@company.com",
         "Username": "fmercury",
         "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",

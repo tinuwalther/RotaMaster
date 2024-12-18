@@ -546,7 +546,7 @@ function Initialize-ApiEndpoints {
                 if($searchFor -eq '*'){
                     $sql = 'SELECT id,login,name,firstname,email,created FROM person ORDER BY firstname ASC'
                 }else{
-                    $sql = "SELECT id,login,name,firstname,email,created FROM person WHERE (firstname || ' ' || name) = '$($searchFor)'"
+                    $sql = "SELECT id,login,name,firstname,email,created FROM person WHERE (name || ' ' || firstname) = '$($searchFor)'"
                 }
                 # $sql = 'SELECT id,login,name,firstname,email,created FROM person ORDER BY firstname ASC'
                 $connection = New-SQLiteConnection -DataSource $dbPath
@@ -559,7 +559,7 @@ function Initialize-ApiEndpoints {
                         name      = $item.name
                         firstname = $item.firstname
                         email     = $item.email
-                        fullname  = "$($item.firstname) $($item.name)"
+                        fullname  = "$($item.name) $($item.firstname)"
                         created   = $item.created
                     } 
                 }
