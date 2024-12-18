@@ -25,6 +25,14 @@ UPDATE events
 WHERE
  type NOT LIKE 'Pikett';
 
+UPDATE events
+ SET person = name || " " || firstname
+WHERE
+ person LIKE '%Alice Cooper%';
+
+SELECT * FROM events
+WHERE
+ person LIKE '%Alice Cooper%';
 
 ALTER TABLE person 
   ADD email TEXT NOT NULL 
