@@ -539,14 +539,20 @@ function Initialize-ApiEndpoints {
         }
 
         # Read data from SQLiteDB for person
-        Add-PodeRoute -Method Get -Path 'api/person/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+        Add-PodeRoute -Method Get -Path 'api/person/read/:person' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
             try{
-                $sql = 'SELECT id,login,name,firstname,email,created FROM person ORDER BY firstname ASC'
+                $searchFor = $WebEvent.Parameters['person']
+                if($searchFor -eq '*'){
+                    $sql = 'SELECT id,login,name,firstname,email,created FROM person ORDER BY firstname ASC'
+                }else{
+                    $sql = "SELECT id,login,name,firstname,email,created FROM person WHERE (firstname || ' ' || name) = '$($searchFor)'"
+                }
+                # $sql = 'SELECT id,login,name,firstname,email,created FROM person ORDER BY firstname ASC'
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
 
-                $absences = foreach($item in $data){
+                $person = foreach($item in $data){
                     [PSCustomObject]@{
                         id        = $item.id
                         login     = $item.login
@@ -558,7 +564,7 @@ function Initialize-ApiEndpoints {
                     } 
                 }
                 $Connection.Close()
-                Write-PodeJsonResponse -Value $($absences | ConvertTo-Json)
+                Write-PodeJsonResponse -Value $($person | ConvertTo-Json)
             }catch{
                 $_.Exception.Message | Out-Default
                 Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
