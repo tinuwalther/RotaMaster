@@ -131,8 +131,8 @@
                                     keyboard: true
                                 });
                                 document.getElementById('btnAllEvents').checked = true;
-                                document.getElementById('personNameInput').value = '';
-                                document.getElementById('eventTypeInput').value = '';
+                                document.getElementById('nameDropdown').value = '';
+                                document.getElementById('absenceType').value = '';
                                 exportModal.show();
                             }
                         },
@@ -283,7 +283,7 @@
                     if (btnAllEvents.checked) {
                         exportCalendarEvents(events, 'all-events.ics');
                     } else if (btnPersonEvents.checked) {
-                        const personName = document.getElementById('personNameInput').value.trim();
+                        const personName = document.getElementById('nameDropdown').value.trim();
                         if (personName) {
                             exportFilteredEvents(
                                 events,
@@ -298,7 +298,7 @@
                             showAlert('RotaMaster - Alert','Bitte geben Sie einen Namen ein.');
                         }
                     } else if (btnTypeOfEvents.checked) {
-                        const eventType = document.getElementById('eventTypeInput').value.trim();
+                        const eventType = document.getElementById('absenceType').value.trim();
                         if (eventType) {
                             exportFilteredEvents(
                                 events,
@@ -486,15 +486,18 @@
 
                             <!-- Inputfeld für den Namen, standardmäßig versteckt -->
                             <div id="personNameContainer" style="display: none; margin-top: 10px;">
-                                <label for="personNameInput" class="form-label">Name der Person:</label>
-                                <input type="text" id="personNameInput" class="form-control" placeholder="Name eingeben...">
+                                <select class="form-select" id="nameDropdown" name="nameDropdown" title="nameDropdown">
+                                    <option value="">Please select...</option>
+                                    <!-- Option values will be filled dynamically by JavaScript -->
+                                </select>
                             </div>
 
                             <!-- Inputfeld für den Event-Typ, standardmäßig versteckt -->
                             <div id="eventTypeContainer" style="display: none; margin-top: 10px;">
-                                <label for="eventTypeInput" class="form-label">Event Typ:</label>
-                                <input type="text" id="eventTypeInput" class="form-control" placeholder="Typ eingeben...">
-                            </div>
+                                <select class="form-select" aria-label="Default select example" id="absenceType" name="type">
+                                    <!--option selected>Typ der Abwesenheit</option-->
+                                </select><br>
+                                </div>
 
                         </div>
                         <div class="modal-footer">
