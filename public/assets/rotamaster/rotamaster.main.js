@@ -648,7 +648,7 @@ async function createDBData(url, data){
         }
     } else {
         console.error('Failed to create event:', response, data);
-        alert(`Fehler beim Erstellen des Events ${data.name}, ggf. OpsGenie prüfen - ${data.type}: ${response.status}, ${response.statusText}`);
+        showAlert('RotaMaster - Alert',`Fehler beim Erstellen des Events ${data.name}, ggf. OpsGenie prüfen - ${data.type}: ${response.status}, ${response.statusText}`);
     }
 }
 
@@ -702,11 +702,11 @@ async function updateDBData(url, event){
             // window.location.reload();
         } else {
             console.error('Failed to update event:', response, event);
-            alert(`Fehler beim Aktualisieren des Events ${event.name}, ggf. OpsGenie prüfen! - ${event.type}: ${response.status}, ${response.statusText}`);
+            showAlert('RotaMaster - Alert',`Fehler beim Aktualisieren des Events ${event.name}, ggf. OpsGenie prüfen! - ${event.type}: ${response.status}, ${response.statusText}`);
         }
     } catch (error) {
         console.error('Error occurred while updating event:', error);
-        alert('Ein Fehler ist beim Aktualisieren des Events aufgetreten');
+        showAlert('RotaMaster - Alert','Ein Fehler ist beim Aktualisieren des Events aufgetreten');
     }
 }
 
@@ -744,11 +744,11 @@ async function deleteDBData(url, event){
             }
         } else {
             console.error('Failed to delete event:', response, event);
-            alert(`Fehler beim Löschen des Events ${event.name} - ${event.type}: ${response.status}, ${response.statusText}`);
+            showAlert('RotaMaster - Alert',`Fehler beim Löschen des Events ${event.name} - ${event.type}: ${response.status}, ${response.statusText}`);
         }
     } catch (error) {
         console.error('Error occurred while deleting event:', error);
-        alert('Ein Fehler ist beim Löschen des Events aufgetreten');
+        showAlert('RotaMaster - Alert','Ein Fehler ist beim Löschen des Events aufgetreten');
     }
 }
 
@@ -776,7 +776,7 @@ function exportFilteredEvents(events, filterFn, filename, exportFn) {
     if (filteredEvents.length > 0) {
         exportFn(filteredEvents, filename);
     } else {
-        alert('Keine passenden Events gefunden.');
+        showAlert('RotaMaster - Alert','Keine passenden Events gefunden.');
     }
 }
 
@@ -837,13 +837,15 @@ function setModalEventData(event) {
  * // Example usage triggered by a modal button:
  * handleModalButtonClick(event);
  */
-function handleModalButtonClick(event, calendar) {
+async function handleModalButtonClick(event, calendar) {
     if (btnExportEvent.checked) {
         exportCalendarEvents(event, `${event.title}.ics`);
     }
     if (btnRemoveEvent.checked) {
         if(event.id){
-            if (confirm(`Event ${event.id}, ${event.title} wirklich löschen?`)) {
+            const message = `Event ${event.id}, ${event.title} wirklich löschen?`;
+            const result = await showConfirm(message);
+            if (result) {
                 deleteDBData('/api/event/delete', event)
                 .then(() => {
                     // Fetch new data and refresh the calendar
@@ -855,11 +857,11 @@ function handleModalButtonClick(event, calendar) {
                 })
                 .catch(error => {
                     console.error('Error deleting event:', error);
-                    alert('Fehler beim Löschen des Events, ggf. OpsGenie prüfen!');
+                    showAlert('RotaMaster - Alert','Fehler beim Löschen des Events, ggf. OpsGenie prüfen!');
                 });
             }
         }else{
-            alert (`${event.title} kann nicht gelöscht werden!`)
+            showAlert(`${event.title} kann nicht gelöscht werden!`)
         }
     }
     const exportModal = bootstrap.Modal.getInstance(document.getElementById('singleEvent'));
@@ -884,7 +886,7 @@ async function refreshCalendarData(calendar) {
         button.textContent = 'My Events';
     } catch (error) {
         console.error('Error refreshing calendar data:', error);
-        alert('Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
+        showAlert('RotaMaster - Alert','Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
     }
 }
 
@@ -962,4 +964,56 @@ function getCookie(name) {
     }
 
     return null; // Gebe null zurück, wenn der Cookie nicht gefunden wird
+}
+
+/**
+ * showAlert(`Welcome ${userCookie.name}`,'RotaMaster - Alert');
+ * @param {*} title 
+ * @param {*} message 
+ */
+function showAlert(message,title) {
+    if(title){
+        document.getElementById('alertTitle').innerText = title;
+    }
+    document.getElementById('alertText').innerText = message;
+    var alertModal = new bootstrap.Modal(document.getElementById('alert'));
+    alertModal.show();
+}
+
+/**
+ * showConfirm(`Welcome ${userCookie.name}`,'RotaMaster - Message');
+ * @param {*} title 
+ * @param {*} message 
+ * 
+ * Beispiel für die Verwendung der showConfirm-Funktion
+ * showConfirm('RotaMaster - Message','Möchten Sie fortfahren?').then((result) => {
+ *  if (result) {
+ *      console.log('Benutzer hat Ja gewählt');
+ *      // Führen Sie die Aktion für Ja aus
+ *  } else {
+ *      console.log('Benutzer hat Nein gewählt');
+ *      // Führen Sie die Aktion für Nein aus
+ *  }
+ * });
+ */
+async function showConfirm(message,title) {
+    return new Promise((resolve) => {
+        if(title){
+            document.getElementById('confirmTitle').innerText = title;
+        }
+        document.getElementById('confirmText').innerText = message;
+        var confirmModal = new bootstrap.Modal(document.getElementById('confirm'));
+
+        document.getElementById('btnYes').onclick = function() {
+            resolve(true);
+            confirmModal.hide();
+        };
+
+        document.getElementById('btnNo').onclick = function() {
+            resolve(false);
+            confirmModal.hide();
+        };
+
+        confirmModal.show();
+    });
 }

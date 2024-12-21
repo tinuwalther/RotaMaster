@@ -64,15 +64,15 @@
                                 console.error("Element with ID 'welcomeMessage' not found.");
                             }
                         }else{
-                            alert("No username found!");
+                            showAlert('RotaMaster - Alert',`No username found!`);
                         }
                     } catch (error) {
-                        alert("There is something wrong with the userCookie!");
+                        showAlert('RotaMaster - Alert',`There is something wrong with the userCookie!`);
                         console.log("There is something wrong with the userCookie!" + error);
                     }
                 }else{
                     console.log('User cookie not found or invalid');
-                    alert('User cookie not found or invalid');
+                    showAlert('RotaMaster - Alert',`User cookie not found or invalid!`);
                 }
 
                 // Refresh footer datetime
@@ -241,8 +241,9 @@
                     eventDrop: async function(info) {
                         if(info.event.id){
                             // Send update to OpsGenie as Override
-                            message = `'${info.event.title}' verschieben nach ${formatDateToShortISOFormat(info.event.start).substring(0,10)}?`;
-                            if (confirm(message)) {
+                            const message = `'${info.event.title}' verschieben nach ${formatDateToShortISOFormat(info.event.start).substring(0,10)}?`;
+                            const result = await showConfirm(message);
+                            if (result) {
                                 const updatedEvent = {
                                     id: info.event.id,
                                     type: info.type,
@@ -251,12 +252,12 @@
                                 };
                                 await updateDBData('/api/event/update', updatedEvent);
                                 console.log('Send update to OpsGenie as Override');
-                            }else{
+                            } else {
                                 info.revert();
                             }
                         }else{
                             info.revert();
-                            alert(`'${info.event.title}' ist von einem CSV und kann nicht verschoben werden!`)
+                            showAlert('RotaMaster - Alert',`'${info.event.title}' ist von einem CSV und kann nicht verschoben werden!`)
                         }
                     }
                     
@@ -294,7 +295,7 @@
                                 exportCalendarEvents
                             );
                         } else {
-                            alert('Bitte geben Sie einen Namen ein.');
+                            showAlert('RotaMaster - Alert','Bitte geben Sie einen Namen ein.');
                         }
                     } else if (btnTypeOfEvents.checked) {
                         const eventType = document.getElementById('eventTypeInput').value.trim();
@@ -309,7 +310,7 @@
                                 exportCalendarEvents
                             );
                         } else {
-                            alert('Bitte geben Sie einen Event-Typ ein.');
+                            showAlert('RotaMaster - Alert','Bitte geben Sie einen Event-Typ ein.');
                         }
                     }
 
@@ -373,7 +374,7 @@
                     // Get form data
                     const data = getFormData(form);
                     if (!data) {
-                        alert('Bitte füllen Sie alle erforderlichen Felder aus.');
+                        showAlert('RotaMaster - Alert','Bitte füllen Sie alle erforderlichen Felder aus.');
                         return;
                     }
 
@@ -400,7 +401,7 @@
                         await createDBData('/api/event/create', data, currentUser);
                     } catch (error) {
                         console.error('Error occurred:', error);
-                        alert('An error occurred while adding the event.');
+                        showAlert('RotaMaster - Alert','An error occurred while adding the event.');
                     }
                 });
 
@@ -467,14 +468,20 @@
                             <p>Events als ICS-Datei herunterladen:</p>
 
                             <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                                <input type="radio" class="btn-check" name="btnradio" id="btnAllEvents" autocomplete="off" checked>
-                                <label class="btn btn-outline-dark" for="btnAllEvents" data-bs-toggle="tooltip" title="Exportiert alle Events als ICS-Datei">Alle Events</label>
 
-                                <input type="radio" class="btn-check" name="btnradio" id="btnPersonEvents" autocomplete="off">
-                                <label class="btn btn-outline-dark" for="btnPersonEvents" data-bs-toggle="tooltip" title="Exportiert alle Events einer bestimmten Person als ICS-Datei">Personen Events</label>
+                                <div class="form-check radio-spacing radio-dark">
+                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="btnAllEvents" checked>
+                                    <label class="form-check-label dark" for="btnExportEvent">Alle Events als ICS-Datei exportieren</label>
+                                </div>
+                                <div class="form-check radio-spacing radio-dark">
+                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="btnPersonEvents" checked>
+                                    <label class="form-check-label dark" for="btnExportEvent">Alle Events einer bestimmten Person als ICS-Datei exportieren</label>
+                                </div>
+                                <div class="form-check radio-spacing radio-dark">
+                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="btnTypeOfEvents" checked>
+                                    <label class="form-check-label dark" for="btnExportEvent">Alle Events eines bestimmten Typs als ICS-Datei exportieren</label>
+                                </div>
 
-                                <input type="radio" class="btn-check" name="btnradio" id="btnTypeOfEvents" autocomplete="off">
-                                <label class="btn btn-outline-dark" for="btnTypeOfEvents" data-bs-toggle="tooltip" title="Exportiert alle Events eines bestimmten Typs als ICS-Datei">Event Typen</label>
                             </div>
 
                             <!-- Inputfeld für den Namen, standardmäßig versteckt -->
@@ -513,16 +520,15 @@
                             <p id="singleEvent-date"></p>
                             <p id="singleEvent-other"></p>
                             <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                                <input type="radio" class="btn-check" name="btnradio" id="btnExportEvent" autocomplete="off" checked>
-                                <label class="btn btn-outline-dark" for="btnExportEvent" data-bs-toggle="tooltip" title="Exportiert den Event als ICS-Datei">Export</label>
 
-                                <!-- 
-                                <input type="radio" class="btn-check" name="btnradio" id="btnUpdateEvent" autocomplete="off">
-                                <label class="btn btn-outline-dark" for="btnUpdateEvent" data-bs-toggle="tooltip" title="Event ändern">Update</label>
-                                -->
-
-                                <input type="radio" class="btn-check" name="btnradio" id="btnRemoveEvent" autocomplete="off">
-                                <label class="btn btn-outline-dark" for="btnRemoveEvent" data-bs-toggle="tooltip" title="Event löschen">Remove</label>
+                                <div class="form-check radio-spacing radio-dark">
+                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="btnExportEvent" checked>
+                                    <label class="form-check-label dark" for="btnExportEvent">Event als ICS-Datei exportieren oder</label>
+                                </div>
+                                <div class="form-check radio-spacing radio-dark">
+                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="btnRemoveEvent">
+                                    <label class="form-check-label dark" for="btnRemoveEvent">Event löschen</label>
+                                </div>
                             </div>
 
                         </div>
@@ -534,6 +540,47 @@
                 </div>
             </div>
             <!-- End Modal singleEvent -->
+
+            <!-- Begin Modal Alert -->
+            <div class="modal fade" id="alert" tabindex="-1" aria-labelledby="alertLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="alertTitle">RotaMaster - Alert</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p id="alertText"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="btnOk" class="btn btn-dark" data-bs-dismiss="modal">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Modal Alert -->
+
+            <!-- Begin Modal Confirm -->
+            <div class="modal fade" id="confirm" tabindex="-1" aria-labelledby="confirmLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="confirmTitle">RotaMaster - Confirm</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p id="confirmText"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <!-- return false -->
+                            <button type="button" id="btnNo" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                            <!-- return true -->
+                            <button type="button" id="btnYes" class="btn btn-dark">Yes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Modal Confirm -->
 
             <div Class="Container-fluid">
 
