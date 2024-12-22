@@ -265,7 +265,7 @@ function Get-EventColor{
                 return $item.Color
             }
         }
-        return '#378006'
+        return '#4F0680'
     }
 
     end{
@@ -435,11 +435,18 @@ function Initialize-ApiEndpoints {
                     'Feiertag|Patch wave' {$title = $item.title; break}
                     default {$title = $item.title, $item.type -join " - "}
                 }
+                if($item.type -eq 'Pikett'){
+                    $start = "$(Get-Date $item.start -f 'yyyy-MM-dd') 10:00"
+                    $end   = "$(Get-Date $item.end -f 'yyyy-MM-dd') 10:00"
+                }else{
+                    $start = "$(Get-Date $item.start -f 'yyyy-MM-dd') 01:00"
+                    $end   = "$(Get-Date $item.end -f 'yyyy-MM-dd') 23:00"
+                }
                 [PSCustomObject]@{
                     title = $title
                     type  = $item.type
-                    start = Get-Date $item.start -f 'yyyy-MM-dd'
-                    end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
+                    start = $start
+                    end   = $end
                     color = Get-EventColor -type $item.type
                 } 
             }
