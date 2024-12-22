@@ -604,12 +604,13 @@ function getEventColors(type) {
     // Run through the colorMap and find the first match
     for (const { regex, color } of colorMap) {
         if (regex.test(type)) {
+            //console.log('DEBUG', 'Color:', color, 'Type:', type);
             return color;
         }
     }
 
     // Return default color if no match was found
-    return '#378006';
+    return '#4F0680';
 }
 
 /**
