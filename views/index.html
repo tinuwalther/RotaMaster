@@ -19,40 +19,19 @@
         <script>
             let db;
 
-            /**
-            * On page load
-            */
+            // Listener for the load event
             window.addEventListener('load', () => {
                 getNextYear('/api/year/new'); // Call the API once the page is fully loaded
             });
 
-            /**
-            * Initializes the FullCalendar instance with events from the API and sets up form submission handling.
-            * 
-            * This function listens for the `DOMContentLoaded` event to ensure the DOM is fully loaded before
-            * initializing the FullCalendar component. It asynchronously fetches event data from the provided API,
-            * configures the calendar with this data, and renders the calendar. Additionally, the form handling logic
-            * for creating new events is included, where form submissions are intercepted, and data is sent to the API.
-            *
-            * Main features:
-            * - Loads calendar events from the API endpoint '/api/csv/read'.
-            * - Initializes a FullCalendar instance with various configuration options (locale, views, toolbars, etc.).
-            * - Handles 'dateClick' and 'select' interactions in the calendar.
-            * - Intercepts form submissions to create new events by sending form data to the API endpoint '/api/event/new'.
-            *
-            * @listens DOMContentLoaded
-            * 
-            * @example
-            * The calendar is initialized and rendered once the page is fully loaded.
-            */
+            // Listener for DOMContentLoaded event
             document.addEventListener('DOMContentLoaded', async function() {
 
+                // Load userCookie and display the username
                 const userCookie = getCookie('CurrentUser');
                 let username = null;
                 if (userCookie) {
-                    // console.log(`Name: ${userCookie.name}`);
-                    // console.log(`Login: ${userCookie.login}`);
-                    // console.log(`Email: ${userCookie.email}`);
+                    // console.log(`Name: ${userCookie.name}, Login: ${userCookie.login}, Email: ${userCookie.email}`);
                     try {
                         username = userCookie.name;
                         if (username) {
@@ -64,65 +43,69 @@
                                 console.error("Element with ID 'welcomeMessage' not found.");
                             }
                         }else{
-                            showAlert('RotaMaster - Alert',`No username found!`);
+                            showAlert(`No username found!`);
                         }
                     } catch (error) {
-                        showAlert('RotaMaster - Alert',`There is something wrong with the userCookie!`);
+                        showAlert('There is something wrong with the userCookie!');
                         console.log("There is something wrong with the userCookie!" + error);
                     }
                 }else{
                     console.log('User cookie not found or invalid');
-                    showAlert('RotaMaster - Alert',`User cookie not found or invalid!`);
+                    showAlert('User cookie not found or invalid!');
                 }
 
-                // Refresh footer datetime
+                // Refresh the footer datetime
                 const d = new Date();
                 document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
-                // Get calendarEvents from SQLite and concatenate holidays and events to one Array
+                // Fetch the events from the API (from the SQLite view v_events) and fill the calendar with the events
                 const events = await readDBData('/api/event/read/*');
                 const holidays = await loadApiData('/api/csv/read');
                 let calendarEvents = [];
                 calendarEvents = [
-                    ...(holidays || []), // Feiertage (falls vorhanden)
-                    ...(Array.isArray(events) ? events : [events] || []) // User Events als Array
+                    ...(holidays || []), // Holidays (if available)
+                    ...(Array.isArray(events) ? events : [events] || []) // User Events as Array
                 ];
                             
-                // Wait for the result of the getPerson function and fill the datalist element
+                // Fetch the person from the API (from the SQLite table person) and fill the datalist with the person names
                 const person = await readDBData('/api/person/read/*');
-                var personNames = new Array;
+                const personNames = new Array;
                 person.map((item) => {
                     personNames.push(item.fullname);
                 });
                 if (personNames.length) {
                     fillDatalistOptions('datalistOptions', personNames);
-                    fillDropdownOptions('nameDropdown', personNames);
+                    fillDropdownOptions('nameDropdownPerson', personNames);
+                    fillDropdownOptions('nameDropdownPersonModal', personNames);
                 } else {
                     console.error('No person found.');
                 }
 
-                // Wait for the result of the API and fill the dropdownoptions
+                // Fetch the absence from the API (from the SQLite table absence) and fill the dropdown with the absence names
                 const absence = await readDBData('/api/absence/read');
-                var absenceNames = new Array;
+                const absenceNames = new Array;
                 absence.map((item) => {
                     absenceNames.push(item.name);
                 });
                 if (absenceNames.length) {
-                    fillDropdownOptions('absenceType', absenceNames);
+                    fillDropdownOptions('nameDropdownAbsence', absenceNames);
+                    fillDropdownOptions('nameDropdownAbsenceModal', absenceNames);
                 } else {
                     console.error('No absence found.');
                 }
 
-                var calendarEl = document.getElementById('calendar');
-
-                var calendar = new FullCalendar.Calendar(calendarEl, {
-                    // concatenate calendarConfig from rotamaster.js
+                // Create a new FullCalendar instance
+                let calendarEl = document.getElementById('calendar');
+                let calendar = new FullCalendar.Calendar(calendarEl, {
+                    // Concatenate the calendarConfig from the rotamaster.js file
                     ...calendarConfig,
 
-                    // JSON feed that the calendar will fetch Event Objects from.
+                    // Data from the API is fetched and displayed in the calendar
                     events: calendarEvents,
 
+                    // Custom Buttons for the calendar
                     customButtons: {
+                        // Button to export all events as iCalendar (.ics) file
                         exportToIcs: {
                             // Create a Bootstrap-Modal-Instance for multipleEvents and open it
                             text: 'Export Events',
@@ -131,11 +114,12 @@
                                     keyboard: true
                                 });
                                 document.getElementById('btnAllEvents').checked = true;
-                                document.getElementById('nameDropdown').value = '';
-                                document.getElementById('absenceType').value = '';
+                                document.getElementById('nameDropdownPersonModal').value = '';
+                                document.getElementById('nameDropdownAbsenceModal').value = '';
                                 exportModal.show();
                             }
                         },
+                        // Button to export person specific events as iCalendar (.ics) file
                         filterEvents: {
                             text: 'My Events',
                             click: async function() {
@@ -146,7 +130,7 @@
                                 let calendarEvents = [];
 
                                 if (isMyEvents.includes('My Events')) {
-                                    // Filter events to the current user
+                                    // Export events of the current user
                                     const response = await fetch(`/api/event/read/${username}`);
                                     if (!response.ok) {
                                         throw new Error(`Failed to fetch user events of ${username}`);
@@ -154,8 +138,7 @@
                                     currentEvents = await response.json();
                                     button.textContent = 'All Events';
                                 }else if(isMyEvents.includes('All Events')) {
-                                    // Fetch all events
-                                    // currentEvents = await loadApiData('/api/event/read/*');
+                                    // Export events of all users
                                     const response = await fetch('/api/event/read/*');
                                     if (!response.ok) {
                                         throw new Error('Failed to fetch user events of all users');
@@ -165,8 +148,8 @@
                                 }
 
                                 calendarEvents = [
-                                    ...(holidays || []), // Feiertage (falls vorhanden)
-                                    ...(Array.isArray(currentEvents) ? currentEvents : [currentEvents] || []) // User Events als Array
+                                    ...(holidays || []), // Holidays (if available)
+                                    ...(Array.isArray(currentEvents) ? currentEvents : [currentEvents] || []) // User Events as Array
                                 ];
 
                                 calendar.removeAllEvents();
@@ -175,7 +158,7 @@
                         }
                     },
 
-                    // view is changed or the date changes
+                    // This function is called when the view is changed or the date changes
                     datesSet: function(info) {
                         
                         let displayedYear = calcDisplayedYear(info);
@@ -198,7 +181,7 @@
                         document.querySelector('.fc-filterEvents-button').textContent = 'My Events';
                     },
 
-                    // event is clicked
+                    // This function is called when an event is clicked
                     eventClick: function(info) {
                         // Create a Bootstrap-Modal-Instance for singleEvent and open it
                         const event = info.event;
@@ -216,7 +199,7 @@
                         };
                     },
 
-                    // date range is selected
+                    // This function is called when an event is selected
                     select: function(info) {
 
                         // Convert start and end dates to Date objects
@@ -237,7 +220,7 @@
                         document.getElementById('end').value = formattedEndDate;
                     },
 
-                    // event is moved
+                    // This function is called when an event is moved
                     eventDrop: async function(info) {
                         if(info.event.id){
                             // Send update to OpsGenie as Override
@@ -257,33 +240,37 @@
                             }
                         }else{
                             info.revert();
-                            showAlert('RotaMaster - Alert',`'${info.event.title}' ist von einem CSV und kann nicht verschoben werden!`)
+                            showAlert(`'${info.event.title}' ist von einem CSV und kann nicht verschoben werden!`)
                         }
                     }
                     
                 });
 
+                // Render the calendar
                 calendar.render();
                 
-                // Füge die App-Version zur Navbar-Brand ein
+                // Add the App-Version to the Navbar-Brand
                 const pageTitle = `RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
                 const navbarBrandElement = document.getElementById('navbarBrand');
                 if (navbarBrandElement) {
                     navbarBrandElement.textContent = pageTitle;
                 };
 
+                // Set the title of the page
                 document.getElementById('title').textContent = pageTitle;
 
-                // Event-Listener für den Export-Button im Modal multipleEvents
+                // Add an event listener to the export button for the modal multipleEvents to export the events as iCalendar (.ics) file
                 const exportButton = document.getElementById('btnExport');
                 exportButton.addEventListener('click', function() {
-                    // Rufe die Events aus dem Kalender ab
+                    // Get the events from the calendar
                     const events = calendar.getEvents();
-
+                    
                     if (btnAllEvents.checked) {
+                        // Export all events as iCalendar (.ics) file
                         exportCalendarEvents(events, 'all-events.ics');
                     } else if (btnPersonEvents.checked) {
-                        const personName = document.getElementById('nameDropdown').value.trim();
+                        // Export person specific events as iCalendar (.ics) file
+                        const personName = document.getElementById('nameDropdownPersonModal').value.trim();
                         if (personName) {
                             exportFilteredEvents(
                                 events,
@@ -295,10 +282,11 @@
                                 exportCalendarEvents
                             );
                         } else {
-                            showAlert('RotaMaster - Alert','Bitte geben Sie einen Namen ein.');
+                            showAlert('Bitte geben Sie einen Namen ein.');
                         }
                     } else if (btnTypeOfEvents.checked) {
-                        const eventType = document.getElementById('absenceType').value.trim();
+                        // Export type of events as iCalendar (.ics) file
+                        const eventType = document.getElementById('nameDropdownAbsenceModal').value.trim();
                         if (eventType) {
                             exportFilteredEvents(
                                 events,
@@ -310,22 +298,23 @@
                                 exportCalendarEvents
                             );
                         } else {
-                            showAlert('RotaMaster - Alert','Bitte geben Sie einen Event-Typ ein.');
+                            showAlert('Bitte geben Sie einen Event-Typ ein.');
                         }
                     }
 
-                    // Modal nach dem Export schließen
+                    // Hide the modal after the export
                     const exportModal = bootstrap.Modal.getInstance(document.getElementById('multipleEvents'));
                     exportModal.hide();
                 });
 
-                // Event-Listener, um das Inputfeld sichtbar zu machen, wenn der entsprechende Radio-Button ausgewählt wird
+                // Listener for the radio buttons to show the input field when the corresponding radio button is selected
                 const btnAllEvents = document.getElementById('btnAllEvents');
                 const btnPersonEvents = document.getElementById('btnPersonEvents');
                 const btnTypeOfEvents = document.getElementById('btnTypeOfEvents');
                 const personNameContainer = document.getElementById('personNameContainer');
                 const eventTypeContainer = document.getElementById('eventTypeContainer');
 
+                // If the button all events is checked, hide the input fields for person name and event type
                 btnAllEvents.addEventListener('change', function() {
                     if (btnAllEvents.checked) {
                         personNameContainer.style.display = 'none';
@@ -333,6 +322,7 @@
                     }
                 });
             
+                // If the button person events is checked, show the input field for the person name and hide the input field for the event type
                 btnPersonEvents.addEventListener('change', function() {
                     if (btnPersonEvents.checked) {
                         personNameContainer.style.display = 'block';
@@ -340,6 +330,7 @@
                     }
                 });
             
+                // If the button type of events is checked, show the input field for the event type and hide the input field for the person name
                 btnTypeOfEvents.addEventListener('change', function() {
                     if (btnTypeOfEvents.checked) {
                         personNameContainer.style.display = 'none';
@@ -348,6 +339,7 @@
                 });
 
                 // Add Tooltip to the Buttons
+                // Timeout is needed to ensure that the buttos are already rendered
                 setTimeout(function() {
                     const buttons = [
                         { selector: '.fc-multiMonthYear-button', tooltip: 'Jahressansicht', },
@@ -366,34 +358,37 @@
                     });
                 }, 0);                
                 
-                // Prevent form submission and handle the form via JavaScript
-                const form = document.querySelector('form'); // Select the form element
+                // Add an event Listener to the form to prevent the default form submit and to call the API to add the event
+                const form = document.querySelector('form');
                 form.addEventListener('submit', async function(event) {
                     event.preventDefault(); // Prevent default form submission
 
-                    // Get form data
+                    // Get the form data as an object
                     const data = getFormData(form);
                     if (!data) {
-                        showAlert('RotaMaster - Alert','Bitte füllen Sie alle erforderlichen Felder aus.');
+                        showAlert('Bitte füllen Sie alle erforderlichen Felder aus.');
                         return;
                     }
 
+                    // Add the event to the SQLite table event
                     try {
                         // console.log('DEBUG', data.type, data);
                         // Perform the API call using fetch add data
                         if(data.type === 'Pikett'){
-                            // Create Override in OpsGenie
                             const username = data.name;
+                            // Fetch the current user from the API (from the SQLite table person)
                             const response = await fetch(`/api/person/read/${username}`);
                             if (!response.ok) {
                                 throw new Error(`Failed to fetch user ${username}`);
                             }
                             const currentUser = await response.json();
                             if(currentUser){
+                                // Concatenate the data for the Override
                                 console.log('DEBUG','Create Override in OpsGenie', data);
                                 console.log('DEBUG','Participant',currentUser.email);
                                 console.log('DEBUG','OnCallStart',data.start);
                                 console.log('DEBUG','OnCallEnd ',data.end);
+                                // Create Override in OpsGenie
                             }else{
                                 throw new Error(`Failed to create Override in OpsGenie for user ${username}`);
                             }
@@ -401,29 +396,24 @@
                         await createDBData('/api/event/create', data, currentUser);
                     } catch (error) {
                         console.error('Error occurred:', error);
-                        showAlert('RotaMaster - Alert','An error occurred while adding the event.');
+                        showAlert('An error occurred while adding the event.');
                     }
                 });
 
-                // synchronize dropdown selection with datalist input field
-                eventListenerDropwodn('nameDropdown','datalistName');
+                // Synchronize the dropdown selection with the datalist input field
+                eventListenerDropwodn('nameDropdownPerson','datalistName');
             });
 
         </script>
 
+        <!-- Title and Favicon -->
         <title id="title" >RotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
 
     </head>
     <!-- End Head -->
 
     <!-- Begin Body -->
-    <Body >
-        <header >
-            <!--div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
-                <h1 >RotaMaster</h1>
-            </div-->
-        </header>
-    
+    <Body >    
         <Section Id="section"  >
 
             <!-- Begin NavBar -->
@@ -486,7 +476,7 @@
 
                             <!-- Inputfeld für den Namen, standardmäßig versteckt -->
                             <div id="personNameContainer" style="display: none; margin-top: 10px;">
-                                <select class="form-select" id="nameDropdown" name="nameDropdown" title="nameDropdown">
+                                <select class="form-select" id="nameDropdownPersonModal" name="nameDropdownPersonModal" title="nameDropdownPersonModal">
                                     <option value="">Please select...</option>
                                     <!-- Option values will be filled dynamically by JavaScript -->
                                 </select>
@@ -494,7 +484,7 @@
 
                             <!-- Inputfeld für den Event-Typ, standardmäßig versteckt -->
                             <div id="eventTypeContainer" style="display: none; margin-top: 10px;">
-                                <select class="form-select" aria-label="Default select example" id="absenceType" name="type">
+                                <select class="form-select" id="nameDropdownAbsenceModal" name="nameDropdownAbsenceModal" title="nameDropdownAbsenceModal"></select>
                                     <!--option selected>Typ der Abwesenheit</option-->
                                 </select><br>
                                 </div>
@@ -587,31 +577,32 @@
 
             <div Class="Container-fluid">
 
-                <!-- Begin Events -->
+                <!-- Begin Section Events -->
                 <div id="events-log">
-                    <!-- Begin Form -->
+
+                    <!-- Begin Palceholder Form -->
                     <form action="/api/event/new" method="POST" id="eventForm">
 
                         <h3>Events</h3>
 
                         <div class="col-auto">
 
+                            <!-- Hide the form -->
                             <input type="hidden" id="request" name="request" value="form"><br>
 
                             <div class="input-group mb-3">
                                 <span class="input-group-text" id="basic-addon1">Name</span>
                                 <input class="form-control" list="datalistOptions" id="datalistName" name="name" placeholder="Tippen oder auswählen...">
                                 <datalist id="datalistOptions">
-                                    <!--option value=Werte aus meinem Array /-->
+                                    <!-- Option values will be filled dynamically by JavaScript function fillDatalistOptions -->
                                 </datalist>
                             </div>
                             
                             <!-- Additional dropdown for names -->
                             <div class="input-group mb-3">
-                                <!-- <label for="nameDropdown" class="input-group-text">Select Name</label> -->
-                                <select class="form-select" id="nameDropdown" name="nameDropdown" title="nameDropdown">
+                                <select class="form-select" id="nameDropdownPerson" name="nameDropdownPerson" title="nameDropdownPerson">
                                     <option value="">Please select...</option>
-                                    <!-- Option values will be filled dynamically by JavaScript -->
+                                    <!-- Option values will be filled dynamically by JavaScript function fillDropdownOptions -->
                                 </select>
                             </div>
 
@@ -619,8 +610,8 @@
 
                         <div class="col-auto">
                             <label for="start" class="form-label">Typ der Abwesenheit</label><br>
-                            <select class="form-select" size="5" aria-label="Default select example" id="absenceType" name="type">
-                                <!--option selected>Typ der Abwesenheit</option-->
+                            <select class="form-select" size="5" aria-label="Default select example" id="nameDropdownAbsence" name="type" title="nameDropdownAbsence">
+                                <!-- Option values will be filled dynamically by JavaScript function fillDropdownOptions -->
                             </select><br>
                         </div>
 
@@ -640,11 +631,11 @@
                     </form>
                     <!-- End Form -->
 
-                    <!-- Begin Summary -->
+                    <!-- Begin Palceholder Summary -->
                     <div>
-                        <h3 id="eventSummary"><!-- Hier wird das Jahr eingefügt --></h3>
+                        <h3 id="eventSummary"><!-- Add the current year --></h3>
                         <p>Angaben in ganzen Tagen</p>
-                        <!-- Tabelle zur Anzeige der Event-Daten -->
+                        <!-- Table to show the event data -->
                         <table class="table table-striped table-hover table-sm" id="pikettTable" border="0">
                             <thead>
                                 <tr>
@@ -655,7 +646,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Hier werden die Daten eingefügt -->
+                                <!-- Add the event records dynamically -->
                             </tbody>
                         </table>
                     </div>
@@ -664,7 +655,7 @@
                 </div>
                 <!-- End Events -->
 
-                <!-- Begin Calendar -->
+                <!-- Begin Palceholder Calendar -->
                 <div id="calendar"></div>
                 <!-- End Calendar -->
 
