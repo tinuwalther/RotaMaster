@@ -34,11 +34,12 @@ const calendarConfig = {
     appVersion: "5.3.6",
     timeZone: 'local',
     locale: 'de-CH',
+    themeSystem: 'standard',
     initialView: 'multiMonthYear',
     multiMonthMinWidth: 350,
     multiMonthMaxColumns: 2,
     headerToolbar: {
-        left: 'prevYear,prev,today,next,nextYear',
+        left: 'prevYear,prev,today,next,nextYear refreshButton',
         center: 'title',
         right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs,filterEvents'
     },
@@ -698,8 +699,6 @@ async function updateDBData(url, event){
         if (response.ok) {
             const responseData = await response.json();
             console.log('DEBUG', responseData.message); // Ausgabe: "Record successfully updated"
-            // Aktualisiere den Kalender oder die UI, nachdem der Record gelöscht wurde
-            // window.location.reload();
         } else {
             console.error('Failed to update event:', response, event);
             showAlert(`Fehler beim Aktualisieren des Events ${event.name}, ggf. OpsGenie prüfen! - ${event.type}: ${response.status}, ${response.statusText}`);

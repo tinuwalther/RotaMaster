@@ -8,10 +8,11 @@
         <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
         <meta name="description" content="RotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
         
-        <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
+        <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css"/>
+        <link rel="stylesheet" href="/assets/bootstrap/bootstrap-icons/font/bootstrap-icons.min.css"/>
         <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
 
-        <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
+        <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
         <script src="/assets/rotamaster/fullcalendar.main.min.js"></script>
         <script src="/assets/rotamaster/index.global.min.js"></script>
         <script src="/assets/rotamaster/rotamaster.main.js"></script>
@@ -105,6 +106,15 @@
 
                     // Custom Buttons for the calendar
                     customButtons: {
+                        refreshButton: {
+                            text: 'Refresh',
+                            icon: 'bi bi-arrow-repeat',
+                            hint: 'Kalender aktualisieren',
+                            click: function() {
+                                console.log('DEBUG', 'Refresh the calendar');
+                                refreshCalendarData(calendar);
+                            }
+                        },
                         // Button to export all events as iCalendar (.ics) file
                         exportToIcs: {
                             // Create a Bootstrap-Modal-Instance for multipleEvents and open it
@@ -261,6 +271,12 @@
                 // Set the title of the page
                 document.getElementById('title').textContent = pageTitle;
 
+                // Add an event listener to the start date input field to set the end date to the start date
+                document.getElementById('start').addEventListener('change', function() {
+                    const startDate = this.value;
+                    document.getElementById('end').value = startDate;
+                });
+
                 // Add an event listener to the export button for the modal multipleEvents to export the events as iCalendar (.ics) file
                 const exportButton = document.getElementById('btnExport');
                 exportButton.addEventListener('click', function() {
@@ -340,8 +356,7 @@
                     }
                 });
 
-                // Add Tooltip to the Buttons
-                // Timeout is needed to ensure that the buttos are already rendered
+                // Add Tooltip to the buttons, timeout is needed to ensure that the buttos are already rendered
                 setTimeout(function() {
                     const buttons = [
                         { selector: '.fc-multiMonthYear-button', tooltip: 'Jahressansicht', },
@@ -395,6 +410,7 @@
                                 throw new Error(`Failed to create Override in OpsGenie for user ${username}`);
                             }
                         }
+                        // Add the event to the SQLite table event
                         await createDBData('/api/event/create', data, currentUser);
                     } catch (error) {
                         console.error('Error occurred:', error);
