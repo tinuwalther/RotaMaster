@@ -31,7 +31,7 @@
  * calendar.render();
  */
 const calendarConfig = {
-    appVersion: "5.3.5",
+    appVersion: "5.3.6",
     timeZone: 'local',
     locale: 'de-CH',
     initialView: 'multiMonthYear',
