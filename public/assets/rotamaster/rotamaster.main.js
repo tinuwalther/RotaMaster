@@ -648,7 +648,7 @@ async function createDBData(url, data){
         }
     } else {
         console.error('Failed to create event:', response, data);
-        showAlert('RotaMaster - Alert',`Fehler beim Erstellen des Events ${data.name}, ggf. OpsGenie prüfen - ${data.type}: ${response.status}, ${response.statusText}`);
+        showAlert(`Fehler beim Erstellen des Events ${data.name}, ggf. OpsGenie prüfen - ${data.type}: ${response.status}, ${response.statusText}`);
     }
 }
 
@@ -702,11 +702,11 @@ async function updateDBData(url, event){
             // window.location.reload();
         } else {
             console.error('Failed to update event:', response, event);
-            showAlert('RotaMaster - Alert',`Fehler beim Aktualisieren des Events ${event.name}, ggf. OpsGenie prüfen! - ${event.type}: ${response.status}, ${response.statusText}`);
+            showAlert(`Fehler beim Aktualisieren des Events ${event.name}, ggf. OpsGenie prüfen! - ${event.type}: ${response.status}, ${response.statusText}`);
         }
     } catch (error) {
         console.error('Error occurred while updating event:', error);
-        showAlert('RotaMaster - Alert','Ein Fehler ist beim Aktualisieren des Events aufgetreten');
+        showAlert('Ein Fehler ist beim Aktualisieren des Events aufgetreten');
     }
 }
 
@@ -744,11 +744,11 @@ async function deleteDBData(url, event){
             }
         } else {
             console.error('Failed to delete event:', response, event);
-            showAlert('RotaMaster - Alert',`Fehler beim Löschen des Events ${event.name} - ${event.type}: ${response.status}, ${response.statusText}`);
+            showAlert(`Fehler beim Löschen des Events ${event.name} - ${event.type}: ${response.status}, ${response.statusText}`);
         }
     } catch (error) {
         console.error('Error occurred while deleting event:', error);
-        showAlert('RotaMaster - Alert','Ein Fehler ist beim Löschen des Events aufgetreten');
+        showAlert('Ein Fehler ist beim Löschen des Events aufgetreten');
     }
 }
 
@@ -776,7 +776,7 @@ function exportFilteredEvents(events, filterFn, filename, exportFn) {
     if (filteredEvents.length > 0) {
         exportFn(filteredEvents, filename);
     } else {
-        showAlert('RotaMaster - Alert','Keine passenden Events gefunden.');
+        showAlert('Keine passenden Events gefunden.');
     }
 }
 
@@ -857,7 +857,7 @@ async function handleModalButtonClick(event, calendar) {
                 })
                 .catch(error => {
                     console.error('Error deleting event:', error);
-                    showAlert('RotaMaster - Alert','Fehler beim Löschen des Events, ggf. OpsGenie prüfen!');
+                    showAlert('Fehler beim Löschen des Events, ggf. OpsGenie prüfen!');
                 });
             }
         }else{
@@ -886,7 +886,7 @@ async function refreshCalendarData(calendar) {
         button.textContent = 'My Events';
     } catch (error) {
         console.error('Error refreshing calendar data:', error);
-        showAlert('RotaMaster - Alert','Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
+        showAlert('Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
     }
 }
 
