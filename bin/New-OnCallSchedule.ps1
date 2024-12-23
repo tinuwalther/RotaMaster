@@ -1,3 +1,24 @@
+## Create a synopsis for the script
+<#
+.SYNOPSIS
+    Generate an on-call schedule for a given year.
+.DESCRIPTION
+    This script generates an on-call schedule for a given year.
+    The script reads the data from the SQLite database and generates the schedule based on the availability of the participants.
+    The schedule is then exported to a CSV file with the format: id;title;type;start;end;created.
+    The script uses the following logic to generate the schedule:
+    - Load the list of participants in rotation order.
+    - Load all events for the given year from the database.
+    - Determine the availability of each participant based on the events.
+    - Generate weekly intervals for the given year.
+    - Assign participants to the weekly intervals based on availability and rotation order.
+    - Export the schedule to a CSV file.
+.PARAMETER Year
+    The year for which to generate the on-call schedule.
+.EXAMPLE
+    New-OnCallSchedule -Year 2022
+#>
+
 [CmdletBinding()]
 param(
     # Set the year for which you want to generate the patching schedule
@@ -5,71 +26,44 @@ param(
     [Int] $Year
 )
 
-# Define the path to the API folder
-$ApiPath = $($PSScriptRoot).Replace('bin','api')
-$dbPath = Join-Path -Path $ApiPath -ChildPath 'rotamaster.db'
+## Add a region named 'Functions'
+#region Functions
+## Create a function from the code block
+function Get-Participants {
+    ## add a parameter for the database path
+    param (
+        [string]$dbPath
+    )
 
-
-# Liste der Personen in Rotationsreihenfolge
-# Annahme: Reihenfolge ist fix, kann aber anpassbar gemacht werden.
-$sql = 'SELECT name,firstname FROM person ORDER BY firstname'
-$connection = New-SQLiteConnection -DataSource $dbPath
-$data = Invoke-SqliteQuery -Connection $connection -Query $sql
-$participants = $data | ForEach-Object{
-    @($_.name + ' ' + $_.firstname)
-}
-$participants
-
-
-# percentPerson hat nur 80% Pensum.
-# Eine einfache Heuristik: von 5 normalen Einsätzen bekommt percentPerson nur 4.
-# Man könnte aber auch bei jeder Rotation prüfen, ob percentPerson gerade genug Einsätze hatte.
-$percentPerson = 'Mercury Freddie'
-$percentCounter = 0
-$percentSkipRate = 5  # alle 5 Durchgänge einen percentPerson-Einsatz auslassen
-
-# Alle Events für das Jahr laden
-$sql = 'SELECT * FROM v_Events WHERE start LIKE "%' + $year + '%"'
-$connection = New-SQLiteConnection -DataSource $dbPath
-$data = Invoke-SqliteQuery -Connection $connection -Query $sql
-$allEvents = $data | ForEach-Object{
-    [PSCustomObject]@{
-        id = $_.id
-        person = $_.person
-        type = $_.type
-        start = $_.start
-        end = $_.end
+    # Liste der Personen in Rotationsreihenfolge
+    # Annahme: Reihenfolge ist fix, kann aber anpassbar gemacht werden.
+    $sql = 'SELECT name,firstname FROM person ORDER BY firstname'
+    $connection = New-SQLiteConnection -DataSource $dbPath
+    $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+    $data | ForEach-Object{
+        @($_.name + ' ' + $_.firstname)
     }
 }
 
-# Verfügbarkeiten ermitteln
-# Wir nehmen an, dass jeder Eintrag, der den Namen einer Person enthält und Ferien, GLZ Kompensation, Blockiert, Militär, Aus/Weiterbildung etc. andeutet,
-# diese Person in diesem Zeitraum sperrt. Pikett-Einträge werden ignoriert, da es sich um vergangene/fixierte Einträge handelt.
-# Du kannst hier dein eigenes Mapping definieren.
-$unavailable = @{}
+## Create a function from the code block
+function Get-AllEvents {
+    param (
+        [string]$dbPath,
+        [int]$year
+    )
 
-foreach ($person in $participants) {
-    $unavailable[$person] = New-Object System.Collections.Generic.List[System.Object]
-}
-
-foreach ($ev in $allEvents) {
-    # Suche nach dem Namen im SUMMARY. Annahme: Format "Name - Ferien"
-    # Bsp: " percentPerson - Ferien"
-    # Wir erkennen Personennamen, indem wir mit allen Personen matchen:
-    $foundPerson = $null
-    foreach ($p in $participants) {
-        if ($ev.type -like "*$p*") {
-            $foundPerson = $p
-            break
+    # Alle Events für das Jahr laden
+    $sql = 'SELECT * FROM v_Events WHERE start LIKE "%' + $year + '%"'
+    $connection = New-SQLiteConnection -DataSource $dbPath
+    $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+    $data | ForEach-Object{
+        [PSCustomObject]@{
+            id = $_.id
+            person = $_.person
+            type = $_.type
+            start = $_.start
+            end = $_.end
         }
-    }
-    if ($foundPerson) {
-        # Prüfe ob das Event den Mitarbeiter blockiert
-        # Wir gehen davon aus, dass alles außer "Pikett" diesen Mitarbeiter blockiert.
-        $unavailable[$foundPerson].Add([PSCustomObject]@{
-            Start = $ev.Start
-            End   = $ev.End
-        })
     }
 }
 
@@ -125,6 +119,54 @@ function Get-WeekIntervals {
     }
 
     return $weeks
+}
+#endregion
+
+# Define the path to the API folder
+$ApiPath = $($PSScriptRoot).Replace('bin','api')
+$dbPath = Join-Path -Path $ApiPath -ChildPath 'rotamaster.db'
+
+$participants = Get-Participants -dbPath $dbPath
+
+# percentPerson hat nur 80% Pensum.
+# Eine einfache Heuristik: von 5 normalen Einsätzen bekommt percentPerson nur 4.
+# Man könnte aber auch bei jeder Rotation prüfen, ob percentPerson gerade genug Einsätze hatte.
+$percentPerson = 'Mercury Freddie'
+$percentCounter = 0
+$percentSkipRate = 5  # alle 5 Durchgänge einen percentPerson-Einsatz auslassen
+
+# Alle Events für das gegebene Jahr laden
+$allEvents = Get-AllEvents -dbPath $dbPath -year $Year
+
+# Verfügbarkeiten ermitteln
+# Wir nehmen an, dass jeder Eintrag, der den Namen einer Person enthält und Ferien, GLZ Kompensation, Blockiert, Militär, Aus/Weiterbildung etc. andeutet,
+# diese Person in diesem Zeitraum sperrt. Pikett-Einträge werden ignoriert, da es sich um vergangene/fixierte Einträge handelt.
+# Du kannst hier dein eigenes Mapping definieren.
+$unavailable = @{}
+
+foreach ($person in $participants) {
+    $unavailable[$person] = New-Object System.Collections.Generic.List[System.Object]
+}
+
+foreach ($ev in $allEvents) {
+    # Suche nach dem Namen im SUMMARY. Annahme: Format "Name - Ferien"
+    # Bsp: " percentPerson - Ferien"
+    # Wir erkennen Personennamen, indem wir mit allen Personen matchen:
+    $foundPerson = $null
+    foreach ($p in $participants) {
+        if ($ev.type -like "*$p*") {
+            $foundPerson = $p
+            break
+        }
+    }
+    if ($foundPerson) {
+        # Prüfe ob das Event den Mitarbeiter blockiert
+        # Wir gehen davon aus, dass alles außer "Pikett" diesen Mitarbeiter blockiert.
+        $unavailable[$foundPerson].Add([PSCustomObject]@{
+            Start = $ev.Start
+            End   = $ev.End
+        })
+    }
 }
 
 $weeks = Get-WeekIntervals -Year $Year
