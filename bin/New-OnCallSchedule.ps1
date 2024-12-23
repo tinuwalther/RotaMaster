@@ -99,7 +99,7 @@ function Get-WeekIntervals {
     while ($startDate.DayOfWeek -ne [System.DayOfWeek]::Monday) {
         $startDate = $startDate.AddDays(1)
     }
-    $startDate = $startDate.Date.AddHours(9) # auf 09:00 Uhr setzen
+    $startDate = $startDate.Date.AddHours(10) # auf 09:00 Uhr setzen
 
     $endOfYear = [datetime]"$($Year+1)-01-01T00:00:00Z"
 
@@ -226,7 +226,7 @@ foreach ($week in $weeks) {
 
     $assignments.Add([PSCustomObject]@{
         id = [System.Guid]::NewGuid().ToString()
-        title = "$chosenPerson"
+        title = $chosenPerson
         type = "Pikett"
         start = $weekStart.ToString("o")
         end = $weekEnd.ToString("o")
