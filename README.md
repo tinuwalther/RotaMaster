@@ -52,9 +52,17 @@ Select a range fills the selected start- and end date into the formular. Type or
 
 ## Export
 
-It's possible to export all events, or events of a specified person or type,
+It's possible to export all events,
 
-![RotaMasterSingleICS](./img/RotaMasterExportPerson.png)
+![RotaMasterMultipleICS](./img/RotaMasterMultipleICS.png)
+
+or events of a specified person,
+
+![RotaMasterExportPerson](./img/RotaMasterExportPerson.png)
+
+or of a specified type,
+
+![RotaMasterExportAbsence](./img/RotaMasterExportAbsence.png)
 
 or a single event as an ics-file.
 
