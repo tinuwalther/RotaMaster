@@ -129,6 +129,27 @@ function Convert-DateFormat {
 ## Create a function to import the .ics file into the table events
 function Import-ToDatabase {
     ## Create the synopsis for the function
+    <#
+    .SYNOPSIS
+        Import the events into the SQLite database.
+    .DESCRIPTION
+        This function imports the events into the SQLite database.
+        The function takes the events and the database path as input and inserts the events into the events table in the database.
+    .PARAMETER dbPath
+        The path to the SQLite database.
+    .PARAMETER events
+        The events to be imported into the database.
+    .PARAMETER soure
+        The source of the events (ics or csv).
+    .PARAMETER header
+        The headers for the CSV file.
+    .EXAMPLE
+        Import-ToDatabase -dbPath 'C:\rotamaster.db' -events $icsData -soure 'ics'
+        Import the events from the .ics file into the database.
+    .EXAMPLE
+        Import-ToDatabase -dbPath 'C:\rotamaster.db' -events $csvData -soure 'csv' -header @("title", "name", "person")
+        Import the events from the .csv file into the database.
+    #>
     param (
         [Parameter(Mandatory = $true)]
         [string]$dbPath,
