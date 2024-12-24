@@ -294,7 +294,7 @@ function New-OnCallRotation{
 
             # Person nicht verfügbar oder abgelehnt, wir probieren die nächste
             $personIndex = ($personIndex + 1) % $participants.Count
-            Write-Host "$($candidate) not available for $($weekStart) - $($weekEnd)" -ForegroundColor Yellow
+            Write-Host "INFO: $($candidate) is not available for $($weekStart) - $($weekEnd)" -ForegroundColor Green
         }
 
         if (-not $chosenPerson) {
@@ -330,6 +330,8 @@ $participants = Get-Participants -dbPath $dbPath
 # $participants | Format-Table
 
 # Alle Events für das gegebene Jahr laden
+$year = (Get-Date $StartDate).Year
+Write-Host "INFO: Generating on-call schedule for year $year" -ForegroundColor Green
 $allEvents = Get-AllEvents -dbPath $dbPath -year $Year
 # $allEvents | Format-Table -AutoSize
 
@@ -350,5 +352,5 @@ $outputCsvPath = Join-Path -Path $ApiPath -ChildPath "on-call-rota-$($Year).csv"
 # Export the patching data to CSV
 $assignments | Export-Csv -Path $outputCsvPath -NoTypeInformation -Delimiter ';'
 # Display the output file path to the user
-Write-Output "CSV file created: $outputCsvPath"
+Write-Host "INFO: CSV file created: $outputCsvPath" -ForegroundColor Green
 #endregion
