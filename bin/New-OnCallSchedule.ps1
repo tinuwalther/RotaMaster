@@ -40,14 +40,29 @@ param(
 #region Functions
 ## Create a function from the code block
 function Get-Participants {
-    ## add a parameter for the database path
+    <#
+    .SYNOPSIS
+        Get the list of participants in rotation order.
+    .DESCRIPTION
+        This function retrieves the list of participants in rotation order from the database.
+        The function queries the database to get the list of participants and orders them based on their first name.
+        The function returns the list of participants as an array.
+    .PARAMETER dbPath
+        The path to the SQLite database.
+    .EXAMPLE
+        Get-Participants -dbPath 'C:\path\to\database.db'
+    .NOTES
+        The function assumes that the database contains a table named 'person' with the following columns:
+        - name: The name of the participant.
+        - firstname: The first name of the participant.
+        The function queries the database to get the list of participants in rotation order.
+    #>
     param (
         [Parameter(Mandatory=$true)]
         [string]$dbPath
     )
 
-    # Liste der Personen in Rotationsreihenfolge
-    # Annahme: Reihenfolge ist fix, kann aber anpassbar gemacht werden.
+    # Assumption: Order is fixed, but can be made adjustable.
     $sql = 'SELECT name,firstname FROM person ORDER BY firstname'
     $connection = New-SQLiteConnection -DataSource $dbPath
     $data = Invoke-SqliteQuery -Connection $connection -Query $sql
@@ -58,6 +73,28 @@ function Get-Participants {
 
 ## Create a function from the code block
 function Get-AllEvents {
+    <#
+    .SYNOPSIS
+        Get all events for the given year from the database.
+    .DESCRIPTION
+        This function retrieves all events for the given year from the database.
+        The function queries the database to get all events for the specified year.
+        The function returns the events as an array of objects.
+    .PARAMETER dbPath
+        The path to the SQLite database.
+    .PARAMETER year
+        The year for which to get the events.
+    .EXAMPLE
+        Get-AllEvents -dbPath 'C:\path\to\database.db' -year 2022
+    .NOTES
+        The function assumes that the database contains a view named 'v_events' with the following columns:
+        - id: The unique identifier for the event.
+        - person: The person associated with the event.
+        - type: The type of event.
+        - start: The start date and time of the event.
+        - end: The end date and time of the event.
+        The function queries the database to get all events for the specified year.
+    #>
     param (
         [Parameter(Mandatory = $true)]
         [string]$dbPath,
@@ -66,7 +103,7 @@ function Get-AllEvents {
         [int]$year
     )
 
-    # Alle Events für das Jahr laden
+    # Load all events for the year from the database view v_events
     $sql = 'SELECT * FROM v_events WHERE start LIKE "%' + $year + '%"'
     $connection = New-SQLiteConnection -DataSource $dbPath
     $data = Invoke-SqliteQuery -Connection $connection -Query $sql
@@ -81,8 +118,30 @@ function Get-AllEvents {
     }
 }
 
-# Funktion, um zu prüfen, ob eine Person in einem Zeitraum verfügbar ist
 function Test-IsPersonAvailable {
+    <#
+    .SYNOPSIS
+        Check if a person is available in the given time frame.
+    .DESCRIPTION
+        This function checks if a person is available in the given time frame.
+        The function takes the person's name, availability blocks, and the start and end times as input.
+        The function checks if the person is available based on their availability blocks.
+        The function returns $true if the person is available and $false if the person is not available.
+    .PARAMETER Person
+        The name of the person to check availability for.
+    .PARAMETER Availability
+        The availability blocks for the person.
+    .PARAMETER Start
+        The start time of the time frame.
+    .PARAMETER End
+        The end time of the time frame.
+    .EXAMPLE
+        Test-IsPersonAvailable -Person 'John Doe' -Availability $Availability -Start '2022-01-01T09:00:00' -End '2022-01-01T17:00:00'
+    .NOTES
+        The function assumes that the availability blocks are in the form of a hashtable with the person's name as the key.
+        The availability blocks are an array of objects with 'Start' and 'End' properties.
+        The function checks if the person is available based on the availability blocks.
+    #>
     param(
         [Parameter(Mandatory = $true)]
         [string]$Person,
@@ -107,10 +166,24 @@ function Test-IsPersonAvailable {
     return $true
 }
 
-# Erstellen der Wochenintervalle für das gegebene Jahr
-# Wir gehen davon aus, dass die Pikettwoche am Montag 09:00 UTC startet.
-# Die Wochen gehen von Montag 09:00 bis Montag 09:00.
 function New-OnCallSchedule {
+    <#
+    .SYNOPSIS
+        Create weekly intervals for the given time frame.
+    .DESCRIPTION
+        This function creates weekly intervals for the given time frame.
+        The function takes the start and end dates as input and generates weekly intervals from Monday 09:00 to Monday 09:00.
+        The function returns a list of weekly intervals as objects with 'Start' and 'End' properties.
+    .PARAMETER StartDate
+        The start date of the schedule in the format 'yyyy-MM-dd'.
+    .PARAMETER EndDate
+        The end date of the schedule in the format 'yyyy-MM-dd'.
+    .EXAMPLE
+        New-OnCallSchedule -StartDate '2022-01-01' -EndDate '2022-12-31'
+    .NOTES
+        The function assumes that the weeks start on Monday at 09:00 UTC and end on the following Monday at 09:00 UTC.
+        The function generates weekly intervals from the start date to the end date.
+    #>
     param(
         [Parameter(Mandatory = $true)]
         [string]$StartDate,
@@ -120,9 +193,6 @@ function New-OnCallSchedule {
     )
 
     # Konvertiere die Eingabe-Strings in Datetime-Objekte
-    # $startDate = [datetime]::ParseExact($StartDate, 'yyyy-MM-dd', $null).ToUniversalTime()
-    # $endDate   = [datetime]::ParseExact($EndDate, 'yyyy-MM-dd', $null).ToUniversalTime()
-
     $start = Get-Date $StartDate
     $end   = Get-Date $EndDate
 
@@ -167,10 +237,8 @@ function Get-Availability{
     .EXAMPLE
         Get-Availability -participants $participants -events $allEvents
     .NOTES
-        Wir nehmen an, dass jeder Eintrag, der den Namen einer Person enthält und Ferien, GLZ Kompensation, Blockiert, Militär,
-        Aus/Weiterbildung etc. andeutet, diese Person in diesem Zeitraum sperrt. 
-        Pikett-Einträge werden ignoriert, da es sich um vergangene/fixierte Einträge handelt. 
-        Du kannst hier dein eigenes Mapping definieren.
+        We assume that any entry containing a person's name and vacation, GLZ compensation, blocked, military,
+        education, etc. indicates that this person is blocked during that period. (You can define your own mapping here.)
     #>
     param(
         [Parameter(Mandatory=$true)]
@@ -179,27 +247,25 @@ function Get-Availability{
         [Parameter(Mandatory=$true)]
         [Array]$events
     )
-    
-    # Initialisiere die Verfügbarkeit für jede Person
+    # Initialize the availability for each person as an empty list
     $unavailable = @{}
     foreach ($person in $participants) {
         $unavailable[$person] = New-Object System.Collections.Generic.List[System.Object]
     }
 
     foreach ($item in $events) {
-        # Suche nach dem Namen im SUMMARY. Annahme: Format "Name - Ferien"
-        # Bsp: " percentPerson - Ferien"
-        # Wir erkennen Personennamen, indem wir mit allen Personen matchen:
+        # Check if the event blocks any of the participants
         $foundPerson = $null
         foreach ($p in $participants) {
+            # Check if the person is part of the event
             if ($item.person -like $p) {
                 $foundPerson = $p
                 break
             }
         }
         if ($foundPerson) {
-            # Prüfe ob das Event den Mitarbeiter blockiert
-            # Wir gehen davon aus, dass alles diesen Mitarbeiter blockiert.
+            # Check if the event blocks the employee
+            # We assume that everything blocks this employee.
             $unavailable[$foundPerson].Add([PSCustomObject]@{
                 Start = $item.Start
                 End   = $item.End
@@ -210,8 +276,9 @@ function Get-Availability{
     
 }
 
-# Pikettrotation
-# Man könnte aber auch bei jeder Rotation prüfen, ob percentPerson gerade genug Einsätze hatte.
+# On-call rotation
+# The on-call rotation is based on the availability of the employees.
+# You could also check in each rotation if percentPerson has had enough assignments.
 function New-OnCallRotation{
     <#
     .SYNOPSIS
@@ -232,10 +299,12 @@ function New-OnCallRotation{
     .EXAMPLE
         New-OnCallRotation -participants $participants -percentPerson 'Mercury Freddie' -Availability $Availability -weeks $weeks
     .NOTES
-        Wir gehen davon aus, dass die Rotation der Mitarbeiter zyklisch ist.
-        Wir gehen davon aus, dass die Verfügbarkeit der Mitarbeiter in Form von Zeitblöcken gegeben ist.
-        Wir gehen davon aus, dass die Wochenintervalle von Montag 09:00 bis Montag 09:00 gehen.
-        Wir gehen davon aus, dass percentPerson nur 80% Pensum hat und alle 5 Einsätze einen auslässt.
+        Assumptions:
+
+        We assume that the rotation of the employees is cyclical.
+        We assume that the availability of the employees is given in the form of time blocks.
+        We assume that the weekly intervals go from Monday 09:00 to Monday 09:00.
+        We assume that percentPerson has only 80% workload and skips one out of every 5 assignments.
     #>
     param(
         [Parameter(Mandatory=$true)]
@@ -252,62 +321,64 @@ function New-OnCallRotation{
     )
 
     $percentCounter = 0
-    $percentSkipRate = 5  # alle 5 Durchgänge einen percentPerson-Einsatz auslassen
+    $percentSkipRate = 5  # skip one percentPerson assignment every 5 rotations
 
-    # Rotation berechnen
+    # Calculate rotation
     $assignments = New-Object System.Collections.Generic.List[System.Object]
 
-    # Ein Index für die Rotation der Mitarbeiter
+    # An index for the rotation of employees
     $personIndex = 0
-    # Ein Zähler, wie oft percentPerson bisher eingeplant wurde, um 80% Pensum abzubilden.
+    # A counter to track how often percentPerson has been scheduled to represent 80% workload.
     $percentAssignedCount = 0 
 
     foreach ($week in $weeks) {
         $weekStart = $week.Start
         $weekEnd = $week.End
 
-        # Wähle die nächste Person, die verfügbar ist
+        # Choose the next person who is available
         $chosenPerson = $null
 
-        # Wir versuchen nacheinander durch die Personen im Kreis zu gehen, bis wir jemanden finden, der verfügbar ist.
+        # We try to go through the participants in a circle until we find someone who is available.
         for ($i=0; $i -lt $participants.Count; $i++) {
             $candidate = $participants[$personIndex]
 
-            # Prüfe Verfügbarkeit
+            # Check availability
             if (Test-IsPersonAvailable -Person $candidate -Availability $Availability -Start $weekStart -End $weekEnd) {
-                # Wenn der Kandidat percentPerson ist, prüfen wir, ob wir ihn aufgrund seiner 80%-Quote nehmen:
+                # If the candidate is percentPerson, we check if we take them due to their 80% quota:
                 if ($candidate -eq $percentPerson) {
-                    $percentCounter++
-                    # Alle 5 Einsätze darf percentPerson nur 4 machen => d.h. wenn $percentCounter mod 5 == 0, wird percentPerson übersprungen
+                    $percentCounter ++
+                    $percentAssignedCount ++
+                    # Every 5 assignments, percentPerson should only do 4 => i.e., if $percentCounter mod 5 == 0, percentPerson is skipped
                     if (($percentCounter % $percentSkipRate) -eq 0) {
-                        # => percentPerson wird diesmal geskippt
-                        # => wir erhöhen $personIndex und probieren nächste Person
+                        # => percentPerson will be skipped this time
+                        # => we increment $personIndex and try the next person
                         $personIndex = ($personIndex + 1) % $participants.Count
-                        # => "continue" geht direkt zur nächsten $i in der for-Schleife
+                        # => "continue" goes directly to the next $i in the for-loop
                         continue
                     }
                 }
-                # Wenn wir hierher kommen, ist Person verfügbar und nicht geskippt
+                # If we get here, the person is available and not skipped
                 $chosenPerson = $candidate
                 break
             }
 
-            # Person nicht verfügbar oder abgelehnt, wir probieren die nächste
+            # Person not available or rejected, we try the next one
             $personIndex = ($personIndex + 1) % $participants.Count
             Write-Host "INFO: $($candidate) is not available for $($weekStart) - $($weekEnd)" -ForegroundColor Green
         }
 
         if (-not $chosenPerson) {
-            # Falls niemand verfügbar ist, kann man eine Logik ergänzen (Ersatzregelung, Ausfall).
-            $chosenPerson = "Niemand Verfügbar"
+            # If no one is available, you can add logic (substitute rule, failure).
+            $chosenPerson = "No one available"
         }else {
-            # wir haben $chosenPerson,
-            # also das war's für diese Woche – Schleife endete mit break
-            # => Der Index wurde in der for-Schleife NICHT für die "bruchab" Person
-            #    erhöht, also tun wir das jetzt:
+            # we have $chosenPerson,
+            # so that's it for this week – loop ended with break
+            # => The index was NOT incremented for the "break" person in the for-loop
+            #    so we do it now:
             $personIndex = ($personIndex + 1) % $participants.Count
         }
 
+        # Add the assignment to the list
         $assignments.Add([PSCustomObject]@{
             id = [System.Guid]::NewGuid().ToString()
             title = $chosenPerson
@@ -316,7 +387,8 @@ function New-OnCallRotation{
             end = $weekEnd.ToString("o")
             created = Get-Date -Format 'yyyy-MM-dd HH:mm'
         })
-    }   
+    }
+    Write-Host "INFO: 80% workload person '$percentPerson' was assigned $percentAssignedCount times." -ForegroundColor Green
     $assignments
 }
 #endregion
@@ -325,25 +397,30 @@ function New-OnCallRotation{
 $ApiPath = $($PSScriptRoot).Replace('bin','api')
 $dbPath = Join-Path -Path $ApiPath -ChildPath 'rotamaster.db'
 
-# Liste der Personen in Rotationsreihenfolge laden
+# Load the list of participants in rotation order
 $participants = Get-Participants -dbPath $dbPath
 # $participants | Format-Table
 
-# Alle Events für das gegebene Jahr laden
+# Load all events for the given year
 $year = (Get-Date $StartDate).Year
 Write-Host "INFO: Generating on-call schedule for year $year" -ForegroundColor Green
 $allEvents = Get-AllEvents -dbPath $dbPath -year $Year
 # $allEvents | Format-Table -AutoSize
 
-# Verfügbarkeit der Personen basierend auf den Events bestimmen
-$Availability = Get-Availability -participants $participants -events $allEvents
-# $Availability | Format-Table
+# Determine the availability of the participants based on the events
+if($allEvents){
+    $Availability = Get-Availability -participants $participants -events $allEvents
+    # $Availability | Format-Table
+}else{
+    Write-Host "INFO: No events found for the year $year" -ForegroundColor Green
+    $Availability = @{}
+}
 
-# Wochenintervalle für das Jahr berechnen
+# Calculate weekly intervals for the year
 $weeks = New-OnCallSchedule -StartDate $StartDate -EndDate $EndDate
 # $weeks | Format-Table
 
-# Neue Pikettrotation generieren
+# Generate new on-call rotation
 $assignments = New-OnCallRotation -participants $participants -percentPerson 'Mercury Freddie' -Availability $Availability -weeks $weeks
 
 #region Export to CSV
