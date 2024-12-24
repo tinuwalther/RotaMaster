@@ -21,6 +21,27 @@
 .EXAMPLE
     Import-ToSqLiteTable -FilePath 'C:\events.csv' -ImportToDatabase
     Import the events from the .csv file into the database.
+.NOTES
+    Headers for the CSV file:
+    id;person(could be one of the following: title;name;person);start;end
+    The script assumes that the CSV file contains the following headers:
+    - id: The unique identifier for the event.
+    - person: The person associated with the event.
+    - type: The type of event.
+    - start: The start date and time of the event.
+    - end: The end date and time of the event.
+    The script uses the headers to determine the properties of the events in the CSV file.
+    The script imports the events based on the headers provided.
+
+    Headers for the ICS file:
+    BEGIN:VEVENT
+    UID: id
+    SUMMARY: person - type
+    DTSTART: start date and time in the format 'yyyyMMddTHHmmssZ'
+    DTEND: end date and time in the format 'yyyyMMddTHHmmssZ'
+    END:VEVENT
+    The script parses the ICS file and extracts the events based on the properties provided.
+    The script imports the events into the database based on the properties extracted from the ICS file.
 #>
 
 ## Begin the script with [CmdletBinding()] and Param block
@@ -116,7 +137,10 @@ function Import-ToDatabase {
         [System.Collections.ArrayList]$events,
 
         [Parameter(Mandatory = $true)]
-        [string]$soure
+        [string]$soure,
+
+        [Parameter(Mandatory = $false)]
+        [Array]$header
     )
 
     Write-Verbose "Import-ToDatabase, $soure"
@@ -139,7 +163,7 @@ function Import-ToDatabase {
         'csv' {
             # Check for headers in the events
             $firstEvent = $events[0]
-            $properties = @("title", "name", "person")
+            $properties = $header
 
             # Find the first existing property
             $person = $properties | Where-Object { $firstEvent.PSObject.Properties.Match($_).Count -gt 0 } | Select-Object -First 1
@@ -217,7 +241,7 @@ if ($fileExtension -eq ".ics") {
     $csvData = Import-Csv -Path $FilePath -Delimiter ';'
 
     if ($ImportToDatabase) {
-        Import-ToDatabase -events $csvData -dbPath $dbPath -soure 'csv' | Format-Table
+        Import-ToDatabase -events $csvData -dbPath $dbPath -soure 'csv' -header @("title", "name", "person") | Format-Table
         Write-Output "Import process completed."
     }else{
         $csvData | Format-Table
