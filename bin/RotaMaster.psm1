@@ -589,6 +589,44 @@ function Initialize-ApiEndpoints {
         }
 
         # Delete person from table person
+        Add-PodeRoute -Method PUT -Path '/api/person/update/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+
+            $id        = $WebEvent.Parameters['id']
+            $login     = $WebEvent.Data['login']
+            $name      = $WebEvent.Data['name']
+            $firstname = $WebEvent.Data['firstname']
+            $active    = $WebEvent.Data['active']
+            $workload  = $WebEvent.Data['workload']
+            $email     = $WebEvent.Data['email']
+            $fullname  = "$($name) $($firstname)"
+
+            $created = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $author  = $WebEvent.Auth.User.Name
+
+            $sql = @"
+        UPDATE person
+        SET 
+            login     = '$login',
+            name      = '$name',
+            firstname = '$firstname',
+            active    = '$active',
+            workload  = '$workload',
+            email     = '$email',
+            created   = '$created',
+            author    = '$author'
+        WHERE id = '$id';
+"@
+            
+            try {
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
+            } catch {
+                Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to update record: $_" } -StatusCode 500
+            }
+        }
+
+        # Delete person from table person
         Add-PodeRoute -Method DELETE -Path '/api/person/delete/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
 
