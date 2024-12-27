@@ -594,7 +594,7 @@ function getEventColors(type) {
         { regex: /^Pikett$/, color: 'red' },
         { regex: /^Pikett-Peer$/, color: 'orange' },
         { regex: /^(Kurs|Aus\/Weiterbildung)$/, color: '#A37563' },
-        { regex: /^(Militär|ZV\/EO|Zivil)$/, color: '#006400' },
+        { regex: /^(Militär\/ZV\/EO|Zivil)$/, color: '#006400' },
         { regex: /^Ferien$/, color: '#05c27c' },
         { regex: /^Feiertag$/, color: '#B9E2A7' },
         { regex: /^(GLZ Kompensation|Absenz|Urlaub)$/, color: '#889CC6' },
