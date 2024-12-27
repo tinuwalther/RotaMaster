@@ -63,7 +63,7 @@ function Get-Participants {
     )
 
     # Assumption: Order is fixed, but can be made adjustable.
-    $sql = 'SELECT name,firstname FROM person ORDER BY firstname'
+    $sql = 'SELECT name,firstname FROM person WHERE active = 1 ORDER BY firstname'
     $connection = New-SQLiteConnection -DataSource $dbPath
     $data = Invoke-SqliteQuery -Connection $connection -Query $sql
     $data | ForEach-Object{
