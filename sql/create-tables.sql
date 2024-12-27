@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS person(
     name TEXT NOT NULL,
     firstname TEXT NOT NULL,
     email TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1,
+    workload INTEGER NOT NULL DEFAULT 100,
     created TEXT NOT NULL DEFAULT current_timestamp,
     author TEXT NOT NULL
 );
