@@ -41,6 +41,28 @@ ALTER TABLE person
 UPDATE person
 SET email = LOWER(firstname || '.' || name || '@company.com');
 
+-- Active: 1734172081002@@127.0.0.1@3306
+
+ALTER TABLE person 
+  ADD active INTEGER NOT NULL 
+  DEFAULT 1;
+
+ALTER TABLE person 
+  ADD workload INTEGER NOT NULL
+  DEFAULT 100;
+
+UPDATE person
+  SET active = 0
+  WHERE login = 'mmanson';
+
+UPDATE person
+  SET workload = 80
+  WHERE login = 'fmercury';
+
+UPDATE person
+  SET workload = 90
+  WHERE login = 'kcobain';
+
 SELECT * FROM person;
 
  
