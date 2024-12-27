@@ -253,8 +253,8 @@ function Get-EventColor{
             @{ Regex = '^Patch wave \d{1}$'; Color = '#d8d800' }
             @{ Regex = '^Pikett$'; Color = 'red' }
             @{ Regex = '^Pikett-Peer$'; Color = 'orange' }
-            @{ Regex = '^(Kurs|Aus\/Weiterbildung)$'; Color = '#A37563' }
-            @{ Regex = '^(Militär|ZV\/EO|Zivil)$'; Color = '#006400' }
+            @{ Regex = '^(Kurs|Aus/Weiterbildung)$'; Color = '#A37563' }
+            @{ Regex = '^(Militär/ZV/EO|Zivil)$'; Color = '#006400' }
             @{ Regex = '^Ferien$'; Color = '#05c27c' }
             @{ Regex = '^Feiertag$'; Color = '#B9E2A7' }
             @{ Regex = '^(GLZ Kompensation|Absenz|Urlaub)$'; Color = '#889CC6' }
