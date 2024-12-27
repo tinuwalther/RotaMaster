@@ -55,6 +55,7 @@
                     event.preventDefault(); // Standardformular absenden verhindern
 
                     const personId = document.querySelector('#personId').value;
+                    const submit = document.querySelector('#submit').value;
 
                     const formData = new FormData(personForm);
                     const data = {};
@@ -75,6 +76,7 @@
                                 body: JSON.stringify(data)
                             });
                             console.log('Person updated:', response);
+                            document.querySelector('#submit').textContent = 'Add Person';
                         } catch (error) {
                             console.error('Error occurred:', error);
                             showAlert(`n error occurred while adding the person ${error}`);
@@ -82,6 +84,7 @@
                     }else{
                         // Add new person
                         try {
+                            document.querySelector('#submit').textContent = 'Add Person';
                             response = await fetch('/api/person/create', {
                                 method: 'POST',
                                 headers: {
@@ -184,6 +187,8 @@
                     document.querySelector('#email').value = person.email;
                     document.querySelector('#active').value = person.active;
                     document.querySelector('#workload').value = person.workload;
+
+                    document.querySelector('#submit').textContent = 'Update Person';
                 } catch (error) {
                     showAlert(`Error fetching person data`);
                     console.error('Error fetching person data:', error);
@@ -296,7 +301,7 @@
                         <input type="text" id="workload" name="workload" placeholder="100" class="form-control" required>
                     </div>
 
-                    <button type="submit" class="btn btn-dark">Add Person</button>
+                    <button type="submit" id="submit" class="btn btn-dark">Add Person</button>
                 </form>
 
                 <!-- Tabelle zur Darstellung vorhandener Personen -->
