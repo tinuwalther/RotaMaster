@@ -528,9 +528,11 @@ function Initialize-ApiEndpoints {
                     $firstname = $WebEvent.Data['firstname']
                     $lastname  = $WebEvent.Data['name']
                     $email     = $WebEvent.Data['email']
+                    $active    = $WebEvent.Data['active']
+                    $workload  = $WebEvent.Data['workload']
                     $created   = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
                     
-                    $sql = "INSERT INTO person (login, firstname, name, email, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($email)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+                    $sql = "INSERT INTO person (login, firstname, name, email, active, workload, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($email)', '$($active)', '$($workload)', '$($created)', '$($WebEvent.Auth.User.Name)')"
                     $connection = New-SQLiteConnection -DataSource $dbPath
                     Invoke-SqliteQuery -Connection $connection -Query $sql
                     $Connection.Close()
@@ -550,24 +552,32 @@ function Initialize-ApiEndpoints {
             param($dbPath)
             try{
                 $searchFor = $WebEvent.Parameters['person']
-                if($searchFor -eq '*'){
-                    $sql = 'SELECT id,login,name,firstname,email,created FROM person ORDER BY firstname ASC'
-                }else{
-                    $sql = "SELECT id,login,name,firstname,email,created FROM person WHERE (name || ' ' || firstname) = '$($searchFor)'"
+
+                # Check if $searchFor is an integer
+                $isInteger = [int]::TryParse($searchFor, [ref]$null)
+
+                if ($searchFor -eq '*') {
+                    $sql = 'SELECT id,login,name,firstname, active, workload, email,created FROM person ORDER BY firstname ASC'
+                } elseif ($isInteger) {
+                    $sql = "SELECT id,login,name,firstname, active, workload, email,created FROM person WHERE id = $searchFor"
+                } else {
+                    $sql = "SELECT id,login,name,firstname, active, workload, email,created FROM person WHERE (name || ' ' || firstname) = '$($searchFor)'"
                 }
-                # $sql = 'SELECT id,login,name,firstname,email,created FROM person ORDER BY firstname ASC'
+
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
 
                 $person = foreach($item in $data){
                     [PSCustomObject]@{
-                        id        = $item.id
-                        login     = $item.login
-                        name      = $item.name
-                        firstname = $item.firstname
-                        email     = $item.email
-                        fullname  = "$($item.name) $($item.firstname)"
-                        created   = $item.created
+                        id         = $item.id
+                        login      = $item.login
+                        name       = $item.name
+                        firstname  = $item.firstname
+                        active     = $item.active
+                        workload   = $item.workload
+                        email      = $item.email
+                        fullname   = "$($item.name) $($item.firstname)"
+                        created    = $item.created
                     } 
                 }
                 $Connection.Close()
