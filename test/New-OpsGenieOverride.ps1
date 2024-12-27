@@ -623,7 +623,7 @@ function Remove-OpsGenieOverride {
 
 #region Year/Initial Rotation
 $ScheduleName       = 'tinu_schedule'
-$ScheduleApiKey     = '2b927048-c8b5-4b3d-8770-f8593c5f0277'
+$ScheduleApiKey     = ''
 $Schedule           = Get-OpsGenieSchedule -Schedule $ScheduleName -ApiKey $ScheduleApiKey -Verbose
 $Schedule | Format-Table id,name,enabled,rotations
 
