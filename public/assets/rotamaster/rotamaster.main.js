@@ -32,6 +32,8 @@
  */
 const calendarConfig = {
     appVersion: "5.3.6",
+    scheduleName: 'tinu_schedule',
+    rotationName: 'OnCall 2025',
     timeZone: 'local',
     locale: 'de-CH',
     themeSystem: 'standard',
@@ -611,6 +613,24 @@ function getEventColors(type) {
 
     // Return default color if no match was found
     return '#4F0680';
+}
+
+async function createOpsGenieOverride(data){
+    const response = await fetch('/api/opsgenie/override/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json' // Send as JSON
+        },
+        body: JSON.stringify(data) // Convert form data to JSON string
+    });
+    if (response.ok) {
+        console.log('DEBUG', response.status, response.statusText, `${data.name} - ${data.type}`); // Ausgabe: "Record successfully updated"
+        const json = await response.json(); // Convert form data to JSON string
+        return json
+    } else {
+        console.error('Failed to create event:', response, data);
+        return 'Request failed with status:', response.status, response.statusText;
+    }
 }
 
 /**
