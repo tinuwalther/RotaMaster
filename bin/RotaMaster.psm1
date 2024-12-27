@@ -599,10 +599,8 @@ function Initialize-ApiEndpoints {
             $active    = $WebEvent.Data['active']
             $workload  = $WebEvent.Data['workload']
             $email     = $WebEvent.Data['email']
-            $fullname  = "$($name) $($firstname)"
-
-            $created = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
-            $author  = $WebEvent.Auth.User.Name
+            $created   = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $author    = $WebEvent.Auth.User.Name
 
             $sql = @"
         UPDATE person
