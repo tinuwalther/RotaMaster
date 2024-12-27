@@ -31,7 +31,7 @@
  * calendar.render();
  */
 const calendarConfig = {
-    appVersion: "5.3.6",
+    appVersion: "5.3.7",
     scheduleName: 'tinu_schedule',
     rotationName: 'OnCall 2025',
     timeZone: 'local',
@@ -615,6 +615,14 @@ function getEventColors(type) {
     return '#4F0680';
 }
 
+/**
+ * Create an OpsGenie override for a specific user and time period.
+ * @param {*} data 
+ * @returns 
+ * @example
+ * const data = { name: "John", type: "Meeting", start: "2024-12-01", end: "2024-12-02" };
+ * const response = await createOpsGenieOverride(data);
+ */
 async function createOpsGenieOverride(data){
     const response = await fetch('/api/opsgenie/override/create', {
         method: 'POST',
