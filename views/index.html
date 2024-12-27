@@ -400,18 +400,31 @@
                             }
                             const currentUser = await response.json();
                             if(currentUser){
-                                // Concatenate the data for the Override
-                                console.log('DEBUG','Create Override in OpsGenie', data);
-                                console.log('DEBUG','Participant',currentUser.email);
-                                console.log('DEBUG','OnCallStart',data.start);
-                                console.log('DEBUG','OnCallEnd ',data.end);
                                 // Create Override in OpsGenie
+                                const override = {                                    
+                                    scheduleName: calendarConfig.scheduleName,
+                                    rotationName: calendarConfig.rotationName,
+                                    userName: currentUser.email,
+                                    onCallStart: data.start,
+                                    onCallEnd: data.end
+                                };
+                                const opsGenieResult = await createOpsGenieOverride(override);
+                                console.log('DEBUG', 'OpsGenie Override:', opsGenieResult);
+                                if(opsGenieResult){
+                                    const message = `Override in OpsGenie für ${currentUser.email} als ${opsGenieResult.data.alias} erstellt. Kalender aktualisieren?`;
+                                    const messageResult = await showConfirm(message);
+                                    if (messageResult) {
+                                        // Add the event to the SQLite table event
+                                        await createDBData('/api/event/create', data, currentUser);
+                                    }
+                                }else{
+                                    showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
+                                    throw new Error(`Failed to create Override in OpsGenie for user ${currentUser.email}`);
+                                }
                             }else{
                                 throw new Error(`Failed to create Override in OpsGenie for user ${username}`);
                             }
                         }
-                        // Add the event to the SQLite table event
-                        await createDBData('/api/event/create', data, currentUser);
                     } catch (error) {
                         console.error('Error occurred:', error);
                         showAlert('An error occurred while adding the event.');
