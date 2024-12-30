@@ -17,5 +17,6 @@ SELECT
 FROM
   events e
   INNER JOIN person p ON (p.name || ' ' || p.firstname) = e.person
+WHERE e.active = 1
 ORDER BY 
   e.id ASC;
