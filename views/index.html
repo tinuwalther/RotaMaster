@@ -229,12 +229,13 @@
                                                 console.log('DEBUG', 'Remove Override form OpsGenie', override);
                                                 const opsGenieResult = await removeOpsGenieOverride(override);
                                                 console.log('DEBUG', 'OpsGenie Override:', opsGenieResult.result);
+                                                // showAlert(`OpsGenie Override ${event.extendedProps.alias} ${opsGenieResult.result}`)
                                             }
                                         }
                                         deleteDBData('/api/event/delete', event)
                                         .then(() => {
                                             // Fetch new data and refresh the calendar
-                                            // refreshCalendarData(calendar);
+                                            refreshCalendarData(calendar);
                                         })
                                         .catch(error => {
                                             console.error('Error deleting event:', error);
@@ -452,14 +453,15 @@
                                     const opsGenieResult = await createOpsGenieOverride(override);
                                     console.log('DEBUG', 'OpsGenie Override:', opsGenieResult);
                                     if(opsGenieResult){
-                                        const message = `Override in OpsGenie für ${currentUser.email} als ${opsGenieResult.data.alias} erstellt. Kalender aktualisieren?`;
-                                        const messageResult = await showConfirm(message);
-                                        if (messageResult) {
+                                        // showAlert(`OpsGenie Override ${opsGenieResult.data.alias} created`)
+                                        // const message = `Override in OpsGenie für ${currentUser.email} als ${opsGenieResult.data.alias} erstellt. Kalender aktualisieren?`;
+                                        // const messageResult = await showConfirm(message);
+                                        // if (messageResult) {
                                             // Add the event to the SQLite table event
                                             data.alias = opsGenieResult.data.alias;
                                             // console.log('DEBUG', data);
                                             await createDBData('/api/event/create', data, currentUser);
-                                        }
+                                        // }
                                     }else{
                                         showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
                                         throw new Error(`Failed to create Override in OpsGenie for user ${currentUser.email}`);
