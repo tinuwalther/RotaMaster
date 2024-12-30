@@ -25,7 +25,7 @@
                 if (navbarBrandElement) {
                     navbarBrandElement.textContent = pageTitle;
                 };
-                
+
                 const userCookie = getCookie('CurrentUser');
                 let username = null;
                 if (userCookie) {
@@ -56,11 +56,14 @@
                 // Absence laden und Tabelle füllen
                 readAbsences();
     
-                // Formular zum Hinzufügen einer neuen Person
+                // Formular zum Hinzufügen einer neuen Absence
                 const absenceForm = document.getElementById('absenceForm');
                 absenceForm.addEventListener('submit', async function(event) {
                     event.preventDefault(); // Standardformular absenden verhindern
     
+                    const absenceId = document.querySelector('#absenceId').value;
+                    const submit = document.querySelector('#submit').value;
+
                     // Formulardaten erfassen
                     const formData = new FormData(absenceForm);
                     const data = {};
@@ -68,26 +71,45 @@
                         data[key] = value;
                     });
     
-                    // API aufrufen, um die Absenz hinzuzufügen
-                    try {
-                        const response = await fetch('/api/absence/create', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(data)
-                        });
-    
-                        if (response.ok) {
-                            absenceForm.reset();
-                            readAbsences(); // Tabelle neu laden
-                        } else {
-                            console.error('Error adding absence:', response.status);
-                            showAlert('Failed to add absence.');
+                    let response;
+                    if(absenceId){
+                        // Update existing absence
+                        try {
+                            response = await fetch(`/api/absence/update/${absenceId}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(data)
+                            });
+                            console.log('Absence updated:', response);
+                            document.querySelector('#submit').textContent = 'Add Absence';
+                        } catch (error) {
+                            console.error('Error occurred:', error);
+                            showAlert(`An error occurred while adding the absence ${error}`);
                         }
-                    } catch (error) {
-                        console.error('Error occurred:', error);
-                        showAlert('An error occurred while adding the absence.');
+                    }else{
+                        // Add new absence
+                        try {
+                            document.querySelector('#submit').textContent = 'Add Absence';
+                            response = await fetch('/api/absence/create', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(data)
+                            });
+                        } catch (error) {
+                            console.error('Error occurred:', error);
+                            showAlert('An error occurred while adding the absence.');
+                        }
+                    }
+                    if (response.ok) {
+                        absenceForm.reset();
+                        readAbsences(); // Tabelle neu laden
+                    } else {
+                        console.error('Error adding absence:', response.status);
+                        showAlert('Failed to add absence.');
                     }
                 });
             });
@@ -95,7 +117,7 @@
             // Funktion zum Laden der Absence und Befüllen der Tabelle
             async function readAbsences() {
                 try {
-                    const response = await fetch('/api/absence/read');
+                    const response = await fetch('/api/absence/read/*');
                     if (!response.ok) {
                         throw new Error('Failed to fetch absence');
                     }
@@ -109,6 +131,7 @@
                             <td>${absence.name}</td>
                             <td>${absence.created}</td>
                             <td>
+                                <button class="btn btn-dark btn-sm" onclick="updateAbsence(${absence.id}, '${absence.name}')">Update</button>
                                 <button class="btn btn-danger btn-sm" onclick="deleteAbsence(${absence.id}, '${absence.name}')">Delete</button>
                             </td>
                         `;
@@ -141,6 +164,31 @@
                 }
             }
 
+            // Function to update an absence
+            async function updateAbsence(absenceId, name) {
+                try {
+                    const response = await fetch(`/api/absence/read/${absenceId}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch absence data');
+                    }
+
+                    const absence = await response.json();
+
+                    if (!absence) {
+                        throw new Error('Absence data is null');
+                    }
+
+                    // Load the absence data into the input fields
+                    document.querySelector('#absenceId').value = absence.id;
+                    document.querySelector('#name').value = absence.name;
+
+                    document.querySelector('#submit').textContent = 'Update absence';
+                } catch (error) {
+                    showAlert(`Error fetching absence data`);
+                    console.error('Error fetching absence data:', error);
+                }
+            }
+            
         </script>
     
         <title id="title" >RotaMaster: Absence Management</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
@@ -220,12 +268,14 @@
                 <h2>Absence Management</h2>
                 <!-- Formular zum Hinzufügen einer Absenz -->
                 <form id="absenceForm" class="mb-4">
+                    <input type="hidden" id="absenceId"> <!-- Hidden field for absenceId -->
+
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Name</span>
                         <label for="name" class="form-label"></label>
                         <input type="text" id="name" name="name" class="form-control" required>
                     </div>
-                    <button type="submit" class="btn btn-dark">Add Absence</button>
+                    <button type="submit" id="submit" class="btn btn-dark">Add Absence</button>
                 </form>
 
                 <!-- Tabelle zur Darstellung vorhandener Absence -->
