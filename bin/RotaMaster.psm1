@@ -984,9 +984,10 @@ function Initialize-ApiEndpoints {
                         $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
                         $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
                     }
+                    $alias   = $WebEvent.Data['alias']
                     $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
     
-                    $sql = "INSERT INTO events (person, type, start, end, created, author) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+                    $sql = "INSERT INTO events (person, type, start, end, alias, created, author) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($alias)', '$($created)', '$($WebEvent.Auth.User.Name)')"
                     $connection = New-SQLiteConnection -DataSource $dbPath
                     Invoke-SqliteQuery -Connection $connection -Query $sql
                     $Connection.Close()
@@ -1027,7 +1028,7 @@ function Initialize-ApiEndpoints {
                         # end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
                         end   = Get-Date $item.end -f 'yyyy-MM-dd HH:MM'
                         color = Get-EventColor -type $item.type
-                        extendedProps = [PSCustomObject]@{email=$item.email}
+                        extendedProps = [PSCustomObject]@{email = $item.email}
                     } 
                 }
                 $Connection.Close()
@@ -1216,7 +1217,7 @@ function Initialize-ApiEndpoints {
             try{
 
                 $ScheduleName   = $WebEvent.Data['scheduleName']
-                $ScheduleApiKey = '2b927048-c8b5-4b3d-8770-f8593c5f0277'
+                $ScheduleApiKey = $env:OPS_GENIE_API_KEY
                 $RotationName   = $WebEvent.Data['rotationName']
                 $Username       = $WebEvent.Data['userName']
                 $OnCallStart    = Get-Date $WebEvent.Data['onCallStart'] -f 'yyyy-MM-dd 10:00'
@@ -1235,7 +1236,8 @@ function Initialize-ApiEndpoints {
                     }
                 )
 
-                $NewOpsGenieOverride  = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey
+                $NewOpsGenieOverride = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey
+                $NewOpsGenieOverride.data.alias | Out-Default
                 Write-PodeJsonResponse -Value $($NewOpsGenieOverride | ConvertTo-Json)
 
             }catch{
@@ -1245,7 +1247,7 @@ function Initialize-ApiEndpoints {
         }
 
         # Create new override for person
-        Add-PodeRoute -Method DELETE -Path '/api/opsgenie/override/delete/:id'  -Authentication 'Login' -ScriptBlock {
+        Add-PodeRoute -Method DELETE -Path '/api/opsgenie/override/delete'  -Authentication 'Login' -ScriptBlock {
 
             function Get-OpsGenieOverride {
                 <#
@@ -1269,7 +1271,7 @@ function Initialize-ApiEndpoints {
                         Position = 0
                     )]
                     [String] $Schedule,
-
+            
                     [Parameter(
                         Mandatory=$true,
                         ValueFromPipeline=$true,
@@ -1277,7 +1279,7 @@ function Initialize-ApiEndpoints {
                         Position = 1
                     )]
                     [String] $ApiKey,
-
+            
                     [Parameter(
                         Mandatory=$false,
                         ValueFromPipeline=$true,
@@ -1286,7 +1288,7 @@ function Initialize-ApiEndpoints {
                     )]
                     [String] $Alias
                 )
-
+            
                 begin{
                     #region Do not change this region
                     $StartTime = Get-Date
@@ -1294,7 +1296,7 @@ function Initialize-ApiEndpoints {
                     Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
                     #endregion
                 }
-
+            
                 process{
                     Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
                     foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
@@ -1308,13 +1310,13 @@ function Initialize-ApiEndpoints {
                                 # $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$($ScheduleId)/overrides/$($Alias)"
                                 $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$($Schedule)/overrides/$($Alias)"
                             }
-
+            
                             # Create headers for the API request
                             $Headers = @{
                                 Authorization = "GenieKey $ApiKey"
                                 "Content-Type" = "application/json"
                             }
-
+            
                             try {
                                 $Response = Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method Get
                                 if($Response){
@@ -1332,7 +1334,7 @@ function Initialize-ApiEndpoints {
                         }
                     }
                 }
-
+            
                 end{
                     #region Do not change this region
                     Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
@@ -1344,7 +1346,7 @@ function Initialize-ApiEndpoints {
                     #endregion
                 }
             }
-
+            
             function Remove-OpsGenieOverride {
                 <#
                 .SYNOPSIS
@@ -1367,7 +1369,7 @@ function Initialize-ApiEndpoints {
                         Position = 0
                     )]
                     [String] $Schedule,
-
+            
                     [Parameter(
                         Mandatory=$true,
                         ValueFromPipeline=$true,
@@ -1375,7 +1377,7 @@ function Initialize-ApiEndpoints {
                         Position = 1
                     )]
                     [String] $Alias,
-
+            
                     [Parameter(
                         Mandatory=$true,
                         ValueFromPipeline=$true,
@@ -1384,7 +1386,7 @@ function Initialize-ApiEndpoints {
                     )]
                     [String] $ApiKey
                 )
-
+            
                 begin{
                     #region Do not change this region
                     $StartTime = Get-Date
@@ -1392,7 +1394,7 @@ function Initialize-ApiEndpoints {
                     Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
                     #endregion
                 }
-
+            
                 process{
                     Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
                     foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
@@ -1400,12 +1402,12 @@ function Initialize-ApiEndpoints {
                         try{
                             # Define variables
                             $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$ScheduleName/overrides/$($Alias)?scheduleIdentifierType=name"
-
+            
                             # Create headers for the API request
                             $Headers = @{
                                 Authorization = "GenieKey $ApiKey"
                             }
-
+            
                             try {
                                 Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method DELETE
                             }
@@ -1418,7 +1420,7 @@ function Initialize-ApiEndpoints {
                         }
                     }
                 }
-
+            
                 end{
                     #region Do not change this region
                     Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
@@ -1434,27 +1436,34 @@ function Initialize-ApiEndpoints {
             try{
 
                 $ScheduleName   = $WebEvent.Data['scheduleName']
-                $ScheduleApiKey = '2b927048-c8b5-4b3d-8770-f8593c5f0277'
+                $ScheduleApiKey = $env:OPS_GENIE_API_KEY
                 $Username       = $WebEvent.Data['userName']
-                $OnCallStart    = Get-Date $WebEvent.Data['onCallStart'] -f 'yyyy-MM-dd 10:00'
+                $OverrideAlias  = $WebEvent.Data['alias']
+                $OnCallStart    = Get-Date $WebEvent.Data['onCallStart'] -f 'yyyy-MM-dd HH:mm:ss'
 
                 #region Delete Override -> Remove event/Move event
-                # $Username  = 'one.user@company.com'
-                # $StartDate = '13.01.2025 10:00:00'
+                "Searching for OverrideAlias $($OverrideAlias)" | Out-Default
+                $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -ApiKey $ScheduleApiKey
+                $RemoveOpsGenieOverride.result | Out-Default
 
-                $AllOpsGenieOverrides = Get-OpsGenieOverride -Schedule $ScheduleName -ApiKey $ScheduleApiKey
-                $UserOverride = $AllOpsGenieOverrides.Where({$_.user.username -match $Username})
-                # $UserOverride | Format-Table @{N='Username';E={$_.user.username}},@{N='Rotation';E={$_.rotations.name}},startDate,endDate
+                # $AllOpsGenieOverrides = Get-OpsGenieOverride -Schedule $ScheduleName -ApiKey $ScheduleApiKey
 
-                if($UserOverride){
-                    $alias = $UserOverride.Where({$_.startDate.ToShortDateString() -match (Get-Date $OnCallStart).ToShortDateString()}) | Select-Object -ExpandProperty alias
-                    if($alias){
-                        $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $alias -ApiKey $ScheduleApiKey
-                    }else {
-                        Write-Host "No Override found for $($Username)"
-                        $RemoveOpsGenieOverride = $null
-                    }
-                }
+                # "All overrides" | Out-Default
+                # $AllOpsGenieOverrides | Out-Default
+
+                # $UserOverride = $AllOpsGenieOverrides.Where({$_.startDate -eq $OnCallStart}).Where({$_.user.username -match $Username})
+                # "User overrides" | Out-Default
+                # $UserOverride | Select-Object @{N='Username';E={$_.user.username}},@{N='Rotation';E={$_.rotations.name}},startDate,endDate | Out-Default
+                # if($UserOverride){
+                #     $alias = $UserOverride.Where({$_.startDate.ToShortDateString() -match (Get-Date $OnCallStart).ToShortDateString()}) | Select-Object -ExpandProperty alias
+                #     if($alias){
+                #         $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $alias -ApiKey $ScheduleApiKey
+                #     }else {
+                #         Write-Host "No Override found for $($Username)"
+                #         $RemoveOpsGenieOverride = @{ result = "No Override found for $($Username)" }
+                #     }
+                #     $RemoveOpsGenieOverride.result | Out-Default
+                # }
                 #endregion
                 Write-PodeJsonResponse -Value $($RemoveOpsGenieOverride | ConvertTo-Json)
 
