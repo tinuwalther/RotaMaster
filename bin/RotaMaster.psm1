@@ -1340,7 +1340,7 @@ function Initialize-ApiEndpoints {
                 )
 
                 $NewOpsGenieOverride = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey
-                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); Override created as $($NewOpsGenieOverride.data.alias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
+                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override created as $($NewOpsGenieOverride.data.alias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
                 Write-PodeJsonResponse -Value $($NewOpsGenieOverride | ConvertTo-Json)
 
             }catch{
@@ -1446,9 +1446,9 @@ function Initialize-ApiEndpoints {
                 $OverrideAlias  = $WebEvent.Data['alias']
 
                 #region Delete Override -> Remove event/Move event
-                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); Searching for Override $($OverrideAlias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
+                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Searching for Override $($OverrideAlias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
                 $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -ApiKey $ScheduleApiKey
-                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); Override $($OverrideAlias) $($RemoveOpsGenieOverride.result)" | Out-File -Append -FilePath $Logfile -Encoding utf8
+                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override $($OverrideAlias) $($RemoveOpsGenieOverride.result)" | Out-File -Append -FilePath $Logfile -Encoding utf8
                 Write-PodeJsonResponse -Value $($RemoveOpsGenieOverride | ConvertTo-Json)
                 #endregion
             }catch{
