@@ -223,7 +223,7 @@
                                                     scheduleName: calendarConfig.scheduleName,
                                                     rotationName: calendarConfig.rotationName,
                                                     userName: event.extendedProps.email,
-                                                    overrideAlias: event.extendedProps.alias,
+                                                    alias: event.extendedProps.alias,
                                                     onCallStart: event.start,
                                                 };
                                                 console.log('DEBUG', 'Remove Override form OpsGenie', override);
@@ -456,10 +456,6 @@
                                         const messageResult = await showConfirm(message);
                                         if (messageResult) {
                                             // Add the event to the SQLite table event
-                                            if(!opsGenieResult.data.alias){
-                                                showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
-                                                throw new Error(`Failed to get the alias of the override ${opsGenieResult.data}`);
-                                            }
                                             data.alias = opsGenieResult.data.alias;
                                             // console.log('DEBUG', data);
                                             await createDBData('/api/event/create', data, currentUser);
