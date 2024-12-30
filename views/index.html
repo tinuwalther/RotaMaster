@@ -204,11 +204,49 @@
                         document.getElementById('btnExportEvent').checked = true;
                         singleEvent.show();
 
-                        const exportButton = document.getElementById('btnUpdateExport'); 
-                        // exportButton.onclick = handleModalButtonClick.bind(null, event, calendar);
-                        exportButton.onclick = function() {
-                            handleModalButtonClick(event, calendar, calendarConfig.opsGenie);
-                        };
+                        const btnExportEvent = document.getElementById('btnExportEvent'); 
+                        const btnRemoveEvent = document.getElementById('btnRemoveEvent'); 
+
+                        const singleEventSubmit = document.getElementById('singleEventSubmit'); 
+                        singleEventSubmit.onclick = async function() {
+                            if (btnExportEvent.checked) {
+                                exportCalendarEvents(event, `${event.title}.ics`);
+                            } else {
+                                if(event.id){
+                                    const message = `Event ${event.id}, ${event.title} wirklich löschen?`;
+                                    const result = await showConfirm(message);
+                                    if (result) {
+                                        if(event.title.includes('Pikett')){
+                                            // Remove Override form OpsGenie
+                                            if(calendarConfig.opsGenie){
+                                                const override = {                                    
+                                                    scheduleName: calendarConfig.scheduleName,
+                                                    rotationName: calendarConfig.rotationName,
+                                                    userName: event.extendedProps.email,
+                                                    onCallStart: event.start,
+                                                };
+                                                console.log('DEBUG', 'Remove Override form OpsGenie', override);
+                                                const opsGenieResult = await removeOpsGenieOverride(override);
+                                                console.log('DEBUG', 'OpsGenie Override:', opsGenieResult.result);
+                                            }
+                                        }
+                                        deleteDBData('/api/event/delete', event)
+                                        .then(() => {
+                                            // Fetch new data and refresh the calendar
+                                            // refreshCalendarData(calendar);
+                                        })
+                                        .catch(error => {
+                                            console.error('Error deleting event:', error);
+                                            showAlert('Fehler beim Löschen des Events, ggf. OpsGenie prüfen!');
+                                        });
+                                    }
+                                }else{
+                                    showAlert(`${event.title} kann nicht gelöscht werden!`)
+                                }
+                            }
+                            const singleEventSubmit = bootstrap.Modal.getInstance(document.getElementById('singleEvent'));
+                            singleEventSubmit.hide();                        
+                        }
                     },
 
                     // This function is called when an event is selected
@@ -417,22 +455,31 @@
                                         const messageResult = await showConfirm(message);
                                         if (messageResult) {
                                             // Add the event to the SQLite table event
+                                            if(!opsGenieResult.data.alias){
+                                                showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
+                                                throw new Error(`Failed to get the alias of the override ${opsGenieResult.data}`);
+                                            }
+                                            data.alias = opsGenieResult.data.alias;
+                                            // console.log('DEBUG', data);
                                             await createDBData('/api/event/create', data, currentUser);
                                         }
                                     }else{
                                         showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
                                         throw new Error(`Failed to create Override in OpsGenie for user ${currentUser.email}`);
                                     }
-
-                                    }else{
-                                        // Add the event to the SQLite table event
-                                        await createDBData('/api/event/create', data, currentUser);
-                                    }
+                                }else{
+                                    // Add the event to the SQLite table event
+                                    data.alias = $null;
+                                    // console.log('DEBUG', data);
+                                    await createDBData('/api/event/create', data, currentUser);
+                                }
                             }else{
                                 throw new Error(`Failed to create Override in OpsGenie for user ${username}`);
                             }
                         }else{
                             // Add the event to the SQLite table event
+                            data.alias = $null;
+                            console.log('DEBUG', data);
                             await createDBData('/api/event/create', data, currentUser);
                         }
                     } catch (error) {
@@ -568,7 +615,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" id="btnClose" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" id="btnUpdateExport" class="btn btn-dark">Submit</button>
+                            <button type="button" id="singleEventSubmit" class="btn btn-dark">Submit</button>
                         </div>
                     </div>
                 </div>
