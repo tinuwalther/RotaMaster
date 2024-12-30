@@ -456,7 +456,7 @@
                                         const messageResult = await showConfirm(message);
                                         if (messageResult) {
                                             // Add the event to the SQLite table event
-                                            // data.alias = opsGenieResult.data.alias;
+                                            data.alias = opsGenieResult.data.alias;
                                             // console.log('DEBUG', data);
                                             await createDBData('/api/event/create', data, currentUser);
                                         }
@@ -466,7 +466,7 @@
                                     }
                                 }else{
                                     // Add the event to the SQLite table event
-                                    // data.alias = $null;
+                                    data.alias = $null;
                                     // console.log('DEBUG', data);
                                     await createDBData('/api/event/create', data, currentUser);
                                 }
@@ -475,7 +475,7 @@
                             }
                         }else{
                             // Add the event to the SQLite table event
-                            // data.alias = $null;
+                            data.alias = $null;
                             // console.log('DEBUG', data);
                             await createDBData('/api/event/create', data, currentUser);
                         }
