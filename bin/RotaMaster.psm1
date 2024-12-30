@@ -1179,8 +1179,19 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method Delete -Path '/api/event/delete/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
 
-            $id = $WebEvent.Parameters['id']
-            $sql = "DELETE FROM events WHERE id = $id"
+            $id      = $WebEvent.Parameters['id']
+            $created = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $author  = $WebEvent.Auth.User.Name
+
+            # $sql = "DELETE FROM events WHERE id = $id"
+            $sql = @"
+        UPDATE events
+        SET 
+            active = 0,
+            created = '$created',
+            author = '$author'
+        WHERE id = $id
+"@
 
             try {
                 Invoke-SqliteQuery -DataSource $dbPath -Query $sql
