@@ -7,6 +7,7 @@ SELECT
   e.type,
   e.start,
   e.end,
+  e.alias,
   p.login,
   p.firstname,
   p.name,
