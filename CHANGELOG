@@ -10,6 +10,11 @@ New structure in table events:
 -- Add column alias
 ALTER TABLE events 
   ADD alias;
+
+-- Add column active
+ALTER TABLE events 
+  ADD active INTEGER NOT NULL 
+  DEFAULT 1;
 ````
 
 and in view v_events:
@@ -39,6 +44,7 @@ SELECT
 FROM
   events e
   INNER JOIN person p ON (p.name || ' ' || p.firstname) = e.person
+WHERE e.active = 1
 ORDER BY 
   e.id ASC;
 ````
