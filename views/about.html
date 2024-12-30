@@ -89,6 +89,13 @@
     <script>
         // Wait until the DOM is fully loaded
         document.addEventListener('DOMContentLoaded', async () => {
+            // Add the App-Version to the Navbar-Brand
+            const pageTitle = `RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
+            const navbarBrandElement = document.getElementById('navbarBrand');
+            if (navbarBrandElement) {
+                navbarBrandElement.textContent = pageTitle;
+            };
+            
             // Set appVersion from calendarConfig
             if (typeof calendarConfig !== 'undefined' && calendarConfig.appVersion) {
                 document.getElementById('appVersion').textContent = `${calendarConfig.appVersion} installed`;
