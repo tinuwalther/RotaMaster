@@ -144,7 +144,7 @@ Currently there is a PowerShell-Script to create a new rotation and save it as R
 RotaMaster/bin/New-OnCallSchedule.ps1 -StartDate '2025-03-01' -EndDate '2025-12-31'
 ````
 
-You can check this ratation in the RotaMaster-calendar and if the rotation passed, then you can import it in to the table events with a PowerShell-Script:
+You can check this rotation in the RotaMaster-calendar and if the rotation passed, then you can import it in to the table events (but NOT into OpsGenie) with a PowerShell-Script:
 
 ````powershell
 RotaMaster/bin/Import-ToSqLiteTable.ps1 -FilePath ../api/on-call-rota-2025.csv -ImportToDatabase
