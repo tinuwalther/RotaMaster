@@ -78,10 +78,31 @@
             </tbody>
         </table>
 
-        <p>All components are licensed under MIT</p>
-
+        <h2>OpsGenie</h2>
         <p>
-            RotaMaster is written by <a href="https://github.com/tinuwalther" Target="_blank">tinuwalther</a>
+            On-call and alert management <a href="https://www.atlassian.com/software/opsgenie" Target="_blank">OpsGenie</a>
+        </p>
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>OpsGenie</th>
+                    <th>Schedule name</th>
+                    <th>Rotation name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="opsGenieIntegration">...</td>
+                    <td id="opsGenieSchedule">...</td>
+                    <td id="opsGenieRotation">...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>License</h2>
+        <p>
+            All components are licensed under <a href="https://mit-license.org/" Target="_blank">MIT</a>. RotaMaster is written by <a href="https://github.com/tinuwalther" Target="_blank">tinuwalther</a>,
+            contact via <a href="https://tinuwalther.bsky.social" Target="_blank">Bluesky</a>.
         </p>
 
     </div>
@@ -95,7 +116,7 @@
             if (navbarBrandElement) {
                 navbarBrandElement.textContent = pageTitle;
             };
-            
+
             // Set appVersion from calendarConfig
             if (typeof calendarConfig !== 'undefined' && calendarConfig.appVersion) {
                 document.getElementById('appVersion').textContent = `${calendarConfig.appVersion} installed`;
@@ -145,6 +166,25 @@
                 }
             } catch (error) {
                 console.error('Error reading Bootstrap version:', error);
+                document.getElementById('bsVersion').textContent = "Error";
+            }
+
+            // Fetch OpsGenie integration
+            try{
+                const integration = calendarConfig.opsGenie
+                const schedule = calendarConfig.scheduleName
+                const rotation = calendarConfig.rotationName
+                if(integration){
+                    document.getElementById('opsGenieIntegration').textContent = "integrated";
+                    document.getElementById('opsGenieSchedule').textContent = schedule;
+                    document.getElementById('opsGenieRotation').textContent = rotation;
+                }else{
+                    document.getElementById('opsGenieIntegration').textContent = "not integrated";
+                    document.getElementById('opsGenieSchedule').textContent = "not integrated";
+                    document.getElementById('opsGenieRotation').textContent = "not integrated";
+                }
+            } catch (error) {
+                console.error('Error reading OpsGenie integration:', error);
                 document.getElementById('bsVersion').textContent = "Error";
             }
         });
