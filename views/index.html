@@ -468,7 +468,7 @@
                                     }
                                 }else{
                                     // Add the event to the SQLite table event
-                                    data.alias = $null;
+                                    data.alias = null;
                                     // console.log('DEBUG', data);
                                     await createDBData('/api/event/create', data, currentUser);
                                 }
@@ -477,7 +477,7 @@
                             }
                         }else{
                             // Add the event to the SQLite table event
-                            data.alias = $null;
+                            data.alias = null;
                             // console.log('DEBUG', data);
                             await createDBData('/api/event/create', data, currentUser);
                         }
