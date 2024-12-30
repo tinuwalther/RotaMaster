@@ -76,9 +76,25 @@ To manage your absences, click on the link in the navbar 'Absenzen'.
 
 ## Person Management
 
-To manage your persons, click on the link in the navbar 'Personen'.
+To manage your persons, click on the link in the navbar 'Personen'. If a person is a member of the on-call team, set the value for Active to 1, otherwise to 0. The workload value has no function yet.
 
 ![RotaMasterPersonMgmt](./img/RotaMasterPersonMgmt.png)
+
+## About
+
+A list of some components and their version. Show is OpsGenie integration.
+
+![RotaMasterAbout](./img/RotaMasterAbout.png)
+
+## OpsGenie
+
+Add new OpsGenie Override for a specified person and on-call time.
+
+![OpsGenie2](./img/OpsGenie2.png)
+
+Synchronize/refresh the calendar and the OpsGenie Schedule.
+
+![OpsGenie3](./img/OpsGenie3.png)
 
 ## Functionality
 
