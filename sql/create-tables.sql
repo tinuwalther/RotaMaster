@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS events(
     type TEXT NOT NULL,
     start TEXT NOT NULL,
     end TEXT NOT NULL,
+    alias TEXT,
     created TEXT NOT NULL DEFAULT current_timestamp,
     author TEXT NOT NULL
 )
