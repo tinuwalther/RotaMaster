@@ -1008,9 +1008,9 @@ function Initialize-ApiEndpoints {
                 # Read from view instead from table
                 $person = $WebEvent.Parameters['person']
                 if($person -eq '*'){
-                    $sql = 'SELECT id,person,email,"type",start,end FROM v_events'
+                    $sql = 'SELECT id,person,email,"type",start,end,alias FROM v_events'
                 }else{
-                    $sql = "SELECT id,person,email,""type"",start,end FROM v_events WHERE person = '$($person)'"
+                    $sql = "SELECT id,person,email,""type"",start,end,alias FROM v_events WHERE person = '$($person)'"
                 }
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
@@ -1028,7 +1028,10 @@ function Initialize-ApiEndpoints {
                         # end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
                         end   = Get-Date $item.end -f 'yyyy-MM-dd HH:MM'
                         color = Get-EventColor -type $item.type
-                        extendedProps = [PSCustomObject]@{email = $item.email}
+                        extendedProps = [PSCustomObject]@{
+                            email = $item.email
+                            alias = $item.alias
+                        }
                     } 
                 }
                 $Connection.Close()
