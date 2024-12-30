@@ -66,6 +66,13 @@ UPDATE person
 SELECT * FROM person;
 
  
+SELECT * FROM events;
+
+ALTER TABLE events 
+  ADD alias;
+
+SELECT * FROM v_events;
+
 Import from CSV:
 sqlite3
 .open /Users/Tinu/git/RotaMaster/api/rotamaster.db 
