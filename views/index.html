@@ -83,7 +83,7 @@
                 }
 
                 // Fetch the absence from the API (from the SQLite table absence) and fill the dropdown with the absence names
-                const absence = await readDBData('/api/absence/read');
+                const absence = await readDBData('/api/absence/read/*');
                 const absenceNames = new Array;
                 absence.map((item) => {
                     absenceNames.push(item.name);
