@@ -1,0 +1,44 @@
+# CHANGELOG
+
+## 2024-12-30
+
+Adding the OpsGenie integration with add and remove override. To remove the override, the events table requires a column for the OpsGenie override alias.
+
+New structure in table events:
+
+````sql
+-- Add column alias
+ALTER TABLE events 
+  ADD alias;
+````
+
+and in view v_events:
+
+````sql
+-- Delete View v_events
+DROP VIEW v_events;
+````
+
+````sql
+-- Create the view for events with alias
+CREATE VIEW v_events
+AS 
+SELECT 
+  e.id,
+  e.person,
+  e.type,
+  e.start,
+  e.end,
+  e.alias,
+  p.login,
+  p.firstname,
+  p.name,
+  p.email,
+  e.created,
+  e.author
+FROM
+  events e
+  INNER JOIN person p ON (p.name || ' ' || p.firstname) = e.person
+ORDER BY 
+  e.id ASC;
+````
