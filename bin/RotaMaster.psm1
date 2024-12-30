@@ -1154,7 +1154,7 @@ function Initialize-ApiEndpoints {
                 $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
                 $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
             }
-            $created = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
             $author  = $WebEvent.Auth.User.Name
 
             $sql = @"
@@ -1180,7 +1180,7 @@ function Initialize-ApiEndpoints {
             param($dbPath)
 
             $id      = $WebEvent.Parameters['id']
-            $created = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $deleted = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
             $author  = $WebEvent.Auth.User.Name
 
             # $sql = "DELETE FROM events WHERE id = $id"
@@ -1188,7 +1188,7 @@ function Initialize-ApiEndpoints {
         UPDATE events
         SET 
             active = 0,
-            created = '$created',
+            deleted = '$deleted',
             author = '$author'
         WHERE id = $id
 "@
