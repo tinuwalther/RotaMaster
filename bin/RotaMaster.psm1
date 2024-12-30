@@ -806,6 +806,8 @@ function Initialize-ApiEndpoints {
     process{
         $BinPath = $PSScriptRoot #Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
         $ApiPath = $($BinPath).Replace('bin','api')
+        $LogPath = $($BinPath).Replace('bin','logs')
+        $Logfile = Join-Path -Path $LogPath -ChildPath "informational_$(Get-Date -f 'yyyy-MM-dd').log"
         $dbPath = Join-Path -Path $($ApiPath) -ChildPath '/rotamaster.db'
 
         # Calculate swiss holidays for next year
@@ -1191,7 +1193,8 @@ function Initialize-ApiEndpoints {
 
         #region CRUD for OpsGenie
         # Create new override for person
-        Add-PodeRoute -Method POST -Path '/api/opsgenie/override/create'  -Authentication 'Login' -ScriptBlock {
+        Add-PodeRoute -Method POST -Path '/api/opsgenie/override/create' -ArgumentList @($Logfile) -Authentication 'Login' -ScriptBlock {
+            param($Logfile)
 
             function New-OpsGenieOverride {
                 <#
@@ -1337,17 +1340,18 @@ function Initialize-ApiEndpoints {
                 )
 
                 $NewOpsGenieOverride = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey
-                "Override created as $($NewOpsGenieOverride.data.alias)" | Out-Default
+                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); Override created as $($NewOpsGenieOverride.data.alias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
                 Write-PodeJsonResponse -Value $($NewOpsGenieOverride | ConvertTo-Json)
 
             }catch{
-                $_.Exception.Message | Out-Default
+                $_.Exception.Message | Write-PodeErrorLog -Level Error
                 Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
             }
         }
 
         # Create new override for person
-        Add-PodeRoute -Method DELETE -Path '/api/opsgenie/override/delete'  -Authentication 'Login' -ScriptBlock {
+        Add-PodeRoute -Method DELETE -Path '/api/opsgenie/override/delete' -ArgumentList @($Logfile) -Authentication 'Login' -ScriptBlock {
+            param($Logfile)
 
             function Remove-OpsGenieOverride {
                 <#
@@ -1442,13 +1446,13 @@ function Initialize-ApiEndpoints {
                 $OverrideAlias  = $WebEvent.Data['alias']
 
                 #region Delete Override -> Remove event/Move event
-                "Searching for Override $($OverrideAlias)" | Out-Default
+                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); Searching for Override $($OverrideAlias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
                 $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -ApiKey $ScheduleApiKey
-                "Override $($OverrideAlias) $($RemoveOpsGenieOverride.result)" | Out-Default
+                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); Override $($OverrideAlias) $($RemoveOpsGenieOverride.result)" | Out-File -Append -FilePath $Logfile -Encoding utf8
                 Write-PodeJsonResponse -Value $($RemoveOpsGenieOverride | ConvertTo-Json)
                 #endregion
             }catch{
-                $_.Exception.Message | Out-Default
+                $_.Exception.Message | Write-PodeErrorLog -Level Error
                 Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
             }
         }
