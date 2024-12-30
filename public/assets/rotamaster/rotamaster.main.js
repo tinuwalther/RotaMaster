@@ -31,9 +31,10 @@
  * calendar.render();
  */
 const calendarConfig = {
-    appVersion: "5.3.7",
+    appVersion: "5.3.8",
+    opsGenie: true,
     scheduleName: 'tinu_schedule',
-    rotationName: 'OnCall 2025',
+    rotationName: '2025',
     timeZone: 'local',
     locale: 'de-CH',
     themeSystem: 'standard',
@@ -632,11 +633,29 @@ async function createOpsGenieOverride(data){
         body: JSON.stringify(data) // Convert form data to JSON string
     });
     if (response.ok) {
-        console.log('DEBUG', response.status, response.statusText, `${data.name} - ${data.type}`); // Ausgabe: "Record successfully updated"
+        console.log('DEBUG', response.status, response.statusText, `${data.userName} - ${data.type}`); // Ausgabe: "Record successfully updated"
         const json = await response.json(); // Convert form data to JSON string
         return json
     } else {
-        console.error('Failed to create event:', response, data);
+        console.error('Failed to create override:', response, data);
+        return 'Request failed with status:', response.status, response.statusText;
+    }
+}
+
+async function removeOpsGenieOverride(data){
+    const response = await fetch('/api/opsgenie/override/delete', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json' // Send as JSON
+        },
+        body: JSON.stringify(data) // Convert form data to JSON string
+    });
+    if (response.ok) {
+        console.log('DEBUG', response.status, response.statusText, response, `${data.userName} - ${data.type}`); // Ausgabe: "Record successfully removed"
+        const json = await response.json(); // Convert form data to JSON string
+        return json
+    } else {
+        console.error('Failed to delete override:', response, data);
         return 'Request failed with status:', response.status, response.statusText;
     }
 }
@@ -864,8 +883,8 @@ function setModalEventData(event) {
  * @example
  * // Example usage triggered by a modal button:
  * handleModalButtonClick(event);
- */
-async function handleModalButtonClick(event, calendar) {
+
+async function handleModalButtonClick(event, calendar, opsGenie) {
     if (btnExportEvent.checked) {
         exportCalendarEvents(event, `${event.title}.ics`);
     }
@@ -874,14 +893,18 @@ async function handleModalButtonClick(event, calendar) {
             const message = `Event ${event.id}, ${event.title} wirklich löschen?`;
             const result = await showConfirm(message);
             if (result) {
+                if(event.title.includes('Pikett')){
+                    // Remove Override form OpsGenie
+                    if(opsGenie){
+                        const user = event.extendedProps.email;
+                        const start = event.start;
+                        console.log('DEBUG', 'Remove Override form OpsGenie', user, start);
+                    }
+                }
                 deleteDBData('/api/event/delete', event)
                 .then(() => {
                     // Fetch new data and refresh the calendar
-                    refreshCalendarData(calendar);
-                    if(event.title.includes('Pikett')){
-                        // Remove Override form OpsGenie
-                        console.log('Remove Override form OpsGenie');
-                    }
+                    // refreshCalendarData(calendar);
                 })
                 .catch(error => {
                     console.error('Error deleting event:', error);
@@ -895,6 +918,7 @@ async function handleModalButtonClick(event, calendar) {
     const exportModal = bootstrap.Modal.getInstance(document.getElementById('singleEvent'));
     exportModal.hide();
 }
+ */
 
 /**
  * Refreshes the calendar by fetching updated event data.
