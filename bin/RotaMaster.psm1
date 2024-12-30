@@ -1444,7 +1444,7 @@ function Initialize-ApiEndpoints {
                 #region Delete Override -> Remove event/Move event
                 "Searching for Override $($OverrideAlias)" | Out-Default
                 $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -ApiKey $ScheduleApiKey
-                "Override created as $($OverrideAlias) $($RemoveOpsGenieOverride.result)" | Out-Default
+                "Override $($OverrideAlias) $($RemoveOpsGenieOverride.result)" | Out-Default
                 Write-PodeJsonResponse -Value $($RemoveOpsGenieOverride | ConvertTo-Json)
                 #endregion
             }catch{
