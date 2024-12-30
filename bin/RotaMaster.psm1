@@ -308,190 +308,6 @@ function New-OpsGenieRotation {
     }
 }
 
-function Get-OpsGenieOverride {
-    <#
-    .SYNOPSIS
-        A short one-line action-based description, e.g. 'Tests if a function is valid'
-    .DESCRIPTION
-        A longer description of the function, its purpose, common use cases, etc.
-    .NOTES
-        Information or caveats about the function e.g. 'This function is not supported in Linux'
-    .EXAMPLE
-        New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
-        Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
-    #>
-    [CmdletBinding(SupportsShouldProcess=$True)]
-    param(
-        # Test-Compute_schedule
-        [Parameter(
-            Mandatory=$true,
-            ValueFromPipeline=$true,
-            ValueFromPipelineByPropertyName=$true,
-            Position = 0
-        )]
-        [String] $Schedule,
-
-        [Parameter(
-            Mandatory=$true,
-            ValueFromPipeline=$true,
-            ValueFromPipelineByPropertyName=$true,
-            Position = 1
-        )]
-        [String] $ApiKey,
-
-        [Parameter(
-            Mandatory=$false,
-            ValueFromPipeline=$true,
-            ValueFromPipelineByPropertyName=$true,
-            Position = 2
-        )]
-        [String] $Alias
-    )
-
-    begin{
-        #region Do not change this region
-        $StartTime = Get-Date
-        $function = $($MyInvocation.MyCommand.Name)
-        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
-        #endregion
-    }
-
-    process{
-        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
-        foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
-        if ($PSCmdlet.ShouldProcess($params.Trim())){
-            try{
-                # Define variables
-                if([String]::IsNullOrEmpty($Alias)){
-                    $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule/overrides?scheduleIdentifierType=name"
-                }else{
-                    # $ScheduleId = Get-IXOpsGenieSchedule -Schedule $Schedule -ApiKey $ApiKey | Select-Object -ExpandProperty Id
-                    # $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$($ScheduleId)/overrides/$($Alias)"
-                    $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$($Schedule)/overrides/$($Alias)"
-                }
-
-                # Create headers for the API request
-                $Headers = @{
-                    Authorization = "GenieKey $ApiKey"
-                    "Content-Type" = "application/json"
-                }
-
-                try {
-                    $Response = Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method Get
-                    if($Response){
-                        $Response.data
-                    }else{
-                        $Response
-                    }
-                }
-                catch {
-                    Write-Warning $_.Exception.Message
-                }
-            }catch{
-                Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
-                $Error.Clear()
-            }
-        }
-    }
-
-    end{
-        #region Do not change this region
-        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
-        $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
-        $Formatted = $TimeSpan | ForEach-Object {
-            '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
-        }
-        Write-Verbose $('Finished in:', $Formatted -Join ' ')
-        #endregion
-    }
-}
-
-function Remove-OpsGenieOverride {
-    <#
-    .SYNOPSIS
-        A short one-line action-based description, e.g. 'Tests if a function is valid'
-    .DESCRIPTION
-        A longer description of the function, its purpose, common use cases, etc.
-    .NOTES
-        Information or caveats about the function e.g. 'This function is not supported in Linux'
-    .EXAMPLE
-        New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
-        Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
-    #>
-    [CmdletBinding(SupportsShouldProcess=$True)]
-    param(
-        # Test-Compute_schedule
-        [Parameter(
-            Mandatory=$true,
-            ValueFromPipeline=$true,
-            ValueFromPipelineByPropertyName=$true,
-            Position = 0
-        )]
-        [String] $Schedule,
-
-        [Parameter(
-            Mandatory=$true,
-            ValueFromPipeline=$true,
-            ValueFromPipelineByPropertyName=$true,
-            Position = 1
-        )]
-        [String] $Alias,
-
-        [Parameter(
-            Mandatory=$true,
-            ValueFromPipeline=$true,
-            ValueFromPipelineByPropertyName=$true,
-            Position = 2
-        )]
-        [String] $ApiKey
-    )
-
-    begin{
-        #region Do not change this region
-        $StartTime = Get-Date
-        $function = $($MyInvocation.MyCommand.Name)
-        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
-        #endregion
-    }
-
-    process{
-        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
-        foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
-        if ($PSCmdlet.ShouldProcess($params.Trim())){
-            try{
-                # Define variables
-                $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$ScheduleName/overrides/$($Alias)?scheduleIdentifierType=name"
-
-                # Create headers for the API request
-                $Headers = @{
-                    Authorization = "GenieKey $ApiKey"
-                }
-
-                try {
-                    Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method DELETE
-                }
-                catch {
-                    Write-Warning $_.Exception.Message
-                }
-            }catch{
-                Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
-                $Error.Clear()
-            }
-        }
-    }
-
-    end{
-        #region Do not change this region
-        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
-        $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
-        $Formatted = $TimeSpan | ForEach-Object {
-            '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
-        }
-        Write-Verbose $('Finished in:', $Formatted -Join ' ')
-        #endregion
-    }
-}
-
 function Get-MonthCalendar{
     <#
     .SYNOPSIS
@@ -964,10 +780,18 @@ function Initialize-ApiEndpoints {
         }
 
         # Read data from SQLiteDB for absence
-        Add-PodeRoute -Method Get -Path 'api/absence/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+        Add-PodeRoute -Method Get -Path 'api/absence/read/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
             try{
-                $sql = 'SELECT id,name,created FROM absence ORDER BY name ASC'
+                $searchFor = $WebEvent.Parameters['id']
+
+                if ($searchFor -eq '*') {
+                    $sql = 'SELECT id,name,created FROM absence ORDER BY name ASC'
+                } else {
+                    $sql = "SELECT id,name,created FROM absence WHERE id = $searchFor"
+                }
+
+                # $sql = 'SELECT id,name,created FROM absence ORDER BY name ASC'
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
 
@@ -986,6 +810,25 @@ function Initialize-ApiEndpoints {
             }
         }
         
+        # Update absence from table absence
+        Add-PodeRoute -Method PUT -Path '/api/absence/update/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+        param($dbPath)
+
+            $id        = $WebEvent.Parameters['id']
+            $name      = $WebEvent.Data['name']
+            $created   = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $author    = $WebEvent.Auth.User.Name
+
+            $sql = "UPDATE absence SET name = '$name', created = '$created', author = '$author' WHERE id = '$id'"
+
+            try {
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
+            } catch {
+                Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to update record: $_" } -StatusCode 500
+            }
+        }
+
         # Delete absence from table absence
         Add-PodeRoute -Method DELETE -Path '/api/absence/delete/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
@@ -1073,7 +916,7 @@ function Initialize-ApiEndpoints {
             }
         }
 
-        # Delete person from table person
+        # Update person from table person
         Add-PodeRoute -Method PUT -Path '/api/person/update/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
 
@@ -1246,7 +1089,7 @@ function Initialize-ApiEndpoints {
         #endregion
 
         #region CRUD for OpsGenie
-        # Create new person into the table person
+        # Create new override for person
         Add-PodeRoute -Method POST -Path '/api/opsgenie/override/create'  -Authentication 'Login' -ScriptBlock {
 
             function New-OpsGenieOverride {
@@ -1373,7 +1216,7 @@ function Initialize-ApiEndpoints {
             try{
 
                 $ScheduleName   = $WebEvent.Data['scheduleName']
-                $ScheduleApiKey = ''
+                $ScheduleApiKey = '2b927048-c8b5-4b3d-8770-f8593c5f0277'
                 $RotationName   = $WebEvent.Data['rotationName']
                 $Username       = $WebEvent.Data['userName']
                 $OnCallStart    = Get-Date $WebEvent.Data['onCallStart'] -f 'yyyy-MM-dd 10:00'
@@ -1393,7 +1236,6 @@ function Initialize-ApiEndpoints {
                 )
 
                 $NewOpsGenieOverride  = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey
-                $NewOpsGenieOverride | Out-Default
                 Write-PodeJsonResponse -Value $($NewOpsGenieOverride | ConvertTo-Json)
 
             }catch{
@@ -1402,6 +1244,225 @@ function Initialize-ApiEndpoints {
             }
         }
 
+        # Create new override for person
+        Add-PodeRoute -Method DELETE -Path '/api/opsgenie/override/delete/:id'  -Authentication 'Login' -ScriptBlock {
+
+            function Get-OpsGenieOverride {
+                <#
+                .SYNOPSIS
+                    A short one-line action-based description, e.g. 'Tests if a function is valid'
+                .DESCRIPTION
+                    A longer description of the function, its purpose, common use cases, etc.
+                .NOTES
+                    Information or caveats about the function e.g. 'This function is not supported in Linux'
+                .EXAMPLE
+                    New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
+                    Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+                #>
+                [CmdletBinding(SupportsShouldProcess=$True)]
+                param(
+                    # Test-Compute_schedule
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 0
+                    )]
+                    [String] $Schedule,
+
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 1
+                    )]
+                    [String] $ApiKey,
+
+                    [Parameter(
+                        Mandatory=$false,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 2
+                    )]
+                    [String] $Alias
+                )
+
+                begin{
+                    #region Do not change this region
+                    $StartTime = Get-Date
+                    $function = $($MyInvocation.MyCommand.Name)
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
+                    #endregion
+                }
+
+                process{
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
+                    foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
+                    if ($PSCmdlet.ShouldProcess($params.Trim())){
+                        try{
+                            # Define variables
+                            if([String]::IsNullOrEmpty($Alias)){
+                                $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule/overrides?scheduleIdentifierType=name"
+                            }else{
+                                # $ScheduleId = Get-IXOpsGenieSchedule -Schedule $Schedule -ApiKey $ApiKey | Select-Object -ExpandProperty Id
+                                # $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$($ScheduleId)/overrides/$($Alias)"
+                                $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$($Schedule)/overrides/$($Alias)"
+                            }
+
+                            # Create headers for the API request
+                            $Headers = @{
+                                Authorization = "GenieKey $ApiKey"
+                                "Content-Type" = "application/json"
+                            }
+
+                            try {
+                                $Response = Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method Get
+                                if($Response){
+                                    $Response.data
+                                }else{
+                                    $Response
+                                }
+                            }
+                            catch {
+                                Write-Warning $_.Exception.Message
+                            }
+                        }catch{
+                            Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
+                            $Error.Clear()
+                        }
+                    }
+                }
+
+                end{
+                    #region Do not change this region
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
+                    $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
+                    $Formatted = $TimeSpan | ForEach-Object {
+                        '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
+                    }
+                    Write-Verbose $('Finished in:', $Formatted -Join ' ')
+                    #endregion
+                }
+            }
+
+            function Remove-OpsGenieOverride {
+                <#
+                .SYNOPSIS
+                    A short one-line action-based description, e.g. 'Tests if a function is valid'
+                .DESCRIPTION
+                    A longer description of the function, its purpose, common use cases, etc.
+                .NOTES
+                    Information or caveats about the function e.g. 'This function is not supported in Linux'
+                .EXAMPLE
+                    New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
+                    Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+                #>
+                [CmdletBinding(SupportsShouldProcess=$True)]
+                param(
+                    # Test-Compute_schedule
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 0
+                    )]
+                    [String] $Schedule,
+
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 1
+                    )]
+                    [String] $Alias,
+
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 2
+                    )]
+                    [String] $ApiKey
+                )
+
+                begin{
+                    #region Do not change this region
+                    $StartTime = Get-Date
+                    $function = $($MyInvocation.MyCommand.Name)
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
+                    #endregion
+                }
+
+                process{
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
+                    foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
+                    if ($PSCmdlet.ShouldProcess($params.Trim())){
+                        try{
+                            # Define variables
+                            $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$ScheduleName/overrides/$($Alias)?scheduleIdentifierType=name"
+
+                            # Create headers for the API request
+                            $Headers = @{
+                                Authorization = "GenieKey $ApiKey"
+                            }
+
+                            try {
+                                Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method DELETE
+                            }
+                            catch {
+                                Write-Warning $_.Exception.Message
+                            }
+                        }catch{
+                            Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
+                            $Error.Clear()
+                        }
+                    }
+                }
+
+                end{
+                    #region Do not change this region
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
+                    $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
+                    $Formatted = $TimeSpan | ForEach-Object {
+                        '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
+                    }
+                    Write-Verbose $('Finished in:', $Formatted -Join ' ')
+                    #endregion
+                }
+            }
+
+            try{
+
+                $ScheduleName   = $WebEvent.Data['scheduleName']
+                $ScheduleApiKey = '2b927048-c8b5-4b3d-8770-f8593c5f0277'
+                $Username       = $WebEvent.Data['userName']
+                $OnCallStart    = Get-Date $WebEvent.Data['onCallStart'] -f 'yyyy-MM-dd 10:00'
+
+                #region Delete Override -> Remove event/Move event
+                # $Username  = 'one.user@company.com'
+                # $StartDate = '13.01.2025 10:00:00'
+
+                $AllOpsGenieOverrides = Get-OpsGenieOverride -Schedule $ScheduleName -ApiKey $ScheduleApiKey
+                $UserOverride = $AllOpsGenieOverrides.Where({$_.user.username -match $Username})
+                # $UserOverride | Format-Table @{N='Username';E={$_.user.username}},@{N='Rotation';E={$_.rotations.name}},startDate,endDate
+
+                if($UserOverride){
+                    $alias = $UserOverride.Where({$_.startDate.ToShortDateString() -match (Get-Date $OnCallStart).ToShortDateString()}) | Select-Object -ExpandProperty alias
+                    if($alias){
+                        $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $alias -ApiKey $ScheduleApiKey
+                    }else {
+                        Write-Host "No Override found for $($Username)"
+                        $RemoveOpsGenieOverride = $null
+                    }
+                }
+                #endregion
+                Write-PodeJsonResponse -Value $($RemoveOpsGenieOverride | ConvertTo-Json)
+
+            }catch{
+                $_.Exception.Message | Out-Default
+                Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+            }
+        }
         #endregion
     }
 
