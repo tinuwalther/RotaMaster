@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
+    <meta name="description" content="RotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
+    
+    <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
+
+    <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
+    <script src="/assets/rotamaster/fullcalendar.main.min.js"></script>
+    <script src="/assets/rotamaster/index.global.min.js"></script>
+    <script src="/assets/rotamaster/rotamaster.main.js"></script>
+
+    <title id="title" >RotaMaster: About</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
+</head>
+<body>
+    <Section Id="section"  >
+
+        <!-- Begin NavBar -->
+        <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
+            <div Class="container-fluid"  >
+                <img src="/assets/img/favicon.png" alt="Bootstrap" width="48" height="48">
+                <a Class="navbar-brand" id="navbarBrand" href="/" Target="_self"  >RotaMaster</a>
+                <button Class="navbar-toggler" type="button" title="Navbar" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
+                    <span Class="navbar-toggler-icon"  ></span>
+                </button>
+                <div Id="collapsibleNavbar" Class="collapse navbar-collapse"  >
+                <ul Class="navbar-nav"  >
+                    <li Class="nav-item"  ><a Class="nav-link" href="/absence" >Absenzen</a></li>
+                    <li Class="nav-item"  ><a Class="nav-link" href="/person"  >Personen</a></li>
+                    <li Class="nav-item"  ><a Class="nav-link" href="/about"  >About</a></li>
+                    <li Class="nav-item"  ><a Class="nav-link" href="/logout"  >Logoff</a></li>
+                </ul>
+                <span class="navbar-text ms-auto" id="currentUser">
+                    <!-- logged-in as Username -->
+                </span>
+                </div>
+            </div>
+        </nav>
+        <!-- End NavBar -->
+
+        <div class="container mt-4">
+            <h2>About</h2>
+
+        <p>Welcome to the About page for RotaMaster. Here you can find information about the app and its dependencies.</p>
+        
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Version</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>RotaMaster (Web service)</td>
+                    <td id="appVersion">Loading...</td>
+                </tr>
+                <tr>
+                    <td>FullCalendar (Framework)</td>
+                    <td id="fcVersion">Loading...</td>
+                </tr>
+                <tr>
+                    <td>Bootstrap (Framework)</td>
+                    <td id="bsVersion">Loading...</td>
+                </tr>
+                <tr>
+                    <td>Pode (PowerShell Module)</td>
+                    <td id="podeVersion">...</td>
+                </tr>
+                <tr>
+                    <td>PSSQLite (PowerShell Module)</td>
+                    <td id="pssqliteVersion">...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>OpsGenie</h2>
+        <p>
+            On-call and alert management <a href="https://www.atlassian.com/software/opsgenie" Target="_blank">OpsGenie</a>
+        </p>
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>OpsGenie</th>
+                    <th>Schedule name</th>
+                    <th>Rotation name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="opsGenieIntegration">...</td>
+                    <td id="opsGenieSchedule">...</td>
+                    <td id="opsGenieRotation">...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>License</h2>
+        <p>
+            All components are licensed under <a href="https://mit-license.org/" Target="_blank">MIT</a>. RotaMaster is written by <a href="https://github.com/tinuwalther" Target="_blank">tinuwalther</a>,
+            contact via <a href="https://tinuwalther.bsky.social" Target="_blank">Bluesky</a>.
+        </p>
+
+    </div>
+
+    <script>
+        // Wait until the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Add the App-Version to the Navbar-Brand
+            const pageTitle = `RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
+            const navbarBrandElement = document.getElementById('navbarBrand');
+            if (navbarBrandElement) {
+                navbarBrandElement.textContent = pageTitle;
+            };
+
+            // Set appVersion from calendarConfig
+            if (typeof calendarConfig !== 'undefined' && calendarConfig.appVersion) {
+                document.getElementById('appVersion').textContent = `${calendarConfig.appVersion} installed`;
+            } else {
+                document.getElementById('appVersion').textContent = "Unknown";
+            }
+
+            // Fetch FullCalendar version from the minified JS file
+            try {
+                const response = await fetch('/assets/rotamaster/fullcalendar.main.min.js');
+                if (response.ok) {
+                    const jsContent = await response.text();
+                    const versionMatch = jsContent.match(/\/\*!\s*FullCalendar\s*v([\d.]+)/);
+                    // console.log('DEBUG', versionMatch);
+                    if (versionMatch && versionMatch[1]) {
+                        document.getElementById('fcVersion').textContent = `${versionMatch[1]} installed`;
+                    } else {
+                        document.getElementById('fcVersion').textContent = "Unknown";
+                    }
+                } else {
+                    console.error('Failed to fetch FullCalendar JS file:', response.status);
+                    document.getElementById('fcVersion').textContent = "Error fetching version";
+                }
+            } catch (error) {
+                console.error('Error reading FullCalendar version:', error);
+                document.getElementById('fcVersion').textContent = "Error";
+            }
+
+            // Fetch Bootstrap version from the minified JS file
+            try {
+                const response = await fetch('/assets/bootstrap/bootstrap.bundle.min.js');
+                // console.error('DEBUG: Response Status:', response.status);
+                if (response.ok) {
+                    const jsContent = await response.text();
+                    // console.log('DEBUG: Bootstrap JS Content:', jsContent.slice(0, 500)); // Zeigt die ersten 500 Zeichen der Datei
+                    // RegEx für Bootstrap-Version
+                    const versionMatch = jsContent.match(/\/\*![^]*?Bootstrap v([\d.]+)/);
+                    // console.log('DEBUG', versionMatch);
+                    if (versionMatch && versionMatch[1]) {
+                        document.getElementById('bsVersion').textContent = `${versionMatch[1]} installed`;
+                    }else{
+                        document.getElementById('bsVersion').textContent = "Unknown";
+                    }
+                } else {
+                    document.getElementById('bsVersion').textContent = "Error fetching version";
+                    console.error('Failed to fetch Bootstrap JS file:', response.status);
+                }
+            } catch (error) {
+                console.error('Error reading Bootstrap version:', error);
+                document.getElementById('bsVersion').textContent = "Error";
+            }
+
+            // Fetch OpsGenie integration
+            try{
+                const integration = calendarConfig.opsGenie
+                const schedule = calendarConfig.scheduleName
+                const rotation = calendarConfig.rotationName
+                if(integration){
+                    document.getElementById('opsGenieIntegration').textContent = "integrated";
+                    document.getElementById('opsGenieSchedule').textContent = schedule;
+                    document.getElementById('opsGenieRotation').textContent = rotation;
+                }else{
+                    document.getElementById('opsGenieIntegration').textContent = "not integrated";
+                    document.getElementById('opsGenieSchedule').textContent = "not integrated";
+                    document.getElementById('opsGenieRotation').textContent = "not integrated";
+                }
+            } catch (error) {
+                console.error('Error reading OpsGenie integration:', error);
+                document.getElementById('bsVersion').textContent = "Error";
+            }
+        });
+    </script>
+</body>
+</html>

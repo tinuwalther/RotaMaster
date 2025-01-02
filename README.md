@@ -1,5 +1,9 @@
 # RotaMaster V5
 
+The RotaMaster is a Web service based on Pode.
+
+All of the APIs on the backend are written in PowerShell and the frontend is written in JavaScript and HTML/CSS.
+
 Absence and duty scheduling program for teams based on Pode, and [FullCalendar](https://fullcalendar.io/), created with ChatGPT prompt for JavaScript.
 
 Each time the page is loaded, the system checks whether the file for the next year's holidays already exists. If the file does not yet exist, the public holidays in Switzerland are calculated for the cantons of Bern, Zurich, St. Gallen and Graubünden and the file is created with these values. You never have to worry about it again, the public holidays are simply there.
@@ -7,6 +11,8 @@ Each time the page is loaded, the system checks whether the file for the next ye
 If you want to create the holidays for a different year, you can call the API with the desired year. For example with PowerShell:
 
 ````Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025````
+
+It possible to use the [OpsGenie API](https://docs.opsgenie.com/docs/api-overview) to create and delete Pikett-events in OpsGenie.
 
 ## Login
 
@@ -52,9 +58,17 @@ Select a range fills the selected start- and end date into the formular. Type or
 
 ## Export
 
-It's possible to export all events, or events of a specified person or type,
+It's possible to export all events,
 
-![RotaMasterSingleICS](./img/RotaMasterExportPerson.png)
+![RotaMasterMultipleICS](./img/RotaMasterMultipleICS.png)
+
+or events of a specified person,
+
+![RotaMasterExportPerson](./img/RotaMasterExportPerson.png)
+
+or of a specified type,
+
+![RotaMasterExportAbsence](./img/RotaMasterExportAbsence.png)
 
 or a single event as an ics-file.
 
@@ -68,17 +82,31 @@ To manage your absences, click on the link in the navbar 'Absenzen'.
 
 ## Person Management
 
-To manage your persons, click on the link in the navbar 'Personen'.
+To manage your persons, click on the link in the navbar 'Personen'. If a person is a member of the on-call team, set the value for Active to 1, otherwise to 0. The workload value has no function yet.
 
 ![RotaMasterPersonMgmt](./img/RotaMasterPersonMgmt.png)
 
-## Functionality
+## About
 
-The RotaMaster is a Web service based on Pode.
+A list of some components and their version. Show is OpsGenie integration.
 
-All of the APIs on the backend are written in PowerShell and the frontend is written in JavaScript and HTML/CSS.
+![RotaMasterAbout](./img/RotaMasterAbout.png)
 
-It would be nice to use the [OpsGenie API](https://docs.opsgenie.com/docs/api-overview) to export/import Pikett-events into OpsGenie.
+## OpsGenie
+
+Add new OpsGenie Override for a specified person and on-call time.
+
+![OpsGenie2](./img/OpsGenie2.png)
+
+Synchronize/refresh the calendar and the OpsGenie Schedule.
+
+![OpsGenie3](./img/OpsGenie3.png)
+
+There is a PowerShell-Script with all functions for CR(U)D operations:
+
+````powershell
+RotaMster/test/New-OpsGenieOverride.ps1
+````
 
 ## Modules
 
@@ -108,36 +136,16 @@ RotaMaster
 \---views
 ````
 
-### RotaMaster
+## Create On-Call-Schedule
 
-This is the root-folder for the web service. Here must be the PodeServer.ps1 located.
+Currently there is a PowerShell-Script to create a new rotation and save it as RotaMaster/api/on-call-rota-2025.csv:
 
-### api
+````powershell
+RotaMaster/bin/New-OnCallSchedule.ps1 -StartDate '2025-03-01' -EndDate '2025-12-31'
+````
 
-This folder contains the files of the web service. The file(s) for holidays or others must be a CSV file.
+You can check this rotation in the RotaMaster-calendar and if the rotation passed, then you can import it in to the table events (but NOT into OpsGenie) with a PowerShell-Script:
 
-The events, persons, and absences have also been saved in a SQLite database called rotamaster.db in this folder.
-
-### archiv
-
-For obsolete files, that you want to archive and not load in to the calendar.
-
-### bin
-
-This folder contains the PowerShell code of the backend.
-
-### errors
-
-This is an internal folder for the error-page.
-
-### img
-
-Here are the images for the readme.
-
-### public
-
-This folder is public for the web service and should contains all the assets you need.
-
-### views
-
-This is the folder where the index.html is saved.
+````powershell
+RotaMaster/bin/Import-ToSqLiteTable.ps1 -FilePath ../api/on-call-rota-2025.csv -ImportToDatabase
+````

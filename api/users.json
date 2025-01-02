@@ -2,6 +2,7 @@
     {
         "Name": "Administrator",
         "Username": "admin",
+        "Email": "admin@company.com",
         "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
         "Groups": [
             "Admin"
@@ -11,22 +12,120 @@
         }
     },
     {
-        "Name": "Alice Cooper",
-        "Username": "acooper",
-        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
-        "Groups": [
-            "Admin"
-        ],
-        "Metadata": {
-            "Created": "2024-11-24"
-        }
-    },
-    {
-        "Name": "Freddie Mercury",
+        "Name": "Mercury Freddie",
         "Username": "fmercury",
+        "Email": "freddie.mercury@company.com",
         "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
         "Groups": [
             "Admin"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
+        "Name": "Osbourne Ozzy",
+        "Username": "oosbourne",
+        "Email": "ozzy.osbourne@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
+        "Name": "Plant Robert",
+        "Username": "rplant",
+        "Email": "robert.plant@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
+        "Name": "Cobain Kurt",
+        "Username": "kcobain",
+        "Email": "kurt.cobain@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
+        "Name": "Cooper Alice",
+        "Username": "acooper",
+        "Email": "alice.cooper@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
+        "Name": "Dio Ronnie James",
+        "Username": "rjdio",
+        "Email": "ronnie.james.dio@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
+        "Name": "Dickinson Bruce",
+        "Username": "bdickinso",
+        "Email": "bruce.dickinson@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
+        "Name": "Lindemann Till",
+        "Username": "tlindeman",
+        "Email": "till.lindemann@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
+        "Name": "Manson Marilyn",
+        "Username": "mmanson",
+        "Email": "marilyn.manson@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
+    },
+    {
+        "Name": "Morrison Jim",
+        "Username": "jmorrison",
+        "Email": "jim.morrison@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
         ],
         "Metadata": {
             "Created": "2024-11-24"

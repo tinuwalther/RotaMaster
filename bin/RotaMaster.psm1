@@ -7,6 +7,405 @@
 #endregion
 
 #region functions
+function Get-OpsGenieSchedule {
+    <#
+    .SYNOPSIS
+        A short one-line action-based description, e.g. 'Tests if a function is valid'
+    .DESCRIPTION
+        A longer description of the function, its purpose, common use cases, etc.
+    .NOTES
+        Information or caveats about the function e.g. 'This function is not supported in Linux'
+    .EXAMPLE
+        New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
+        Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+    #>
+    [CmdletBinding(SupportsShouldProcess=$True)]
+    param(
+        # Test-Compute_schedule
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 0
+        )]
+        [String] $Schedule,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 1
+        )]
+        [String] $ApiKey
+    )
+
+    begin{
+        #region Do not change this region
+        $StartTime = Get-Date
+        $function = $($MyInvocation.MyCommand.Name)
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
+        #endregion
+    }
+
+    process{
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
+        foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
+        if ($PSCmdlet.ShouldProcess($params.Trim())){
+            try{
+                # Define variables
+                # $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule?identifierType=name"
+                $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules"
+
+                # Create headers for the API request
+                $Headers = @{
+                    Authorization = "GenieKey $ApiKey"
+                }
+
+                # Construct the URL for the specific rotation
+                #$Url = "$BaseUrl/$RotationId"
+
+                # Send the GET request to OpsGenie API
+                try {
+                    $Response = Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method Get
+                    #$Response | ConvertTo-Json -Depth 10 | Write-Output
+                    if($Response){
+                        $Response.data
+                    }else{
+                        $Response
+                    }
+                }
+                catch {
+                    Write-Warning "Failed to retrieve ."
+                    Write-Warning $_.Exception.Message
+                }
+            }catch{
+                Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
+                $Error.Clear()
+            }
+        }
+    }
+
+    end{
+        #region Do not change this region
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
+        $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
+        $Formatted = $TimeSpan | ForEach-Object {
+            '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
+        }
+        Write-Verbose $('Finished in:', $Formatted -Join ' ')
+        #endregion
+    }
+}
+
+function Get-OpsGenieRotation {
+    <#
+    .SYNOPSIS
+        A short one-line action-based description, e.g. 'Tests if a function is valid'
+    .DESCRIPTION
+        A longer description of the function, its purpose, common use cases, etc.
+    .NOTES
+        Information or caveats about the function e.g. 'This function is not supported in Linux'
+    .EXAMPLE
+        New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
+        Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+    #>
+    [CmdletBinding(SupportsShouldProcess=$True)]
+    param(
+        # Test-Compute_schedule
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 0
+        )]
+        [String] $Schedule,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 1
+        )]
+        [String] $ApiKey
+    )
+
+    begin{
+        #region Do not change this region
+        $StartTime = Get-Date
+        $function = $($MyInvocation.MyCommand.Name)
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
+        #endregion
+    }
+
+    process{
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
+        foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
+        if ($PSCmdlet.ShouldProcess($params.Trim())){
+            try{
+                # Define variables
+                $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule/rotations?scheduleIdentifierType=name"
+
+                # Create headers for the API request
+                $Headers = @{
+                    Authorization = "GenieKey $ApiKey"
+                }
+
+                # Construct the URL for the specific rotation
+                #$Url = "$BaseUrl/$RotationId"
+
+                # Send the GET request to OpsGenie API
+                try {
+                    $Response = Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method Get
+                    #$Response | ConvertTo-Json -Depth 10 | Write-Output
+                    if($Response){
+                        $Response.data
+                    }else{
+                        $Response
+                    }
+                }
+                catch {
+                    Write-Warning "Failed to retrieve ."
+                    Write-Warning $_.Exception.Message
+                }
+            }catch{
+                Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
+                $Error.Clear()
+            }
+        }
+    }
+
+    end{
+        #region Do not change this region
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
+        $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
+        $Formatted = $TimeSpan | ForEach-Object {
+            '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
+        }
+        Write-Verbose $('Finished in:', $Formatted -Join ' ')
+        #endregion
+    }
+}
+
+function New-OpsGenieRotation {
+    <#
+    .SYNOPSIS
+        A short one-line action-based description, e.g. 'Tests if a function is valid'
+    .DESCRIPTION
+        A longer description of the function, its purpose, common use cases, etc.
+    .NOTES
+        Information or caveats about the function e.g. 'This function is not supported in Linux'
+    .EXAMPLE
+        New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
+        Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+    #>
+    [CmdletBinding(SupportsShouldProcess=$True)]
+    param(
+        # Test-Compute_schedule
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 0
+        )]
+        [String] $Schedule,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 1
+        )]
+        [String] $Rotation,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 2
+        )]
+        [String] $startDate,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 3
+        )]
+        [String] $endDate,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 4
+        )]
+        [Object] $participants,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 5
+        )]
+        [String] $ApiKey
+    )
+
+    begin{
+        #region Do not change this region
+        $StartTime = Get-Date
+        $function = $($MyInvocation.MyCommand.Name)
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
+        #endregion
+    }
+
+    process{
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
+        foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
+        if ($PSCmdlet.ShouldProcess($params.Trim())){
+            try{
+                # Define variables
+                $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule/rotations?scheduleIdentifierType=name"
+
+                # Create headers for the API request
+                $Headers = @{
+                    Authorization = "GenieKey $ApiKey"
+                    "Content-Type" = "application/json"
+                }
+
+                # Create the body the API request
+                $Payload = [PSCustomObject]@{
+                    name         = $Rotation
+                    startDate    = (Get-Date $startDate).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                    endDate      = (Get-Date $endDate).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                    type         = 'weekly'
+                    participants = $participants
+                }
+                $JsonPayload = $Payload | ConvertTo-Json -Depth 10 -Compress
+                Write-Verbose $($Payload | Out-String) -Verbose
+
+                try {
+                    Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method POST -Body $JsonPayload
+                }
+                catch {
+                    Write-Warning $_.Exception.Message
+                }
+            }catch{
+                Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
+                $Error.Clear()
+            }
+        }
+    }
+
+    end{
+        #region Do not change this region
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
+        $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
+        $Formatted = $TimeSpan | ForEach-Object {
+            '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
+        }
+        Write-Verbose $('Finished in:', $Formatted -Join ' ')
+        #endregion
+    }
+}
+
+function Get-OpsGenieOverride {
+    <#
+    .SYNOPSIS
+        A short one-line action-based description, e.g. 'Tests if a function is valid'
+    .DESCRIPTION
+        A longer description of the function, its purpose, common use cases, etc.
+    .NOTES
+        Information or caveats about the function e.g. 'This function is not supported in Linux'
+    .EXAMPLE
+        New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
+        Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+    #>
+    [CmdletBinding(SupportsShouldProcess=$True)]
+    param(
+        # Test-Compute_schedule
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 0
+        )]
+        [String] $Schedule,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 1
+        )]
+        [String] $ApiKey,
+
+        [Parameter(
+            Mandatory=$false,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 2
+        )]
+        [String] $Alias
+    )
+
+    begin{
+        #region Do not change this region
+        $StartTime = Get-Date
+        $function = $($MyInvocation.MyCommand.Name)
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
+        #endregion
+    }
+
+    process{
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
+        foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
+        if ($PSCmdlet.ShouldProcess($params.Trim())){
+            try{
+                # Define variables
+                if([String]::IsNullOrEmpty($Alias)){
+                    $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule/overrides?scheduleIdentifierType=name"
+                }else{
+                    # $ScheduleId = Get-IXOpsGenieSchedule -Schedule $Schedule -ApiKey $ApiKey | Select-Object -ExpandProperty Id
+                    # $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$($ScheduleId)/overrides/$($Alias)"
+                    $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$($Schedule)/overrides/$($Alias)"
+                }
+
+                # Create headers for the API request
+                $Headers = @{
+                    Authorization = "GenieKey $ApiKey"
+                    "Content-Type" = "application/json"
+                }
+
+                try {
+                    $Response = Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method Get
+                    if($Response){
+                        $Response.data
+                    }else{
+                        $Response
+                    }
+                }
+                catch {
+                    Write-Warning $_.Exception.Message
+                }
+            }catch{
+                Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
+                $Error.Clear()
+            }
+        }
+    }
+
+    end{
+        #region Do not change this region
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
+        $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
+        $Formatted = $TimeSpan | ForEach-Object {
+            '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
+        }
+        Write-Verbose $('Finished in:', $Formatted -Join ' ')
+        #endregion
+    }
+}
+
 function Get-MonthCalendar{
     <#
     .SYNOPSIS
@@ -253,8 +652,8 @@ function Get-EventColor{
             @{ Regex = '^Patch wave \d{1}$'; Color = '#d8d800' }
             @{ Regex = '^Pikett$'; Color = 'red' }
             @{ Regex = '^Pikett-Peer$'; Color = 'orange' }
-            @{ Regex = '^(Kurs|Aus\/Weiterbildung)$'; Color = '#A37563' }
-            @{ Regex = '^(Militär|ZV\/EO|Zivil)$'; Color = '#006400' }
+            @{ Regex = '^(Kurs|Aus/Weiterbildung)$'; Color = '#A37563' }
+            @{ Regex = '^(Militär/ZV/EO|Zivil)$'; Color = '#006400' }
             @{ Regex = '^Ferien$'; Color = '#05c27c' }
             @{ Regex = '^Feiertag$'; Color = '#B9E2A7' }
             @{ Regex = '^(GLZ Kompensation|Absenz|Urlaub)$'; Color = '#889CC6' }
@@ -265,7 +664,7 @@ function Get-EventColor{
                 return $item.Color
             }
         }
-        return '#378006'
+        return '#4F0680'
     }
 
     end{
@@ -348,6 +747,33 @@ function Initialize-WebEndpoints {
     }
 
     process{
+        # Redirected to the login page
+        Add-PodeRoute -Method Get -Path '/' -Authentication 'Login' -ScriptBlock {
+            $username = $WebEvent.Auth.User.Name
+            Write-PodeViewResponse -Path 'index.html' -Data @{ Username = $username }
+        }
+
+        # the login page itself
+        Add-PodeRoute -Method Get -Path '/login' -Authentication 'Login' -Login -ScriptBlock {
+            Write-PodeViewResponse -Path 'login.pode' -FlashMessages
+        }
+
+        # the POST action for the <form>
+        Add-PodeRoute -Method Post -Path '/login' -Authentication 'Login' -Login
+        
+        # the logout Route
+        Add-PodeRoute -Method Post -Path '/logout' -Authentication 'Login' -Logout
+
+        Add-PodeRoute -Method Get -Path '/logout' -Authentication 'Login' -Logout -ScriptBlock {
+            # Beende die aktuelle Sitzung, um den Benutzer auszuloggen
+            Remove-PodeAuth -Name 'Login'
+            if(Test-PodeCookie  -Name 'CurrentUser'){
+                Remove-PodeCookie -Name 'CurrentUser'
+            }
+            # Leite den Benutzer auf die Login-Seite weiter (oder eine andere Seite)
+            Redirect-PodeRoute -Location '/login'
+        }
+
         # Absence
         Add-PodeRoute -Method Get -Path '/absence' -Authentication 'Login' -ScriptBlock {
             Write-PodeViewResponse -Path 'absence.html'
@@ -355,6 +781,10 @@ function Initialize-WebEndpoints {
         # Person
         Add-PodeRoute -Method Get -Path '/person' -Authentication 'Login' -ScriptBlock {
             Write-PodeViewResponse -Path 'person.html'
+        }
+        # About
+        Add-PodeRoute -Method Get -Path '/about' -Authentication 'Login' -ScriptBlock {
+            Write-PodeViewResponse -Path 'about.html'
         }
     }
 
@@ -376,34 +806,9 @@ function Initialize-ApiEndpoints {
     process{
         $BinPath = $PSScriptRoot #Join-Path -Path $($PSScriptRoot) -ChildPath 'bin'
         $ApiPath = $($BinPath).Replace('bin','api')
+        $LogPath = $($BinPath).Replace('bin','logs')
+        $Logfile = Join-Path -Path $LogPath -ChildPath "informational_$(Get-Date -f 'yyyy-MM-dd').log"
         $dbPath = Join-Path -Path $($ApiPath) -ChildPath '/rotamaster.db'
-
-        # Get person from JSON-file
-        # Add-PodeRoute -Method Get -Path '/api/events/person' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
-        #     param($ApiPath)
-        #     $person = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'person.json') | ConvertFrom-Json | Sort-Object
-        #     Write-PodeJsonResponse -Value $person  
-        # }
-
-        # Get absences from JSON-file
-        # Add-PodeRoute -Method Get -Path '/api/events/absence' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
-        #     param($ApiPath)
-        #     $absence = Get-Content -Path (Join-Path -Path $ApiPath -ChildPath 'absence.json') | ConvertFrom-Json | Sort-Object
-        #     Write-PodeJsonResponse -Value $absence  
-        # }
-
-        <# Calculate next month for PS calendar
-        Add-PodeRoute -Method Post -Path '/api/month/next' -ContentType 'application/json' -ArgumentList @($BinPath) -ScriptBlock {
-            param($BinPath)
-            
-            $body = $WebEvent.Data
-            
-            if($CurrentOS -eq [OSType]::Windows){Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force}
-            $Response = . $(Join-Path $BinPath -ChildPath 'New-PshtmlCalendar.ps1') -Title 'PS calendar' -Year $body.Year -Month $body.Month
-            Write-PodeJsonResponse -Value $Response    
-
-        }
-        #>
 
         # Calculate swiss holidays for next year
         Add-PodeRoute -Method Post -Path '/api/year/new' -ContentType 'application/text' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
@@ -419,31 +824,39 @@ function Initialize-ApiEndpoints {
             }
         }
 
-        # Read data from SQLiteDB for absence
-        Add-PodeRoute -Method Get -Path 'api/absence/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
-            try{
-                $sql = 'SELECT id,name,created FROM absence ORDER BY name ASC'
-                $connection = New-SQLiteConnection -DataSource $dbPath
-                $data = Invoke-SqliteQuery -Connection $connection -Query $sql
-
-                $absences = foreach($item in $data){
-                    [PSCustomObject]@{
-                        id      = $item.id
-                        name    = $item.name
-                        created = $item.created
-                    } 
-                }
-                $Connection.Close()
-                Write-PodeJsonResponse -Value $($absences | ConvertTo-Json)
-            }catch{
-                $_.Exception.Message | Out-Default
-                Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+        # Read events from CSV and return it as JSON, used for swiss holidays or patching
+        Add-PodeRoute -Method Get -Path '/api/csv/read' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
+            param($ApiPath)
+            $data = Get-ChildItem -Path $ApiPath -Filter '*.csv' | ForEach-Object {
+                Import-Csv -Path $PSItem.Fullname -Delimiter ';' -Encoding utf8
             }
+
+            $events = foreach($item in $data){
+                switch -Regex ($item.type){
+                    'Feiertag|Patch wave' {$title = $item.title; break}
+                    default {$title = $item.title, $item.type -join " - "}
+                }
+                if($item.type -eq 'Pikett'){
+                    $start = "$(Get-Date $item.start -f 'yyyy-MM-dd') 10:00"
+                    $end   = "$(Get-Date $item.end -f 'yyyy-MM-dd') 10:00"
+                }else{
+                    $start = "$(Get-Date $item.start -f 'yyyy-MM-dd') 01:00"
+                    $end   = "$(Get-Date $item.end -f 'yyyy-MM-dd') 23:00"
+                }
+                [PSCustomObject]@{
+                    title = $title
+                    type  = $item.type
+                    start = $start
+                    end   = $end
+                    color = Get-EventColor -type $item.type
+                } 
+            }
+            Write-PodeJsonResponse -Value $events
         }
 
-        # Add new absence into the table absence
-        Add-PodeRoute -Method POST -Path '/api/absence/add' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+        #region CRUD for Absence
+        # Create new absence into the table absence
+        Add-PodeRoute -Method POST -Path '/api/absence/create' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
 
             if(-not([String]::IsNullOrEmpty($WebEvent.Data['name']))){
@@ -465,8 +878,58 @@ function Initialize-ApiEndpoints {
                 Write-PodeJsonResponse -StatusCode 400 -Value @{ StatusDescription = 'No name is given!' }
             }
         }
+
+        # Read data from SQLiteDB for absence
+        Add-PodeRoute -Method Get -Path 'api/absence/read/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+            try{
+                $searchFor = $WebEvent.Parameters['id']
+
+                if ($searchFor -eq '*') {
+                    $sql = 'SELECT id,name,created FROM absence ORDER BY name ASC'
+                } else {
+                    $sql = "SELECT id,name,created FROM absence WHERE id = $searchFor"
+                }
+
+                # $sql = 'SELECT id,name,created FROM absence ORDER BY name ASC'
+                $connection = New-SQLiteConnection -DataSource $dbPath
+                $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+
+                $absences = foreach($item in $data){
+                    [PSCustomObject]@{
+                        id      = $item.id
+                        name    = $item.name
+                        created = $item.created
+                    } 
+                }
+                $Connection.Close()
+                Write-PodeJsonResponse -Value $($absences | ConvertTo-Json)
+            }catch{
+                $_.Exception.Message | Out-Default
+                Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+            }
+        }
         
-        # Remove absence from table absence
+        # Update absence from table absence
+        Add-PodeRoute -Method PUT -Path '/api/absence/update/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+        param($dbPath)
+
+            $id        = $WebEvent.Parameters['id']
+            $name      = $WebEvent.Data['name']
+            $created   = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $author    = $WebEvent.Auth.User.Name
+
+            $sql = "UPDATE absence SET name = '$name', created = '$created', author = '$author' WHERE id = '$id'"
+
+            try {
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
+            } catch {
+                Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to update record: $_" } -StatusCode 500
+            }
+        }
+
+        # Delete absence from table absence
         Add-PodeRoute -Method DELETE -Path '/api/absence/delete/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
 
@@ -480,35 +943,11 @@ function Initialize-ApiEndpoints {
                 Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to delete record: $_" } -StatusCode 500
             }
         }
+        #endregion
 
-        # Read data from SQLiteDB for person
-        Add-PodeRoute -Method Get -Path 'api/person/read' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
-            try{
-                $sql = 'SELECT id,login,name,firstname,created FROM person ORDER BY firstname ASC'
-                $connection = New-SQLiteConnection -DataSource $dbPath
-                $data = Invoke-SqliteQuery -Connection $connection -Query $sql
-
-                $absences = foreach($item in $data){
-                    [PSCustomObject]@{
-                        id        = $item.id
-                        login     = $item.login
-                        name      = $item.name
-                        firstname = $item.firstname
-                        fullname  = "$($item.firstname) $($item.name)"
-                        created   = $item.created
-                    } 
-                }
-                $Connection.Close()
-                Write-PodeJsonResponse -Value $($absences | ConvertTo-Json)
-            }catch{
-                $_.Exception.Message | Out-Default
-                Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
-            }
-        }
-        
-        # Add new person into the table person
-        Add-PodeRoute -Method POST -Path '/api/person/add' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+        #region CRUD for Person
+        # Create new person into the table person
+        Add-PodeRoute -Method POST -Path '/api/person/create' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
 
             if((-not([String]::IsNullOrEmpty($WebEvent.Data['login'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['firstname'])))))){
@@ -516,9 +955,12 @@ function Initialize-ApiEndpoints {
                     $login     = $WebEvent.Data['login']
                     $firstname = $WebEvent.Data['firstname']
                     $lastname  = $WebEvent.Data['name']
+                    $email     = $WebEvent.Data['email']
+                    $active    = $WebEvent.Data['active']
+                    $workload  = $WebEvent.Data['workload']
                     $created   = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
                     
-                    $sql = "INSERT INTO person (login, firstname, name, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+                    $sql = "INSERT INTO person (login, firstname, name, email, active, workload, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($email)', '$($active)', '$($workload)', '$($created)', '$($WebEvent.Auth.User.Name)')"
                     $connection = New-SQLiteConnection -DataSource $dbPath
                     Invoke-SqliteQuery -Connection $connection -Query $sql
                     $Connection.Close()
@@ -533,7 +975,84 @@ function Initialize-ApiEndpoints {
             }
         }
 
-        # Remove person from table person
+        # Read data from SQLiteDB for person
+        Add-PodeRoute -Method Get -Path 'api/person/read/:person' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+            try{
+                $searchFor = $WebEvent.Parameters['person']
+
+                # Check if $searchFor is an integer
+                $isInteger = [int]::TryParse($searchFor, [ref]$null)
+
+                if ($searchFor -eq '*') {
+                    $sql = 'SELECT id,login,name,firstname, active, workload, email,created FROM person ORDER BY firstname ASC'
+                } elseif ($isInteger) {
+                    $sql = "SELECT id,login,name,firstname, active, workload, email,created FROM person WHERE id = $searchFor"
+                } else {
+                    $sql = "SELECT id,login,name,firstname, active, workload, email,created FROM person WHERE (name || ' ' || firstname) = '$($searchFor)'"
+                }
+
+                $connection = New-SQLiteConnection -DataSource $dbPath
+                $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+
+                $person = foreach($item in $data){
+                    [PSCustomObject]@{
+                        id         = $item.id
+                        login      = $item.login
+                        name       = $item.name
+                        firstname  = $item.firstname
+                        active     = $item.active
+                        workload   = $item.workload
+                        email      = $item.email
+                        fullname   = "$($item.name) $($item.firstname)"
+                        created    = $item.created
+                    } 
+                }
+                $Connection.Close()
+                Write-PodeJsonResponse -Value $($person | ConvertTo-Json)
+            }catch{
+                $_.Exception.Message | Out-Default
+                Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+            }
+        }
+
+        # Update person from table person
+        Add-PodeRoute -Method PUT -Path '/api/person/update/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+
+            $id        = $WebEvent.Parameters['id']
+            $login     = $WebEvent.Data['login']
+            $name      = $WebEvent.Data['name']
+            $firstname = $WebEvent.Data['firstname']
+            $active    = $WebEvent.Data['active']
+            $workload  = $WebEvent.Data['workload']
+            $email     = $WebEvent.Data['email']
+            $created   = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $author    = $WebEvent.Auth.User.Name
+
+            $sql = @"
+        UPDATE person
+        SET 
+            login     = '$login',
+            name      = '$name',
+            firstname = '$firstname',
+            active    = '$active',
+            workload  = '$workload',
+            email     = '$email',
+            created   = '$created',
+            author    = '$author'
+        WHERE id = '$id';
+"@
+            
+            try {
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
+            } catch {
+                Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to update record: $_" } -StatusCode 500
+            }
+        }
+
+        # Delete person from table person
         Add-PodeRoute -Method DELETE -Path '/api/person/delete/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
 
@@ -547,9 +1066,11 @@ function Initialize-ApiEndpoints {
                 Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to delete record: $_" } -StatusCode 500
             }
         }
+        #endregion
 
-        # Add new record into the SQLiteDB
-        Add-PodeRoute -Method POST -Path '/api/event/insert' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+        #region CRUD for events
+        # Create new record into the table events
+        Add-PodeRoute -Method POST -Path '/api/event/create' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
             # Read the data of the formular
             if((-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['type']))))){
@@ -563,9 +1084,10 @@ function Initialize-ApiEndpoints {
                         $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
                         $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
                     }
+                    $alias   = $WebEvent.Data['alias']
                     $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
     
-                    $sql = "INSERT INTO events (person, type, start, end, created, author) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+                    $sql = "INSERT INTO events (person, type, start, end, alias, created, author) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($alias)', '$($created)', '$($WebEvent.Auth.User.Name)')"
                     $connection = New-SQLiteConnection -DataSource $dbPath
                     Invoke-SqliteQuery -Connection $connection -Query $sql
                     $Connection.Close()
@@ -579,15 +1101,16 @@ function Initialize-ApiEndpoints {
             }
         }
 
-        # Read data from SQLiteDB for events
+        # Read data from table events
         Add-PodeRoute -Method Get -Path 'api/event/read/:person' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
             try{
+                # Read from view instead from table
                 $person = $WebEvent.Parameters['person']
                 if($person -eq '*'){
-                    $sql = 'SELECT id,person,"type",start,end FROM events'
+                    $sql = 'SELECT id,person,email,"type",start,end,alias FROM v_events'
                 }else{
-                    $sql = "SELECT id,person,""type"",start,end FROM events WHERE person = '$($person)'"
+                    $sql = "SELECT id,person,email,""type"",start,end,alias FROM v_events WHERE person = '$($person)'"
                 }
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql
@@ -602,9 +1125,12 @@ function Initialize-ApiEndpoints {
                         title = $title
                         type  = $item.type
                         start = Get-Date $item.start -f 'yyyy-MM-dd HH:mm'
-                        # end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
                         end   = Get-Date $item.end -f 'yyyy-MM-dd HH:MM'
                         color = Get-EventColor -type $item.type
+                        extendedProps = [PSCustomObject]@{
+                            email = $item.email
+                            alias = $item.alias
+                        }
                     } 
                 }
                 $Connection.Close()
@@ -615,12 +1141,57 @@ function Initialize-ApiEndpoints {
             }
         }
 
-        # Remove data from SQLiteDB for events
+        # Update data from table events
+        Add-PodeRoute -Method Put -Path '/api/event/update/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
+            param($dbPath)
+
+            $id      = $WebEvent.Parameters['id']
+            $type    = $WebEvent.Data['type']
+            if($type -match '^Pikett$'){
+                $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 10:00"
+                $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 10:00"
+            }else{
+                $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
+                $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
+            }
+            $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $author  = $WebEvent.Auth.User.Name
+
+            $sql = @"
+        UPDATE events
+        SET 
+            start = '$start',
+            end = '$end',
+            created = '$created',
+            author = '$author'
+        WHERE id = '$id';
+"@
+
+            try {
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
+            } catch {
+                Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to update record: $_" } -StatusCode 500
+            }
+        }
+
+        # Delete data from table events
         Add-PodeRoute -Method Delete -Path '/api/event/delete/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
             param($dbPath)
 
-            $id = $WebEvent.Parameters['id']
-            $sql = "DELETE FROM events WHERE id = $id"
+            $id      = $WebEvent.Parameters['id']
+            $deleted = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+            $author  = $WebEvent.Auth.User.Name
+
+            # $sql = "DELETE FROM events WHERE id = $id"
+            $sql = @"
+        UPDATE events
+        SET 
+            active = 0,
+            deleted = '$deleted',
+            author = '$author'
+        WHERE id = $id
+"@
 
             try {
                 Invoke-SqliteQuery -DataSource $dbPath -Query $sql
@@ -629,29 +1200,274 @@ function Initialize-ApiEndpoints {
                 Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to delete record: $_" } -StatusCode 500
             }
         }
+        #endregion
 
-        # Get events from CSV and return it as JSON, used for swiss holidays
-        Add-PodeRoute -Method Get -Path '/api/event/get' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
-            param($ApiPath)
-            $data = Get-ChildItem -Path $ApiPath -Filter '*.csv' | ForEach-Object {
-                Import-Csv -Path $PSItem.Fullname -Delimiter ';' -Encoding utf8
-            }
+        #region CRUD for OpsGenie
+        # Create new override for person
+        Add-PodeRoute -Method POST -Path '/api/opsgenie/override/create' -ArgumentList @($Logfile) -Authentication 'Login' -ScriptBlock {
+            param($Logfile)
 
-            $events = foreach($item in $data){
-                switch -Regex ($item.type){
-                    'Feiertag|Patch wave' {$title = $item.title; break}
-                    default {$title = $item.title, $item.type -join " - "}
+            function New-OpsGenieOverride {
+                <#
+                .SYNOPSIS
+                    A short one-line action-based description, e.g. 'Tests if a function is valid'
+                .DESCRIPTION
+                    A longer description of the function, its purpose, common use cases, etc.
+                .NOTES
+                    Information or caveats about the function e.g. 'This function is not supported in Linux'
+                .EXAMPLE
+                    New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
+                    Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+                #>
+                [CmdletBinding(SupportsShouldProcess=$True)]
+                param(
+                    # Test-Compute_schedule
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 0
+                    )]
+                    [String] $Schedule,
+            
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 1
+                    )]
+                    [Object] $Rotation,
+            
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 2
+                    )]
+                    [String] $startDate,
+            
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 3
+                    )]
+                    [String] $endDate,
+            
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 4
+                    )]
+                    [Object] $participants,
+            
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 5
+                    )]
+                    [String] $ApiKey
+                )
+            
+                begin{
+                    #region Do not change this region
+                    $StartTime = Get-Date
+                    $function = $($MyInvocation.MyCommand.Name)
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
+                    #endregion
                 }
-                [PSCustomObject]@{
-                    title = $title
-                    type  = $item.type
-                    start = Get-Date $item.start -f 'yyyy-MM-dd'
-                    end   = Get-Date (Get-Date $item.end).AddDays(1) -f 'yyyy-MM-dd'
-                    color = Get-EventColor -type $item.type
-                } 
+            
+                process{
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
+                    foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
+                    if ($PSCmdlet.ShouldProcess($params.Trim())){
+                        try{
+                            # Define variables
+                            $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule/overrides?scheduleIdentifierType=name"
+            
+                            # Create headers for the API request
+                            $Headers = @{
+                                Authorization = "GenieKey $ApiKey"
+                                "Content-Type" = "application/json"
+                            }
+            
+                            # Create the body the API request
+                            $Payload = [PSCustomObject]@{
+                                #alias        = ([guid]::NewGuid()).Guid
+                                user         = $participants[0]
+                                startDate    = (Get-Date $startDate).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                                endDate      = (Get-Date $endDate).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                                rotations    = $Rotation
+                            }
+                            $JsonPayload = $Payload | ConvertTo-Json -Depth 10 -Compress
+            
+                            try {
+                                Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method POST -Body $JsonPayload
+                            }
+                            catch {
+                                Write-Warning $_.Exception.Message
+                            }
+                        }catch{
+                            Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
+                            $Error.Clear()
+                        }
+                    }
+                }
+            
+                end{
+                    #region Do not change this region
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
+                    $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
+                    $Formatted = $TimeSpan | ForEach-Object {
+                        '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
+                    }
+                    Write-Verbose $('Finished in:', $Formatted -Join ' ')
+                    #endregion
+                }
             }
-            Write-PodeJsonResponse -Value $events
+
+            try{
+
+                $ScheduleName   = $WebEvent.Data['scheduleName']
+                $ScheduleApiKey = $env:OPS_GENIE_API_KEY
+                $RotationName   = $WebEvent.Data['rotationName']
+                $Username       = $WebEvent.Data['userName']
+                $OnCallStart    = Get-Date $WebEvent.Data['onCallStart'] -f 'yyyy-MM-dd 10:00'
+                $OnCallEnd      = Get-Date $WebEvent.Data['onCallEnd'] -f 'yyyy-MM-dd 10:00'
+
+                $participants = @(
+                    [PSCustomObject]@{
+                        type = 'user'
+                        username = $Username
+                    }
+                )
+                
+                $rotations = @(
+                    [PSCustomObject]@{
+                        name = $RotationName
+                    }
+                )
+
+                $NewOpsGenieOverride = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey
+                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override created as $($NewOpsGenieOverride.data.alias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
+                Write-PodeJsonResponse -Value $($NewOpsGenieOverride | ConvertTo-Json)
+
+            }catch{
+                $_.Exception.Message | Write-PodeErrorLog -Level Error
+                Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+            }
         }
+
+        # Create new override for person
+        Add-PodeRoute -Method DELETE -Path '/api/opsgenie/override/delete' -ArgumentList @($Logfile) -Authentication 'Login' -ScriptBlock {
+            param($Logfile)
+
+            function Remove-OpsGenieOverride {
+                <#
+                .SYNOPSIS
+                    A short one-line action-based description, e.g. 'Tests if a function is valid'
+                .DESCRIPTION
+                    A longer description of the function, its purpose, common use cases, etc.
+                .NOTES
+                    Information or caveats about the function e.g. 'This function is not supported in Linux'
+                .EXAMPLE
+                    New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
+                    Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+                #>
+                [CmdletBinding(SupportsShouldProcess=$True)]
+                param(
+                    # Test-Compute_schedule
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 0
+                    )]
+                    [String] $Schedule,
+            
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 1
+                    )]
+                    [String] $Alias,
+            
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 2
+                    )]
+                    [String] $ApiKey
+                )
+            
+                begin{
+                    #region Do not change this region
+                    $StartTime = Get-Date
+                    $function = $($MyInvocation.MyCommand.Name)
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
+                    #endregion
+                }
+            
+                process{
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
+                    foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
+                    if ($PSCmdlet.ShouldProcess($params.Trim())){
+                        try{
+                            # Define variables
+                            $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$ScheduleName/overrides/$($Alias)?scheduleIdentifierType=name"
+            
+                            # Create headers for the API request
+                            $Headers = @{
+                                Authorization = "GenieKey $ApiKey"
+                            }
+            
+                            try {
+                                Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method DELETE
+                            }
+                            catch {
+                                Write-Warning $_.Exception.Message
+                            }
+                        }catch{
+                            Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
+                            $Error.Clear()
+                        }
+                    }
+                }
+            
+                end{
+                    #region Do not change this region
+                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
+                    $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
+                    $Formatted = $TimeSpan | ForEach-Object {
+                        '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
+                    }
+                    Write-Verbose $('Finished in:', $Formatted -Join ' ')
+                    #endregion
+                }
+            }
+
+            try{
+
+                $ScheduleName   = $WebEvent.Data['scheduleName']
+                $ScheduleApiKey = $env:OPS_GENIE_API_KEY
+                $OverrideAlias  = $WebEvent.Data['alias']
+
+                #region Delete Override -> Remove event/Move event
+                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Searching for Override $($OverrideAlias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
+                $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -ApiKey $ScheduleApiKey
+                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override $($OverrideAlias) $($RemoveOpsGenieOverride.result)" | Out-File -Append -FilePath $Logfile -Encoding utf8
+                Write-PodeJsonResponse -Value $($RemoveOpsGenieOverride | ConvertTo-Json)
+                #endregion
+            }catch{
+                $_.Exception.Message | Write-PodeErrorLog -Level Error
+                Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
+            }
+        }
+        #endregion
     }
 
     end{
@@ -669,4 +1485,25 @@ function ConvertTo-SHA256{
     $SHA256HashString = [Convert]::ToBase64String($SHA256Hash)
     return $SHA256HashString
 }
+
+function ConvertTo-SaltedSHA256 {
+    param (
+        [Parameter(Mandatory)]
+        [string]$ApiKey,
+
+        [string]$Salt = "default-salt" # Optionaler Salt-Parameter mit Standardwert
+    )
+
+    try {
+        $salted = $Salt + $ApiKey
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        $hashBytes = $sha256.ComputeHash([Text.Encoding]::ASCII.GetBytes($salted))
+        $hashString = -join ($hashBytes | ForEach-Object { "{0:x2}" -f $_ })
+        return $hashString
+    } catch {
+        Write-Error "An error occurred: $_"
+    }
+}
+
+
 #endregion

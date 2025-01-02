@@ -1,15 +1,48 @@
 /**
- * CalendarConfig
+ * Configuration object for the FullCalendar instance.
+ * 
+ * This constant defines the default configuration settings for a FullCalendar instance, 
+ * including the application version, time zone, locale, initial view, toolbar layout, 
+ * button labels, and various display preferences. It centralizes the calendar setup 
+ * to ensure consistency across the application.
+ *
+ * @constant
+ * @type {Object}
+ * @property {string} appVersion - The version of the application.
+ * @property {string} timeZone - The time zone setting for the calendar (e.g., 'local').
+ * @property {string} locale - The locale for date and time formatting (e.g., 'de-CH').
+ * @property {string} initialView - The default view when the calendar is loaded (e.g., 'multiMonthYear').
+ * @property {number} multiMonthMinWidth - The minimum width for multi-month views in pixels.
+ * @property {number} multiMonthMaxColumns - The maximum number of columns in multi-month views.
+ * @property {Object} headerToolbar - Defines the layout of the toolbar, including buttons for navigation and views.
+ * @property {Object} buttonText - Custom labels for calendar buttons (e.g., 'Heute' for 'today').
+ * @property {boolean} weekNumbers - Whether to display week numbers in the calendar.
+ * @property {boolean} dayMaxEvents - Whether to limit the number of events displayed per day.
+ * @property {boolean} showNonCurrentDates - Whether to show dates from adjacent months in the current view.
+ * @property {boolean} fixedWeekCount - Whether each month should be displayed with a fixed number of weeks.
+ * @property {string} weekNumberCalculation - The method for calculating week numbers (e.g., 'ISO').
+ * @property {boolean} selectable - Whether users can select date ranges in the calendar.
+ * @property {boolean} editable - Whether events can be edited directly in the calendar.
+ * @property {boolean} displayEventTime - Whether to display the time of events in the calendar.
+ * @property {boolean} navLinks - Whether navigation links are enabled for days and weeks.
+ *
+ * @example
+ * const calendar = new FullCalendar.Calendar(calendarElement, calendarConfig);
+ * calendar.render();
  */
 const calendarConfig = {
-    appVersion: "5.1.0",
+    appVersion: "5.3.8",
+    opsGenie: true,
+    scheduleName: 'tinu_schedule',
+    rotationName: '2025',
     timeZone: 'local',
     locale: 'de-CH',
+    themeSystem: 'standard',
     initialView: 'multiMonthYear',
     multiMonthMinWidth: 350,
     multiMonthMaxColumns: 2,
     headerToolbar: {
-        left: 'prevYear,prev,today,next,nextYear',
+        left: 'prevYear,prev,today,next,nextYear refreshButton',
         center: 'title',
         right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs,filterEvents'
     },
@@ -19,7 +52,7 @@ const calendarConfig = {
         month: 'Monat',
         list: 'Liste'
     },
-    weekNumbers: false,
+    weekNumbers: true,
     dayMaxEvents: true,
     showNonCurrentDates: false,
     fixedWeekCount: false,
@@ -68,7 +101,7 @@ async function getNextYear(url) {
         // Check if the request was successful
         if (response.ok) {
             const result = await response.text(); // Read the response as plain text
-            // console.log('Success:', result); // Log the successful response
+            // console.log('DEBUG', 'Success:', result); // Log the successful response
         } else {
             console.error('Request failed with status:', response.status); // Log if the request failed
         }
@@ -107,15 +140,15 @@ function calcDisplayedYear(info) {
         // Extract the year and month
         displayedYear = centralDate.getFullYear();
         const displayedMonth = centralDate.getMonth() + 1; // Month is zero-based
-        // console.log('Month view - Displayed year:', displayedYear);
-        // console.log('Month view - Displayed month:', displayedMonth);
+        // console.log('DEBUG', 'Month view - Displayed year:', displayedYear);
+        // console.log('DEBUG', 'Month view - Displayed month:', displayedMonth);
     } else if (info.view.type === 'multiMonthYear') {
         const centralDate = new Date(
             (info.start.getTime() + info.end.getTime()) / 2
         );
         // Extract the year
         displayedYear = centralDate.getFullYear();
-        // console.log('Year view - Displayed year:', displayedYear);
+        // console.log('DEBUG', 'Year view - Displayed year:', displayedYear);
     }
 
     return displayedYear;
@@ -243,12 +276,12 @@ function fillDropdownOptions(selectId, values) {
 * If the request fails, the function returns an empty array.
 * 
 * @example
-* const events = await loadApiData('/api/event/get'); 
+* const events = await loadApiData('/api/event/read/*'); 
 * // console.log(events); // Logs the calendar event data or an empty array if an error occurs.
 */
 async function loadApiData(url) {
     var calendarData = []; // Initialize an empty array to store calendar event data
-    // console.log('Starting to fetch calendar data from:', url); 
+    // console.log('DEBUG', 'Starting to fetch calendar data from:', url); 
 
     try {
         const response = await fetch(url); // Send a GET request to the provided URL
@@ -290,7 +323,7 @@ async function loadApiData(url) {
 * renderTable(data); // Populates the HTML table with rows for Alice and Bob.
 */
 function renderTable(data) {
-    // console.log('renderTable:', data);
+    // console.log('DEBUG', 'renderTable:', data);
     const tableBody = document.querySelector('#pikettTable tbody');
     tableBody.innerHTML = ''; // Clear the table to ensure no old data is present
 
@@ -345,11 +378,11 @@ async function getEventSummary(calendarData, selectedYear) {
     calendarData.forEach(event => {
 
         if(event.type !== 'Feiertag'){
-            // console.log('Calculate summary', event);
+            // console.log('DEBUG', 'Calculate summary', event);
             const [personName, eventType] = event.title.split(' - ');
             if (!personName || !eventType) return;
 
-            // console.log(event.start,event.end);
+            // console.log('DEBUG', event.start,event.end);
             let eventStartDate = new Date(event.start);
             let eventEndDate = new Date(event.end);
 
@@ -396,13 +429,13 @@ async function getEventSummary(calendarData, selectedYear) {
         });
 
         result[person].ferien = totalVacationDays;
-        // console.log(`Person: ${person}, Vacation Intervals: ${result[person].ferienIntervals}, Total Vacation Days: ${totalVacationDays}`);
+        // console.log('DEBUG', `Person: ${person}, Vacation Intervals: ${result[person].ferienIntervals}, Total Vacation Days: ${totalVacationDays}`);
 
         result[person].pikett = totalPikettDays;
-        // console.log(`Person: ${person}, Pikett Intervals: ${result[person].pikettIntervals}, Total Pikett Days: ${totalPikettDays}`);
+        // console.log('DEBUG', `Person: ${person}, Pikett Intervals: ${result[person].pikettIntervals}, Total Pikett Days: ${totalPikettDays}`);
 
         result[person].PikettPeer = totalPikettPeerDays;
-        // console.log(`Person: ${person}, Pikett-Peer Intervals: ${result[person].pikettIntervals}, Total Pikett-Peer Days: ${totalPikettPeerDays}`);
+        // console.log('DEBUG', `Person: ${person}, Pikett-Peer Intervals: ${result[person].pikettIntervals}, Total Pikett-Peer Days: ${totalPikettPeerDays}`);
     }
 
     return result;
@@ -444,15 +477,15 @@ function calculateWorkdays(startDate, endDate) {
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
             count++; // Count only weekdays
         } else {
-            // console.log(`calculateWorkdays - Skipping weekend: ${currentDate.toDateString()}`);
+            // console.log('DEBUG', `calculateWorkdays - Skipping weekend: ${currentDate.toDateString()}`);
         }
-        // console.log(`calculateWorkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
+        // console.log('DEBUG', `calculateWorkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
 
         // Move to the next day
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // console.log('calculateWorkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of weekdays:', count);
+    // console.log('DEBUG', 'calculateWorkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of weekdays:', count);
     return count;
 }
 
@@ -487,13 +520,13 @@ function calculatePikettkdays(startDate, endDate) {
     // Iterate over each day in the period, including the end date
     while (currentDate.getTime() < endDate.getTime()) {
         count++; // Count each day
-        // console.log(`calculatePikettkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
+        // console.log('DEBUG', `calculatePikettkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
 
         // Move to the next day
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // console.log('calculatePikettkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of days:', count);
+    // console.log('DEBUG', 'calculatePikettkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of days:', count);
     return count;
 }
 
@@ -564,7 +597,7 @@ function getEventColors(type) {
         { regex: /^Pikett$/, color: 'red' },
         { regex: /^Pikett-Peer$/, color: 'orange' },
         { regex: /^(Kurs|Aus\/Weiterbildung)$/, color: '#A37563' },
-        { regex: /^(Militär|ZV\/EO|Zivil)$/, color: '#006400' },
+        { regex: /^(Militär\/ZV\/EO|Zivil)$/, color: '#006400' },
         { regex: /^Ferien$/, color: '#05c27c' },
         { regex: /^Feiertag$/, color: '#B9E2A7' },
         { regex: /^(GLZ Kompensation|Absenz|Urlaub)$/, color: '#889CC6' },
@@ -574,15 +607,81 @@ function getEventColors(type) {
     // Run through the colorMap and find the first match
     for (const { regex, color } of colorMap) {
         if (regex.test(type)) {
+            //console.log('DEBUG', 'Color:', color, 'Type:', type);
             return color;
         }
     }
 
     // Return default color if no match was found
-    return '#378006';
+    return '#4F0680';
 }
 
-// CRUD Functions
+/**
+ * Create an OpsGenie override for a specific user and time period.
+ * @param {*} data 
+ * @returns 
+ * @example
+ * const data = { name: "John", type: "Meeting", start: "2024-12-01", end: "2024-12-02" };
+ * const response = await createOpsGenieOverride(data);
+ */
+async function createOpsGenieOverride(data){
+    const response = await fetch('/api/opsgenie/override/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json' // Send as JSON
+        },
+        body: JSON.stringify(data) // Convert form data to JSON string
+    });
+    if (response.ok) {
+        console.log('DEBUG', response.status, response.statusText, `${data.userName} - ${data.type}`); // Ausgabe: "Record successfully updated"
+        const json = await response.json(); // Convert form data to JSON string
+        return json
+    } else {
+        console.error('Failed to create override:', response, data);
+        return 'Request failed with status:', response.status, response.statusText;
+    }
+}
+
+async function removeOpsGenieOverride(data){
+    const response = await fetch('/api/opsgenie/override/delete', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json' // Send as JSON
+        },
+        body: JSON.stringify(data) // Convert form data to JSON string
+    });
+    if (response.ok) {
+        console.log('DEBUG', response.status, response.statusText, response, `${data.userName} - ${data.type}`); // Ausgabe: "Record successfully removed"
+        const json = await response.json(); // Convert form data to JSON string
+        return json
+    } else {
+        console.error('Failed to delete override:', response, data);
+        return 'Request failed with status:', response.status, response.statusText;
+    }
+}
+
+/**
+ * Sends data to a database using a POST request and returns the response status.
+ * 
+ * This asynchronous function performs a POST request to the specified API endpoint, 
+ * sending the provided data as a JSON payload. If the request is successful, the HTTP 
+ * status code is returned. Otherwise, an error message including the response status 
+ * and status text is returned.
+ *
+ * @async
+ * @param {string} url - The API endpoint URL where the data will be sent.
+ * @param {Object} data - The data object to be sent to the server.
+ * @returns {number|string} - The HTTP status code if the request is successful; otherwise, an error message.
+ *
+ * @example
+ * const data = { name: "John", type: "Meeting", start: "2024-12-01", end: "2024-12-02" };
+ * const status = await createDBData('/api/event/create', data);
+ * if (status === 200) {
+ *     console.log('Data successfully inserted into the database.');
+ * } else {
+ *     console.error('Failed to insert data:', status);
+ * }
+ */
 async function createDBData(url, data){
     const response = await fetch(url, {
         method: 'POST',
@@ -592,24 +691,70 @@ async function createDBData(url, data){
         body: JSON.stringify(data) // Convert form data to JSON string
     });
     if (response.ok) {
-        return response.status;
+        // console.log('DEBUG', response.status, response.statusText, `${data.name} - ${data.type}`); // Ausgabe: "Record successfully updated"
+        if(data.type.includes('Pikett') || data.type.includes('Ferien')){
+            window.location.reload();
+        }
     } else {
-        return 'Request failed with status:', response.status, response.statusText;
+        console.error('Failed to create event:', response, data);
+        showAlert(`Fehler beim Erstellen des Events ${data.name}, ggf. OpsGenie prüfen - ${data.type}: ${response.status}, ${response.statusText}`);
     }
 }
 
+/**
+ * Fetches data from a database via an API and returns the result as JSON.
+ * 
+ * This asynchronous function performs a GET request to the specified API endpoint,
+ * retrieves the data, and converts it into a JSON object. If the request is successful,
+ * the parsed JSON data is returned. If the request fails, an error message containing 
+ * the response status and status text is returned.
+ *
+ * @async
+ * @param {string} url - The API endpoint URL to fetch data from.
+ * @returns {Object|string} - The JSON data if the request is successful; otherwise, an error message.
+ *
+ * @example
+ * const data = await readDBData('/api/event/read');
+ * if (typeof data === 'object') {
+ *     console.log('Retrieved data:', data);
+ * } else {
+ *     console.error('Failed to fetch data:', data);
+ * }
+ */
 async function readDBData(url) {
     const response = await fetch(url);
     if (response.ok) {
         const json = await response.json(); // Convert form data to JSON string
         return json
     } else {
+        console.error('Failed to read event:', response);
         return 'Request failed with status:', response.status, response.statusText;
     }
 }
 
-function updateDBData(query, dbFile, elementId){
-    console.log('Not implemented yet:', query)
+async function updateDBData(url, event){
+    try {
+        // Sende UPDATE-Anfrage an die PowerShell API
+        const response = await fetch(`${url}/${event.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(event)
+        });
+
+        // Überprüfe, ob die Anfrage erfolgreich war
+        if (response.ok) {
+            const responseData = await response.json();
+            console.log('DEBUG', responseData.message); // Ausgabe: "Record successfully updated"
+        } else {
+            console.error('Failed to update event:', response, event);
+            showAlert(`Fehler beim Aktualisieren des Events ${event.name}, ggf. OpsGenie prüfen! - ${event.type}: ${response.status}, ${response.statusText}`);
+        }
+    } catch (error) {
+        console.error('Error occurred while updating event:', error);
+        showAlert('Ein Fehler ist beim Aktualisieren des Events aufgetreten');
+    }
 }
 
 /**
@@ -626,10 +771,10 @@ function updateDBData(query, dbFile, elementId){
  * @example
  * await deleteDBData('12345'); // Deletes the event with ID '12345' and reloads the page if successful.
  */
-async function deleteDBData(eventId){
+async function deleteDBData(url, event){
     try {
         // Sende DELETE-Anfrage an die PowerShell API
-        const response = await fetch(`/api/event/delete/${eventId}`, {
+        const response = await fetch(`${url}/${event.id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -639,16 +784,18 @@ async function deleteDBData(eventId){
         // Überprüfe, ob die Anfrage erfolgreich war
         if (response.ok) {
             const responseData = await response.json();
-            console.log(responseData.message); // Ausgabe: "Record successfully deleted"
+            console.log('DEBUG', responseData.message, event); // Ausgabe: "Record successfully deleted"
             // Aktualisiere den Kalender oder die UI, nachdem der Record gelöscht wurde
-            window.location.reload();
+            if(event.title.includes('Pikett') || event.title.includes('Ferien')){
+                window.location.reload();
+            }
         } else {
-            console.error('Failed to delete event:', response.status);
-            alert('Fehler beim Löschen des Events');
+            console.error('Failed to delete event:', response, event);
+            showAlert(`Fehler beim Löschen des Events ${event.name} - ${event.type}: ${response.status}, ${response.statusText}`);
         }
     } catch (error) {
         console.error('Error occurred while deleting event:', error);
-        alert('Ein Fehler ist beim Löschen des Events aufgetreten');
+        showAlert('Ein Fehler ist beim Löschen des Events aufgetreten');
     }
 }
 
@@ -676,7 +823,7 @@ function exportFilteredEvents(events, filterFn, filename, exportFn) {
     if (filteredEvents.length > 0) {
         exportFn(filteredEvents, filename);
     } else {
-        alert('Keine passenden Events gefunden.');
+        showAlert('Keine passenden Events gefunden.');
     }
 }
 
@@ -705,6 +852,8 @@ function setModalEventData(event) {
 
     if(event.id){
         document.getElementById('singleEvent-id').textContent = `id: ${event.id}`;
+    }else{
+        document.getElementById('singleEvent-id').textContent = 'id: n/a, this event is form a file!';
     }
     document.getElementById('singleEvent-title').textContent = `${event.title}, ${days} Tage`;
     document.getElementById('singleEvent-date').textContent = `von: ${eventStartDate} bis: ${eventEndDate}`;
@@ -720,26 +869,99 @@ function setModalEventData(event) {
 }
 
 /**
- * Verarbeitet den Klick auf die Schaltflächen im Modal.
+ * Handles actions triggered by modal buttons for an event.
+ * 
+ * This function determines which action to perform based on the selected button in the modal:
+ * - If the "Export Event" button is selected, it exports the event as an ICS file.
+ * - If the "Remove Event" button is selected, it confirms the deletion of the event and removes it 
+ *   from the database if an event ID is present. If no ID exists, an alert is displayed.
  *
- * @param {Object} event - Das Event-Objekt.
- */
-function handleModalButtonClick(event) {
+ * @param {Object} event - The event object containing details about the calendar event.
+ * @param {string} event.id - The unique identifier of the event.
+ * @param {string} event.title - The title of the event.
+ *
+ * @example
+ * // Example usage triggered by a modal button:
+ * handleModalButtonClick(event);
+
+async function handleModalButtonClick(event, calendar, opsGenie) {
     if (btnExportEvent.checked) {
         exportCalendarEvents(event, `${event.title}.ics`);
     }
     if (btnRemoveEvent.checked) {
         if(event.id){
-            if (confirm(`Event ${event.id}, ${event.title} wirklich löschen?`)) {
-                deleteDBData(event.id);
+            const message = `Event ${event.id}, ${event.title} wirklich löschen?`;
+            const result = await showConfirm(message);
+            if (result) {
+                if(event.title.includes('Pikett')){
+                    // Remove Override form OpsGenie
+                    if(opsGenie){
+                        const user = event.extendedProps.email;
+                        const start = event.start;
+                        console.log('DEBUG', 'Remove Override form OpsGenie', user, start);
+                    }
+                }
+                deleteDBData('/api/event/delete', event)
+                .then(() => {
+                    // Fetch new data and refresh the calendar
+                    // refreshCalendarData(calendar);
+                })
+                .catch(error => {
+                    console.error('Error deleting event:', error);
+                    showAlert('Fehler beim Löschen des Events, ggf. OpsGenie prüfen!');
+                });
             }
         }else{
-            alert (`${event.title} kann nicht gelöscht werden!`)
+            showAlert(`${event.title} kann nicht gelöscht werden!`)
         }
+    }
+    const exportModal = bootstrap.Modal.getInstance(document.getElementById('singleEvent'));
+    exportModal.hide();
+}
+ */
+
+/**
+ * Refreshes the calendar by fetching updated event data.
+ */
+async function refreshCalendarData(calendar) {
+    try {
+        const holidays = await loadApiData('/api/csv/read');
+        const events = await readDBData('/api/event/read/*');
+        let calendarEvents = [];
+        calendarEvents = [
+            ...(holidays || []), // Feiertage (falls vorhanden)
+            ...(Array.isArray(events) ? events : [events] || []) // User Events als Array
+        ];
+        calendar.removeAllEvents();
+        calendar.addEventSource(calendarEvents);
+        const button = document.querySelector('.fc-filterEvents-button');
+        button.textContent = 'My Events';
+    } catch (error) {
+        console.error('Error refreshing calendar data:', error);
+        showAlert('Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
     }
 }
 
-// Funktion zum Extrahieren und Validieren der Formulardaten
+/**
+ * Extracts and validates data from an HTML form.
+ * 
+ * This function retrieves all form inputs using the FormData API,
+ * converts them into a JavaScript object, and validates the presence 
+ * of required fields (`name`, `type`, `start`, and `end`). If any 
+ * required field is missing, the function logs an error and returns `null`.
+ *
+ * @param {HTMLFormElement} form - The form element to extract data from.
+ * @returns {Object|null} - A JavaScript object containing the form data if all required fields are present, otherwise `null`.
+ *
+ * @example
+ * const form = document.querySelector('#eventForm');
+ * const formData = getFormData(form);
+ * if (formData) {
+ *     console.log('Valid form data:', formData);
+ * } else {
+ *     console.error('Invalid form data.');
+ * }
+ */
 function getFormData(form) {
     const formData = new FormData(form);
     const data = {};
@@ -753,19 +975,97 @@ function getFormData(form) {
         return null;
     }
 
-    console.log('Formulardaten extrahiert:', data);
+    // console.log('DEBUG', 'Formulardaten extrahiert:', data);
     return data;
 }
 
+/**
+ * Retrieves the value of a specific cookie by name.
+ * 
+ * This function searches through the document's cookies, locates the cookie
+ * with the specified name, and returns its value. If the cookie is not found,
+ * the function returns `null`.
+ *
+ * @param {string} name - The name of the cookie to retrieve.
+ * @returns {string|null} - The value of the cookie if found, otherwise `null`.
+ *
+ * @example
+ * // Assuming a cookie 'username=JohnDoe' exists:
+ * const username = getCookie('username');
+ * console.log(username); // Output: 'JohnDoe'
+ *
+*/
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
 
     if (parts.length === 2) {
-        const cookieValue = parts.pop().split(';').shift(); // Extrahiere den Cookie-Wert einmal
-        // console.log("getCookie:", cookieValue);
-        return cookieValue; // Gib den Cookie-Wert zurück
+        let cookieValue = parts.pop().split(';').shift();
+        try {
+            // Entferne unerwartete Zeichen (z. B. überflüssige Leerzeichen)
+            cookieValue = cookieValue.trim();
+            // JSON parsen
+            const parsedValue = JSON.parse(cookieValue);
+            // Optional: Debugging
+            // console.log('DEBUG', "getCookie parsed value:", parsedValue);
+            return parsedValue;
+        } catch (error) {
+            console.error('Error parsing cookie value:', error, cookieValue);
+            return null; // Gebe null zurück, wenn das Parsen fehlschlägt
+        }
     }
 
-    return null; // Wenn kein Cookie gefunden wird, gib null zurück
+    return null; // Gebe null zurück, wenn der Cookie nicht gefunden wird
+}
+
+/**
+ * showAlert(`Welcome ${userCookie.name}`,'RotaMaster - Alert');
+ * @param {*} title 
+ * @param {*} message 
+ */
+function showAlert(message,title) {
+    if(title){
+        document.getElementById('alertTitle').innerText = title;
+    }
+    document.getElementById('alertText').innerText = message;
+    var alertModal = new bootstrap.Modal(document.getElementById('alert'));
+    alertModal.show();
+}
+
+/**
+ * showConfirm(`Welcome ${userCookie.name}`,'RotaMaster - Message');
+ * @param {*} title 
+ * @param {*} message 
+ * 
+ * Beispiel für die Verwendung der showConfirm-Funktion
+ * showConfirm('RotaMaster - Message','Möchten Sie fortfahren?').then((result) => {
+ *  if (result) {
+ *      console.log('Benutzer hat Ja gewählt');
+ *      // Führen Sie die Aktion für Ja aus
+ *  } else {
+ *      console.log('Benutzer hat Nein gewählt');
+ *      // Führen Sie die Aktion für Nein aus
+ *  }
+ * });
+ */
+async function showConfirm(message,title) {
+    return new Promise((resolve) => {
+        if(title){
+            document.getElementById('confirmTitle').innerText = title;
+        }
+        document.getElementById('confirmText').innerText = message;
+        var confirmModal = new bootstrap.Modal(document.getElementById('confirm'));
+
+        document.getElementById('btnYes').onclick = function() {
+            resolve(true);
+            confirmModal.hide();
+        };
+
+        document.getElementById('btnNo').onclick = function() {
+            resolve(false);
+            confirmModal.hide();
+        };
+
+        confirmModal.show();
+    });
 }
