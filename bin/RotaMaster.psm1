@@ -856,8 +856,8 @@ function Initialize-ApiEndpoints {
 
         #region CRUD for Absence
         # Create new absence into the table absence
-        Add-PodeRoute -Method POST -Path '/api/absence/create' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method POST -Path '/api/absence/create' -ArgumentList @($dbPath, $Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
 
             if(-not([String]::IsNullOrEmpty($WebEvent.Data['name']))){
                 try{
@@ -871,7 +871,8 @@ function Initialize-ApiEndpoints {
                     Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
 
                 }catch{
-                    $_.Exception.Message | Out-Default
+                    $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                     Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
                 }
             }else{
@@ -880,8 +881,8 @@ function Initialize-ApiEndpoints {
         }
 
         # Read data from SQLiteDB for absence
-        Add-PodeRoute -Method Get -Path 'api/absence/read/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method Get -Path 'api/absence/read/:id' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
             try{
                 $searchFor = $WebEvent.Parameters['id']
 
@@ -905,14 +906,15 @@ function Initialize-ApiEndpoints {
                 $Connection.Close()
                 Write-PodeJsonResponse -Value $($absences | ConvertTo-Json)
             }catch{
-                $_.Exception.Message | Out-Default
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
             }
         }
         
         # Update absence from table absence
-        Add-PodeRoute -Method PUT -Path '/api/absence/update/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-        param($dbPath)
+        Add-PodeRoute -Method PUT -Path '/api/absence/update/:id'  -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+        param($dbPath,$Logfile)
 
             $id        = $WebEvent.Parameters['id']
             $name      = $WebEvent.Data['name']
@@ -925,13 +927,15 @@ function Initialize-ApiEndpoints {
                 Invoke-SqliteQuery -DataSource $dbPath -Query $sql
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
             } catch {
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to update record: $_" } -StatusCode 500
             }
         }
 
         # Delete absence from table absence
-        Add-PodeRoute -Method DELETE -Path '/api/absence/delete/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method DELETE -Path '/api/absence/delete/:id'  -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
 
             $id = $WebEvent.Parameters['id']
             $sql = "DELETE FROM absence WHERE id = $id"
@@ -940,6 +944,8 @@ function Initialize-ApiEndpoints {
                 Invoke-SqliteQuery -DataSource $dbPath -Query $sql
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully deleted" }
             } catch {
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to delete record: $_" } -StatusCode 500
             }
         }
@@ -947,8 +953,8 @@ function Initialize-ApiEndpoints {
 
         #region CRUD for Person
         # Create new person into the table person
-        Add-PodeRoute -Method POST -Path '/api/person/create' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method POST -Path '/api/person/create' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
 
             if((-not([String]::IsNullOrEmpty($WebEvent.Data['login'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['firstname'])))))){
                 try{
@@ -967,7 +973,8 @@ function Initialize-ApiEndpoints {
                     Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
 
                 }catch{
-                    $_.Exception.Message | Out-Default
+                    $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                     Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
                 }
             }else{
@@ -976,8 +983,8 @@ function Initialize-ApiEndpoints {
         }
 
         # Read data from SQLiteDB for person
-        Add-PodeRoute -Method Get -Path 'api/person/read/:person' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method Get -Path 'api/person/read/:person' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
             try{
                 $searchFor = $WebEvent.Parameters['person']
 
@@ -1011,14 +1018,15 @@ function Initialize-ApiEndpoints {
                 $Connection.Close()
                 Write-PodeJsonResponse -Value $($person | ConvertTo-Json)
             }catch{
-                $_.Exception.Message | Out-Default
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
             }
         }
 
         # Update person from table person
-        Add-PodeRoute -Method PUT -Path '/api/person/update/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method PUT -Path '/api/person/update/:id'  -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
 
             $id        = $WebEvent.Parameters['id']
             $login     = $WebEvent.Data['login']
@@ -1048,13 +1056,15 @@ function Initialize-ApiEndpoints {
                 Invoke-SqliteQuery -DataSource $dbPath -Query $sql
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
             } catch {
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to update record: $_" } -StatusCode 500
             }
         }
 
         # Delete person from table person
-        Add-PodeRoute -Method DELETE -Path '/api/person/delete/:id'  -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method DELETE -Path '/api/person/delete/:id'  -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
 
             $id = $WebEvent.Parameters['id']
             $sql = "DELETE FROM person WHERE id = $id"
@@ -1063,6 +1073,8 @@ function Initialize-ApiEndpoints {
                 Invoke-SqliteQuery -DataSource $dbPath -Query $sql
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully deleted" }
             } catch {
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to delete record: $_" } -StatusCode 500
             }
         }
@@ -1070,8 +1082,8 @@ function Initialize-ApiEndpoints {
 
         #region CRUD for events
         # Create new record into the table events
-        Add-PodeRoute -Method POST -Path '/api/event/create' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method POST -Path '/api/event/create' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
             # Read the data of the formular
             if((-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['type']))))){
                 try{
@@ -1093,7 +1105,8 @@ function Initialize-ApiEndpoints {
                     $Connection.Close()
                     Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
                 }catch{
-                    $_.Exception.Message | Out-Default
+                    $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                     Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
                 }
             }else{
@@ -1102,8 +1115,8 @@ function Initialize-ApiEndpoints {
         }
 
         # Read data from table events
-        Add-PodeRoute -Method Get -Path 'api/event/read/:person' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method Get -Path 'api/event/read/:person' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
             try{
                 # Read from view instead from table
                 $person = $WebEvent.Parameters['person']
@@ -1136,17 +1149,20 @@ function Initialize-ApiEndpoints {
                 $Connection.Close()
                 Write-PodeJsonResponse -Value $($events | ConvertTo-Json)
             }catch{
-                $_.Exception.Message | Out-Default
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
             }
         }
 
         # Update data from table events
-        Add-PodeRoute -Method Put -Path '/api/event/update/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method Put -Path '/api/event/update/:id' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
 
             $id      = $WebEvent.Parameters['id']
             $type    = $WebEvent.Data['type']
+            $alias   = $WebEvent.Data['alias']
+
             if($type -match '^Pikett$'){
                 $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 10:00"
                 $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 10:00"
@@ -1157,27 +1173,42 @@ function Initialize-ApiEndpoints {
             $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
             $author  = $WebEvent.Auth.User.Name
 
-            $sql = @"
-        UPDATE events
-        SET 
-            start = '$start',
-            end = '$end',
-            created = '$created',
-            author = '$author'
-        WHERE id = '$id';
-"@
+            if($alias){
+                $sql = "
+                UPDATE events
+                SET 
+                    start = '$start',
+                    end = '$end',
+                    alias = '$alias',
+                    created = '$created',
+                    author = '$author'
+                WHERE id = '$id';
+                "
+            }else{
+                $sql = "
+                UPDATE events
+                SET 
+                    start = '$start',
+                    end = '$end',
+                    created = '$created',
+                    author = '$author'
+                WHERE id = '$id';
+                "
+            }
 
             try {
                 Invoke-SqliteQuery -DataSource $dbPath -Query $sql
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
             } catch {
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to update record: $_" } -StatusCode 500
             }
         }
 
         # Delete data from table events
-        Add-PodeRoute -Method Delete -Path '/api/event/delete/:id' -ArgumentList @($dbPath) -Authentication 'Login' -ScriptBlock {
-            param($dbPath)
+        Add-PodeRoute -Method Delete -Path '/api/event/delete/:id' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+            param($dbPath,$Logfile)
 
             $id      = $WebEvent.Parameters['id']
             $deleted = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
@@ -1197,6 +1228,8 @@ function Initialize-ApiEndpoints {
                 Invoke-SqliteQuery -DataSource $dbPath -Query $sql
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully deleted" }
             } catch {
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -Value @{ status = "error"; message = "Failed to delete record: $_" } -StatusCode 500
             }
         }
@@ -1268,7 +1301,15 @@ function Initialize-ApiEndpoints {
                         ValueFromPipelineByPropertyName=$true,
                         Position = 5
                     )]
-                    [String] $ApiKey
+                    [String] $ApiKey,
+            
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 6
+                    )]
+                    [String] $Logfile
                 )
             
                 begin{
@@ -1307,7 +1348,8 @@ function Initialize-ApiEndpoints {
                                 Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method POST -Body $JsonPayload
                             }
                             catch {
-                                Write-Warning $_.Exception.Message
+                                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8                
                             }
                         }catch{
                             Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
@@ -1350,12 +1392,13 @@ function Initialize-ApiEndpoints {
                     }
                 )
 
-                $NewOpsGenieOverride = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey
+                $NewOpsGenieOverride = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey -Logfile $Logfile
                 "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override created as $($NewOpsGenieOverride.data.alias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
                 Write-PodeJsonResponse -Value $($NewOpsGenieOverride | ConvertTo-Json)
 
             }catch{
-                $_.Exception.Message | Write-PodeErrorLog -Level Error
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
             }
         }
@@ -1401,7 +1444,15 @@ function Initialize-ApiEndpoints {
                         ValueFromPipelineByPropertyName=$true,
                         Position = 2
                     )]
-                    [String] $ApiKey
+                    [String] $ApiKey,
+            
+                    [Parameter(
+                        Mandatory=$true,
+                        ValueFromPipeline=$true,
+                        ValueFromPipelineByPropertyName=$true,
+                        Position = 3
+                    )]
+                    [String] $Logfile
                 )
             
                 begin{
@@ -1429,7 +1480,8 @@ function Initialize-ApiEndpoints {
                                 Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method DELETE
                             }
                             catch {
-                                Write-Warning $_.Exception.Message
+                                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8                
                             }
                         }catch{
                             Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
@@ -1458,12 +1510,13 @@ function Initialize-ApiEndpoints {
 
                 #region Delete Override -> Remove event/Move event
                 "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Searching for Override $($OverrideAlias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
-                $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -ApiKey $ScheduleApiKey
+                $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -ApiKey $ScheduleApiKey -logfile $Logfile
                 "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override $($OverrideAlias) $($RemoveOpsGenieOverride.result)" | Out-File -Append -FilePath $Logfile -Encoding utf8
                 Write-PodeJsonResponse -Value $($RemoveOpsGenieOverride | ConvertTo-Json)
                 #endregion
             }catch{
-                $_.Exception.Message | Write-PodeErrorLog -Level Error
+                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 Write-PodeJsonResponse -StatusCode 500 -Value @{ status = "error"; message = $_.Exception.Message }
             }
         }
