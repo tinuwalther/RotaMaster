@@ -278,15 +278,60 @@
                             // Send update to OpsGenie as Override
                             const message = `'${info.event.title}' verschieben nach ${formatDateToShortISOFormat(info.event.start).substring(0,10)}?`;
                             const result = await showConfirm(message);
+                            const event = info.event;
                             if (result) {
-                                const updatedEvent = {
-                                    id: info.event.id,
-                                    type: info.type,
-                                    start: info.event.start,
-                                    end: info.event.end
-                                };
-                                await updateDBData('/api/event/update', updatedEvent);
-                                console.log('Send update to OpsGenie as Override');
+                                if(event.extendedProps.type === 'Pikett'){
+                                    // console.log('DEBUG', 'Pikett', event.extendedProps);
+                                    if(calendarConfig.opsGenie){
+                                        if(event.extendedProps.alias){
+                                            // Remove Override form OpsGenie
+                                            const override = {                                    
+                                                scheduleName: calendarConfig.scheduleName,
+                                                rotationName: calendarConfig.rotationName,
+                                                userName: event.extendedProps.email,
+                                                alias: event.extendedProps.alias,
+                                                onCallStart: event.start,
+                                                onCallEnd: event.end
+                                            };
+                                            console.log('DEBUG', 'Send update to OpsGenie as Override', event);
+                                            // removeOpsGenieOverride(override)
+                                            const removeOverride = await removeOpsGenieOverride(override);
+                                            console.log('DEBUG', 'Remove OpsGenie Override:', removeOverride);
+
+                                            // Create Override in OpsGenie
+                                            const newOverride = {                                    
+                                                scheduleName: calendarConfig.scheduleName,
+                                                rotationName: calendarConfig.rotationName,
+                                                userName: event.extendedProps.email,
+                                                onCallStart: event.start,
+                                                onCallEnd: event.end
+                                            };
+                                            const createOverride = await createOpsGenieOverride(newOverride);
+                                            console.log('DEBUG', 'Create new OpsGenie Override:', createOverride);
+                                            const updatedEvent = {
+                                                id: event.id,
+                                                type: event.extendedProps.type,
+                                                alias: createOverride.data.alias,
+                                                start: event.start,
+                                                end: event.end
+                                            };
+                                            await updateDBData('/api/event/update', updatedEvent);
+                                            refreshCalendarData(calendar);
+                                        }else{
+                                            console.log('DEBUG', 'Alias empty', event.extendedProps);
+                                            showAlert(`'${event.title} von ${formatDateToShortISOFormat(event.start).substring(0,10)} bis ${formatDateToShortISOFormat(event.end).substring(0,10)}'\nBitte im OpsGenie prüfen und ggf. manuell anpassen!`, 'RotaMaster - OpsGenie Alias ist leer!')
+                                        }
+                                    }
+                                }else{
+                                    console.log('DEBUG', 'No Pikett', event.extendedProps);
+                                    const updatedEvent = {
+                                        id: event.id,
+                                        type: event.extendedProps.type,
+                                        start: event.start,
+                                        end: event.end
+                                    };
+                                    await updateDBData('/api/event/update', updatedEvent);    
+                                }
                             } else {
                                 info.revert();
                             }
