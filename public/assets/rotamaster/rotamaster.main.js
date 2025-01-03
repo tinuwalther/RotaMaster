@@ -31,7 +31,7 @@
  * calendar.render();
  */
 const calendarConfig = {
-    appVersion: "5.3.8",
+    appVersion: "5.4.0",
     opsGenie: true,
     scheduleName: 'tinu_schedule',
     rotationName: '2025',
@@ -633,7 +633,7 @@ async function createOpsGenieOverride(data){
         body: JSON.stringify(data) // Convert form data to JSON string
     });
     if (response.ok) {
-        console.log('DEBUG', response.status, response.statusText, `${data.userName} - ${data.type}`); // Ausgabe: "Record successfully updated"
+        // console.log('DEBUG', response.status, response.statusText, `${data.userName}`, `${data.data.alias}`); // Ausgabe: "Record successfully updated"
         const json = await response.json(); // Convert form data to JSON string
         return json
     } else {
@@ -651,7 +651,7 @@ async function removeOpsGenieOverride(data){
         body: JSON.stringify(data) // Convert form data to JSON string
     });
     if (response.ok) {
-        console.log('DEBUG', response.status, response.statusText, response, `${data.userName} - ${data.type}`); // Ausgabe: "Record successfully removed"
+        // console.log('DEBUG', response.status, response.statusText, response, `${data.userName}`, `${data.result}`); // Ausgabe: "Record successfully removed"
         const json = await response.json(); // Convert form data to JSON string
         return json
     } else {
