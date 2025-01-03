@@ -623,11 +623,11 @@ function Remove-OpsGenieOverride {
 
 #region Year/Initial Rotation
 $ScheduleName       = 'tinu_schedule'
-$ScheduleApiKey     = ''
+$ScheduleApiKey     = $env:OPS_GENIE_API_KEY
 $Schedule           = Get-OpsGenieSchedule -Schedule $ScheduleName -ApiKey $ScheduleApiKey -Verbose
 $Schedule | Format-Table id,name,enabled,rotations
 
-$RotationNameYear   = 'OnCall 2025'
+$RotationNameYear   = '2025'
 $RotationStartYear  = '2025-01-01 10:00'
 $RotationEndYear    = '2025-12-31 10:00'
 
