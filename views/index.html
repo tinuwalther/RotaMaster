@@ -284,7 +284,7 @@
                                     // console.log('DEBUG', 'Pikett', event.extendedProps);
                                     if(calendarConfig.opsGenie){
                                         if(event.extendedProps.alias){
-                                            // Remove Override form OpsGenie
+                                            // Update Override in OpsGenie
                                             const override = {                                    
                                                 scheduleName: calendarConfig.scheduleName,
                                                 rotationName: calendarConfig.rotationName,
@@ -293,25 +293,14 @@
                                                 onCallStart: event.start,
                                                 onCallEnd: event.end
                                             };
-                                            console.log('DEBUG', 'Send update to OpsGenie as Override', event);
-                                            // removeOpsGenieOverride(override)
-                                            const removeOverride = await removeOpsGenieOverride(override);
-                                            console.log('DEBUG', 'Remove OpsGenie Override:', removeOverride);
-
-                                            // Create Override in OpsGenie
-                                            const newOverride = {                                    
-                                                scheduleName: calendarConfig.scheduleName,
-                                                rotationName: calendarConfig.rotationName,
-                                                userName: event.extendedProps.email,
-                                                onCallStart: event.start,
-                                                onCallEnd: event.end
-                                            };
-                                            const createOverride = await createOpsGenieOverride(newOverride);
-                                            console.log('DEBUG', 'Create new OpsGenie Override:', createOverride);
+                                            // console.log('DEBUG', 'Send update to OpsGenie as Override', event);
+                                            const updateOverride = await updateOpsGenieOverride(override);
+                                            // console.log('DEBUG', 'Update OpsGenie Override:', updateOverride);
+                                            // Update the event in the SQLite table event
                                             const updatedEvent = {
                                                 id: event.id,
                                                 type: event.extendedProps.type,
-                                                alias: createOverride.data.alias,
+                                                alias: event.extendedProps.alias,
                                                 start: event.start,
                                                 end: event.end
                                             };
