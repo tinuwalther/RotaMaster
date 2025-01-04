@@ -1,6 +1,35 @@
+<#
+.SYNOPSIS
+    This script is used to maintain the OpsGenie schedules.
+.DESCRIPTION
+    This script is used to maintain the OpsGenie schedules, rotations, and overrides.
+.PARAMETER ScheduleName
+    The name of the schedule.
+.PARAMETER ListSchedule
+    List the schedule.
+.PARAMETER ListRotations
+    List all the rotations.
+.PARAMETER ListOverrides
+    List all the overrides.
+.PARAMETER RemoveOverride
+    Remove the override.
+.PARAMETER Alias
+    The alias of the override.
+.EXAMPLE
+    Invoke-OpsGenieMaintenace -ScheduleName 'MySchedule' -ListSchedule
+    List all properties of the specified schedule.
+.EXAMPLE
+    Invoke-OpsGenieMaintenace -ScheduleName 'MySchedule' -ListRotations
+    List all properties of the specified schedule and rotations.
+.EXAMPLE
+    Invoke-OpsGenieMaintenace -ScheduleName 'MySchedule' -ListOverrides
+    List all properties the overrides of the specified schedule.
+.EXAMPLE
+    Invoke-OpsGenieMaintenace -ScheduleName 'MySchedule' -RemoveOverride -Alias 'MyAlias'
+    Remove the override of the specified alias.
+#>
 [CmdletBinding(SupportsShouldProcess=$True)]
 param(
-    # Test-Compute_schedule
     [Parameter(
         Mandatory=$true,
         ValueFromPipeline=$true,
