@@ -18,7 +18,7 @@
             });
         </script>
 
-        <title >RotaMaster</title><link type="image/x-icon" href="/assets/img/favicon.ico" rel="icon"  />
+        <title >RotaMaster - Login</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
 
         <style>
             footer {
@@ -38,7 +38,7 @@
 
 		<header >
             <!--div Class="jumbotron text-center" Id="j1" Style="padding:15; background-color:#012456"  >
-                <h1 >RotaMaster - V2</h1>
+                <h1 >RotaMaster</h1>
             </div-->
 		</header>
 
@@ -75,17 +75,20 @@
 
                     <div class="login">
                     <h3>Please Login</h3>
+                    <br>
 
                     <form action="/login" method="post">
-                        <div class="col-auto">
-                            <label class="form-label">Username:</label><br>
-                            <input type="text" name="username" placeholder="Your account name"/>
-                        </div><br>
-                        
-                        <div class="col-auto">
-                            <label class="form-label">Password:</label><br>
-                            <input type="password" name="password" placeholder="Your password"/>
-                        </div><br>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">Username</span>
+                            <label for="name" class="form-label"></label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <br>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">Password</span>
+                            <label for="name" class="form-label"></label>
+                            <input type="password" name="password" class="form-control" required/>
+                        </div>
                         
                         <div class="col-auto">
                             <input type="submit" value="Login" class="btn btn-dark mb-3"/>
