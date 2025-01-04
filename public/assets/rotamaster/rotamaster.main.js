@@ -642,6 +642,25 @@ async function createOpsGenieOverride(data){
     }
 }
 
+async function updateOpsGenieOverride(data){
+    const response = await fetch('/api/opsgenie/override/update', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json' // Send as JSON
+        },
+        body: JSON.stringify(data) // Convert form data to JSON string
+    });
+    if (response.ok) {
+        // console.log('DEBUG', response.status, response.statusText, `${data.userName}`, `${data.alias}`); // Ausgabe: "Record successfully updated"
+        const json = await response.json(); // Convert form data to JSON string
+        return json
+    } else {
+        console.error('Failed to update override:', response, data);
+        return 'Request failed with status:', response.status, response.statusText;
+    }
+}
+
+
 async function removeOpsGenieOverride(data){
     const response = await fetch('/api/opsgenie/override/delete', {
         method: 'DELETE',
@@ -867,58 +886,6 @@ function setModalEventData(event) {
     }
     */
 }
-
-/**
- * Handles actions triggered by modal buttons for an event.
- * 
- * This function determines which action to perform based on the selected button in the modal:
- * - If the "Export Event" button is selected, it exports the event as an ICS file.
- * - If the "Remove Event" button is selected, it confirms the deletion of the event and removes it 
- *   from the database if an event ID is present. If no ID exists, an alert is displayed.
- *
- * @param {Object} event - The event object containing details about the calendar event.
- * @param {string} event.id - The unique identifier of the event.
- * @param {string} event.title - The title of the event.
- *
- * @example
- * // Example usage triggered by a modal button:
- * handleModalButtonClick(event);
-
-async function handleModalButtonClick(event, calendar, opsGenie) {
-    if (btnExportEvent.checked) {
-        exportCalendarEvents(event, `${event.title}.ics`);
-    }
-    if (btnRemoveEvent.checked) {
-        if(event.id){
-            const message = `Event ${event.id}, ${event.title} wirklich löschen?`;
-            const result = await showConfirm(message);
-            if (result) {
-                if(event.title.includes('Pikett')){
-                    // Remove Override form OpsGenie
-                    if(opsGenie){
-                        const user = event.extendedProps.email;
-                        const start = event.start;
-                        console.log('DEBUG', 'Remove Override form OpsGenie', user, start);
-                    }
-                }
-                deleteDBData('/api/event/delete', event)
-                .then(() => {
-                    // Fetch new data and refresh the calendar
-                    // refreshCalendarData(calendar);
-                })
-                .catch(error => {
-                    console.error('Error deleting event:', error);
-                    showAlert('Fehler beim Löschen des Events, ggf. OpsGenie prüfen!');
-                });
-            }
-        }else{
-            showAlert(`${event.title} kann nicht gelöscht werden!`)
-        }
-    }
-    const exportModal = bootstrap.Modal.getInstance(document.getElementById('singleEvent'));
-    exportModal.hide();
-}
- */
 
 /**
  * Refreshes the calendar by fetching updated event data.
