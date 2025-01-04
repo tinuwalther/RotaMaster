@@ -32,6 +32,7 @@
  */
 const calendarConfig = {
     appVersion: "5.4.0",
+    appPrefix: "PS",
     opsGenie: true,
     scheduleName: 'tinu_schedule',
     rotationName: '2025',
