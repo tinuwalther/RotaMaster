@@ -275,16 +275,24 @@
                     // This function is called when an event is moved
                     eventDrop: async function(info) {
                         if(info.event.id){
-                            // Send update to OpsGenie as Override
                             const message = `'${info.event.title}' verschieben nach ${formatDateToShortISOFormat(info.event.start).substring(0,10)}?`;
                             const result = await showConfirm(message);
                             const event = info.event;
                             if (result) {
+                                // Update the event in the SQLite table event with the new start and end date
+                                const updatedEvent = {
+                                    id: event.id,
+                                    type: event.extendedProps.type,
+                                    start: event.start,
+                                    end: event.end
+                                };
+                                await updateDBData('/api/event/update', updatedEvent);
+                                // refreshCalendarData(calendar);
+
+                                // Update Override in OpsGenie if it's Pikett and OpsGenie is enabled and the alias is not empty
                                 if(event.extendedProps.type === 'Pikett'){
-                                    // console.log('DEBUG', 'Pikett', event.extendedProps);
                                     if(calendarConfig.opsGenie){
                                         if(event.extendedProps.alias){
-                                            // Update Override in OpsGenie
                                             const override = {                                    
                                                 scheduleName: calendarConfig.scheduleName,
                                                 rotationName: calendarConfig.rotationName,
@@ -296,30 +304,11 @@
                                             // console.log('DEBUG', 'Send update to OpsGenie as Override', event);
                                             const updateOverride = await updateOpsGenieOverride(override);
                                             // console.log('DEBUG', 'Update OpsGenie Override:', updateOverride);
-                                            // Update the event in the SQLite table event
-                                            const updatedEvent = {
-                                                id: event.id,
-                                                type: event.extendedProps.type,
-                                                alias: event.extendedProps.alias,
-                                                start: event.start,
-                                                end: event.end
-                                            };
-                                            await updateDBData('/api/event/update', updatedEvent);
-                                            refreshCalendarData(calendar);
                                         }else{
                                             console.log('DEBUG', 'Alias empty', event.extendedProps);
                                             showAlert(`'${event.title} von ${formatDateToShortISOFormat(event.start).substring(0,10)} bis ${formatDateToShortISOFormat(event.end).substring(0,10)}'\nBitte im OpsGenie prüfen und ggf. manuell anpassen!`, 'RotaMaster - OpsGenie Alias ist leer!')
                                         }
                                     }
-                                }else{
-                                    console.log('DEBUG', 'No Pikett', event.extendedProps);
-                                    const updatedEvent = {
-                                        id: event.id,
-                                        type: event.extendedProps.type,
-                                        start: event.start,
-                                        end: event.end
-                                    };
-                                    await updateDBData('/api/event/update', updatedEvent);    
                                 }
                             } else {
                                 info.revert();
@@ -329,7 +318,6 @@
                             showAlert(`'${info.event.title}' ist von einem CSV und kann nicht verschoben werden!`)
                         }
                     }
-                    
                 });
 
                 // Render the calendar
