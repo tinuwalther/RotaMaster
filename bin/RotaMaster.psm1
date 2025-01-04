@@ -854,7 +854,7 @@ function Initialize-ApiEndpoints {
             Write-PodeJsonResponse -Value $events
         }
 
-        #region CRUD for Absence
+        #region CRUD operations for Absence
         # Create new absence into the table absence
         Add-PodeRoute -Method POST -Path '/api/absence/create' -ArgumentList @($dbPath, $Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
@@ -951,7 +951,7 @@ function Initialize-ApiEndpoints {
         }
         #endregion
 
-        #region CRUD for Person
+        #region CRUD operations for Person
         # Create new person into the table person
         Add-PodeRoute -Method POST -Path '/api/person/create' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
@@ -1080,7 +1080,7 @@ function Initialize-ApiEndpoints {
         }
         #endregion
 
-        #region CRUD for events
+        #region CRUD operations for events
         # Create new record into the table events
         Add-PodeRoute -Method POST -Path '/api/event/create' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
@@ -1235,7 +1235,7 @@ function Initialize-ApiEndpoints {
         }
         #endregion
 
-        #region CRUD for OpsGenie
+        #region CRUD operations for OpsGenie
         # Create new override in opsgenie
         Add-PodeRoute -Method POST -Path '/api/opsgenie/override/create' -ArgumentList @($Logfile) -Authentication 'Login' -ScriptBlock {
             param($Logfile)
@@ -1349,7 +1349,10 @@ function Initialize-ApiEndpoints {
                             }
                             catch {
                                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
-                                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8                
+                                $BaseUrl | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                                $JsonPayload | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                                @{ statusCode = "error"; statusText = $_.Exception.Message}
                             }
                         }catch{
                             Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
@@ -1379,23 +1382,28 @@ function Initialize-ApiEndpoints {
                 $OnCallStart    = Get-Date $WebEvent.Data['onCallStart'] -f 'yyyy-MM-dd 10:00'
                 $OnCallEnd      = Get-Date $WebEvent.Data['onCallEnd'] -f 'yyyy-MM-dd 10:00'
 
-                $participants = @(
-                    [PSCustomObject]@{
-                        type = 'user'
-                        username = $Username
-                    }
-                )
-                
-                $rotations = @(
-                    [PSCustomObject]@{
-                        name = $RotationName
-                    }
-                )
+                if ($ScheduleName -and $ScheduleApiKey -and $RotationName -and $Username -and $OnCallStart -and $OnCallEnd) {
+                    $participants = @(
+                        [PSCustomObject]@{
+                            type = 'user'
+                            username = $Username
+                        }
+                    )
+                    
+                    $rotations = @(
+                        [PSCustomObject]@{
+                            name = $RotationName
+                        }
+                    )
 
-                $NewOpsGenieOverride = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey -Logfile $Logfile
-                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override created as $($NewOpsGenieOverride.data.alias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
-                Write-PodeJsonResponse -Value $($NewOpsGenieOverride | ConvertTo-Json)
-
+                    $NewOpsGenieOverride = New-OpsGenieOverride -Schedule $ScheduleName -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey -Logfile $Logfile
+                    "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override created as $($NewOpsGenieOverride.data.alias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
+                    Write-PodeJsonResponse -Value $($NewOpsGenieOverride | ConvertTo-Json)
+                }else{
+                    "Missing parameters" | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    Write-PodeJsonResponse -StatusCode 400 -Value @{ status = "error"; message = "Missing parameters" }
+                }
             }catch{
                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
@@ -1526,7 +1534,7 @@ function Initialize-ApiEndpoints {
                                 $BaseUrl | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                                 $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                                 $JsonPayload | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
-                                @{ statusCode = "405"; statusText = $_.Exception.Message}
+                                @{ statusCode = "error"; statusText = $_.Exception.Message}
                             }
                         }catch{
                             Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
@@ -1557,23 +1565,28 @@ function Initialize-ApiEndpoints {
                 $OnCallEnd      = Get-Date $WebEvent.Data['onCallEnd'] -f 'yyyy-MM-dd 10:00'
                 $OverrideAlias  = $WebEvent.Data['alias']
 
-                $participants = @(
-                    [PSCustomObject]@{
-                        type = 'user'
-                        username = $Username
-                    }
-                )
-                
-                $rotations = @(
-                    [PSCustomObject]@{
-                        name = $RotationName
-                    }
-                )
+                if ($ScheduleName -and $ScheduleApiKey -and $RotationName -and $Username -and $OnCallStart -and $OnCallEnd -and $OverrideAlias) {
+                    $participants = @(
+                        [PSCustomObject]@{
+                            type = 'user'
+                            username = $Username
+                        }
+                    )
+                    
+                    $rotations = @(
+                        [PSCustomObject]@{
+                            name = $RotationName
+                        }
+                    )
 
-                $UpdateOpsGenieOverride = Update-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey -Logfile $Logfile
-                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override updated for $($UpdateOpsGenieOverride.data.alias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
-                Write-PodeJsonResponse -Value $($UpdateOpsGenieOverride | ConvertTo-Json)
-
+                    $UpdateOpsGenieOverride = Update-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -Rotation $rotations -startDate $OnCallStart -endDate $OnCallEnd -participants $participants -ApiKey $ScheduleApiKey -Logfile $Logfile
+                    "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override updated for $($UpdateOpsGenieOverride.data.alias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
+                    Write-PodeJsonResponse -Value $($UpdateOpsGenieOverride | ConvertTo-Json)
+                }else{
+                    "Missing parameters" | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    Write-PodeJsonResponse -StatusCode 400 -Value @{ status = "error"; message = "Missing parameters" }
+                }
             }catch{
                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
@@ -1659,7 +1672,9 @@ function Initialize-ApiEndpoints {
                             }
                             catch {
                                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
-                                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8                
+                                $BaseUrl | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                                @{ statusCode = "error"; statusText = $_.Exception.Message}
                             }
                         }catch{
                             Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
@@ -1686,12 +1701,16 @@ function Initialize-ApiEndpoints {
                 $ScheduleApiKey = $env:OPS_GENIE_API_KEY
                 $OverrideAlias  = $WebEvent.Data['alias']
 
-                #region Delete Override -> Remove event/Move event
-                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Searching for Override $($OverrideAlias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
-                $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -ApiKey $ScheduleApiKey -logfile $Logfile
-                "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override $($OverrideAlias) $($RemoveOpsGenieOverride.result)" | Out-File -Append -FilePath $Logfile -Encoding utf8
-                Write-PodeJsonResponse -Value $($RemoveOpsGenieOverride | ConvertTo-Json)
-                #endregion
+                if ($ScheduleName -and $ScheduleApiKey -and $OverrideAlias) {
+                    "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Searching for Override $($OverrideAlias)" | Out-File -Append -FilePath $Logfile -Encoding utf8
+                    $RemoveOpsGenieOverride = Remove-OpsGenieOverride -Schedule $ScheduleName -Alias $OverrideAlias -ApiKey $ScheduleApiKey -logfile $Logfile
+                    "$(Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'); $($WebEvent.Auth.User.Username); Override $($OverrideAlias) $($RemoveOpsGenieOverride.result)" | Out-File -Append -FilePath $Logfile -Encoding utf8
+                    Write-PodeJsonResponse -Value $($RemoveOpsGenieOverride | ConvertTo-Json)
+                }else{
+                    "Missing parameters" | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    Write-PodeJsonResponse -StatusCode 400 -Value @{ status = "error"; message = "Missing parameters" }
+                }
             }catch{
                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
                 $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
