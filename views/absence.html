@@ -18,13 +18,17 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', async function() {
-    
-                // Add the App-Version to the Navbar-Brand
-                const pageTitle = `RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
+                // Add the App-Version and App-Prefix to the Navbar-Brand
+                const pageTitle = `${calendarConfig.appPrefix}RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
                 const navbarBrandElement = document.getElementById('navbarBrand');
                 if (navbarBrandElement) {
                     navbarBrandElement.textContent = pageTitle;
                 };
+
+                // Set the title of the page
+                document.getElementById('title').textContent = `${pageTitle} - Absence`;
+                document.getElementById('alertTitle').textContent = `${pageTitle} - Alert!`;
+                document.getElementById('confirmTitle').textContent = `${pageTitle} - Confirm?`;
 
                 const userCookie = getCookie('CurrentUser');
                 let username = null;
