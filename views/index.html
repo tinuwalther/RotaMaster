@@ -306,7 +306,7 @@
                                             // console.log('DEBUG', 'Update OpsGenie Override:', updateOverride);
                                         }else{
                                             console.log('DEBUG', 'Alias empty', event.extendedProps);
-                                            showAlert(`'${event.title} von ${formatDateToShortISOFormat(event.start).substring(0,10)} bis ${formatDateToShortISOFormat(event.end).substring(0,10)}'\nBitte im OpsGenie prüfen und ggf. manuell anpassen!`, 'RotaMaster - OpsGenie Alias ist leer!')
+                                            showAlert(`'${event.title} von ${formatDateToShortISOFormat(event.start).substring(0,10)} bis ${formatDateToShortISOFormat(event.end).substring(0,10)}'\nBitte im OpsGenie prüfen und ggf. manuell anpassen!`, `${calendarConfig.appPrefix}RotaMaster - OpsGenie Alias ist leer!`)
                                         }
                                     }
                                 }
@@ -323,15 +323,19 @@
                 // Render the calendar
                 calendar.render();
                 
-                // Add the App-Version to the Navbar-Brand
-                const pageTitle = `RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
+                // Add the App-Version and App-Prefix to the Navbar-Brand
+                const pageTitle = `${calendarConfig.appPrefix}RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
                 const navbarBrandElement = document.getElementById('navbarBrand');
                 if (navbarBrandElement) {
                     navbarBrandElement.textContent = pageTitle;
                 };
 
                 // Set the title of the page
-                document.getElementById('title').textContent = pageTitle;
+                document.getElementById('title').textContent = `${pageTitle} - Home`;
+                document.getElementById('exampleModalLabel').textContent = `${pageTitle} - Export multiple Events`;
+                document.getElementById('updateExportEventTitle').textContent = `${pageTitle} - Single Events`;
+                document.getElementById('alertTitle').textContent = `${pageTitle} - Alert!`;
+                document.getElementById('confirmTitle').textContent = `${pageTitle} - Confirm?`;
 
                 // Add an event listener to the start date input field to set the end date to the start date
                 document.getElementById('start').addEventListener('change', function() {
