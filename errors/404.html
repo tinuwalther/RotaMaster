@@ -1,20 +1,32 @@
 <html >
     <head >
         <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="keywords" content="Pode, FullCalendar, PowerShell, JavaScript"/>
         <meta name="description" content="RotaMaster is a Calendar App based on Pode and PowerShell-APIs"/>
         
-        <link rel="stylesheet" href="\assets\BootStrap\bootstrap.min.css"/>
-        <link rel="stylesheet" href='\assets\BootStrap\bootstrap-icons.css'>
-        <link rel="stylesheet" href="\assets\RotaMaster\RotaMaster.main.css"/>
+        <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
+        <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
 
-        <script src="\assets\BootStrap\bootstrap.bundle.min.js"></script>
-        <script src="\assets\RotaMaster\fullcalendar.main.min.js"></script>
-        <script src='\assets\RotaMaster\index.global.min.js'></script>
-        <script src='/assets/RotaMaster/RotaMaster.config.js'></scrip>
-        <script src='/assets/RotaMaster/RotaMaster.main.js'></script>
+        <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
+        <script src="/assets/rotamaster/index.global.min.js"></script>
+        <script src="/assets/rotamaster/rotamaster.config.js"></script>
+        <script src="/assets/rotamaster/rotamaster.main.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', async function() {
+                // Add the App-Version and App-Prefix to the Navbar-Brand
+                const pageTitle = `${calendarConfig.appPrefix}RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
+                const navbarBrandElement = document.getElementById('navbarBrand');
+                if (navbarBrandElement) {
+                    navbarBrandElement.textContent = pageTitle;
+                };
+
+                // Set the title of the page
+                document.getElementById('title').textContent = `${pageTitle} - Page not found!`;
+            });
+        </script>
         
-        <title >RotaMaster - Page not found!</title><link rel="icon" type="image/x-icon" href="/assets/img/favicon.png"  />
+        <title id="title">RotaMaster - Page not found!</title><link rel="icon" type="image/x-icon" href="/assets/img/favicon.png"  />
 
         <style>
             footer {
@@ -40,7 +52,7 @@
             <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
                 <div Class="container-fluid"  >
                     <img src="/assets/img/favicon.png" alt="Bootstrap" width="48" height="48">
-                    <a Class="navbar-brand" href="/" Target="_self"  >RotaMaster</a>
+                    <a Class="navbar-brand" id="navbarBrand" href="/" Target="_self"  >RotaMaster</a>
                     <button Class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar"  >
                         <span Class="navbar-toggler-icon"  ></span>
                     </button>
