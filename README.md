@@ -136,6 +136,44 @@ RotaMaster
 \---views
 ````
 
+## Configuration
+
+The configurations are hosted in ``RotaMaster/public/assets/rotamaster/rotamaster.config.js``.
+
+````javascript
+appVersion: "5.4.0",
+appPrefix: "PS",
+opsGenie: true,
+scheduleName: 'tinu_schedule',
+rotationName: '2025',
+timeZone: 'local',
+locale: 'de-CH',
+themeSystem: 'standard',
+initialView: 'multiMonthYear',
+multiMonthMinWidth: 350,
+multiMonthMaxColumns: 2,
+headerToolbar: {
+    left: 'prevYear,prev,today,next,nextYear refreshButton',
+    center: 'title',
+    right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs,filterEvents'
+},
+buttonText: {
+    today: 'Heute',
+    year: 'Jahr',
+    month: 'Monat',
+    list: 'Liste'
+},
+weekNumbers: true,
+dayMaxEvents: true,
+showNonCurrentDates: false,
+fixedWeekCount: false,
+weekNumberCalculation: 'ISO',
+selectable: true,
+editable: true,
+displayEventTime: false,
+navLinks: true
+````
+
 ## Create On-Call-Schedule
 
 Currently there is a PowerShell-Script to create a new rotation and save it as RotaMaster/api/on-call-rota-2025.csv:
