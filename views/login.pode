@@ -10,6 +10,7 @@
         
         <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
         <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
+        <script src="/assets/rotamaster/rotamaster.config.js"></script>
         <script src="/assets/rotamaster/rotamaster.main.js"></script>
         <script>
             window.addEventListener('load', () => {
