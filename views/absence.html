@@ -128,10 +128,15 @@
                     }
                     const absences = await response.json();    
 
+                    let absenceData = [];
+                    absenceData = [
+                        ...(Array.isArray(absences) ? absences : [absences] || []) // User Events as Array
+                    ];
+
                     const absenceTableBody = document.querySelector('#absenceTable tbody');
                     absenceTableBody.innerHTML = ''; // Bestehende Tabellenzeilen löschen
     
-                    absences.forEach(absence => {
+                    absenceData.forEach(absence => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${absence.name}</td>

@@ -68,32 +68,53 @@
                     ...(holidays || []), // Holidays (if available)
                     ...(Array.isArray(events) ? events : [events] || []) // User Events as Array
                 ];
-                            
+                console.log('DEBUG', 'calendarEvents', calendarEvents);
                 // Fetch the person from the API (from the SQLite table person) and fill the datalist with the person names
-                const person = await readDBData('/api/person/read/*');
-                const personNames = new Array;
-                person.map((item) => {
-                    personNames.push(item.fullname);
-                });
-                if (personNames.length) {
-                    fillDatalistOptions('datalistOptions', personNames);
-                    fillDropdownOptions('nameDropdownPerson', personNames);
-                    fillDropdownOptions('nameDropdownPersonModal', personNames);
-                } else {
-                    console.error('No person found.');
+                try {
+                    const person = await readDBData('/api/person/read/*');
+                    if(!person){
+                        fillDatalistOptions('datalistOptions', []);
+                        fillDropdownOptions('nameDropdownPerson', []);
+                        fillDropdownOptions('nameDropdownPersonModal', []);
+                        alert(`Person Tabelle ist leer, bitte Personen erfassen.`);
+                    }else{
+                        const personNames = new Array;
+                        person.map((item) => {
+                            personNames.push(item.fullname);
+                        });
+                        if (personNames.length) {
+                            fillDatalistOptions('datalistOptions', personNames);
+                            fillDropdownOptions('nameDropdownPerson', personNames);
+                            fillDropdownOptions('nameDropdownPersonModal', personNames);
+                        } else {
+                            console.error('No person found.');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching person:', error);
                 }
 
                 // Fetch the absence from the API (from the SQLite table absence) and fill the dropdown with the absence names
-                const absence = await readDBData('/api/absence/read/*');
-                const absenceNames = new Array;
-                absence.map((item) => {
-                    absenceNames.push(item.name);
-                });
-                if (absenceNames.length) {
-                    fillDropdownOptions('nameDropdownAbsence', absenceNames);
-                    fillDropdownOptions('nameDropdownAbsenceModal', absenceNames);
-                } else {
-                    console.error('No absence found.');
+                try {
+                    const absence = await readDBData('/api/absence/read/*');
+                    if(!absence){
+                        fillDropdownOptions('nameDropdownAbsence', []);
+                        fillDropdownOptions('nameDropdownAbsenceModal', []);
+                        alert(`Absence Tabelle ist leer, bitte Absenzen erfassen.`);
+                    }else{
+                        const absenceNames = new Array;
+                        absence.map((item) => {
+                            absenceNames.push(item.name);
+                        });
+                        if (absenceNames.length) {
+                            fillDropdownOptions('nameDropdownAbsence', absenceNames);
+                            fillDropdownOptions('nameDropdownAbsenceModal', absenceNames);
+                        } else {
+                            console.error('No absence found.');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching absences:', error);
                 }
 
                 // Create a new FullCalendar instance

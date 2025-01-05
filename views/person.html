@@ -127,11 +127,16 @@
                         throw new Error('Failed to fetch persons');
                     }
                     const persons = await response.json();
-    
+
+                    let personData = [];
+                    personData = [
+                        ...(Array.isArray(persons) ? persons : [persons] || []) // User Events as Array
+                    ];
+        
                     const personTableBody = document.querySelector('#personTable tbody');
                     personTableBody.innerHTML = ''; // Bestehende Tabellenzeilen löschen
     
-                    persons.forEach(person => {
+                    personData.forEach(person => {
                         // console.log(person);
                         const row = document.createElement('tr');
                         row.innerHTML = `
