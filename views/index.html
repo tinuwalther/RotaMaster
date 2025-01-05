@@ -71,17 +71,23 @@
                 console.log('DEBUG', 'calendarEvents', calendarEvents);
                 // Fetch the person from the API (from the SQLite table person) and fill the datalist with the person names
                 try {
-                    const person = await readDBData('/api/person/read/*');
-                    if(!person){
+                    const persons = await readDBData('/api/person/read/*');
+                    if(!persons){
                         fillDatalistOptions('datalistOptions', []);
                         fillDropdownOptions('nameDropdownPerson', []);
                         fillDropdownOptions('nameDropdownPersonModal', []);
                         alert(`Person Tabelle ist leer, bitte Personen erfassen.`);
                     }else{
+                        let personNames = [];
+                        personNames = [
+                            ...(Array.isArray(persons) ? persons.fullname : [persons.fullname] || []) // User Events as Array
+                        ];
+                        /*
                         const personNames = new Array;
                         person.map((item) => {
                             personNames.push(item.fullname);
                         });
+                        */
                         if (personNames.length) {
                             fillDatalistOptions('datalistOptions', personNames);
                             fillDropdownOptions('nameDropdownPerson', personNames);
@@ -102,10 +108,16 @@
                         fillDropdownOptions('nameDropdownAbsenceModal', []);
                         alert(`Absence Tabelle ist leer, bitte Absenzen erfassen.`);
                     }else{
+                        let absenceNames = [];
+                        absenceNames = [
+                            ...(Array.isArray(absence) ? absence.name : [absence.name] || []) // User Events as Array
+                        ];
+                        /*
                         const absenceNames = new Array;
                         absence.map((item) => {
                             absenceNames.push(item.name);
                         });
+                        */
                         if (absenceNames.length) {
                             fillDropdownOptions('nameDropdownAbsence', absenceNames);
                             fillDropdownOptions('nameDropdownAbsenceModal', absenceNames);
