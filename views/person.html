@@ -150,7 +150,7 @@
                         personTableBody.appendChild(row);
                     });
                 } catch (error) {
-                    showAlert(`Error fetching person data ${error}`);
+                    showAlert(`Fehler beim Lesen der Daten aus der Tabelle person:\n${error}`);
                     console.error('Error fetching persons:', error);
                 }
             }
