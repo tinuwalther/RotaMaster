@@ -249,6 +249,16 @@ function New-Tables {
             author TEXT NOT NULL
         );
 
+        INSERT INTO
+            absence (
+                'name',
+                'author'
+            )
+            VALUES (
+                'Ferien',
+                'Administrator'
+            );
+
         -- Create indexes
         CREATE INDEX idx_events_person
         ON events (person);
