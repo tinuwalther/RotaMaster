@@ -152,8 +152,64 @@ Synchronize/refresh the calendar and the OpsGenie Schedule.
 
 There is a PowerShell-Script with all functions for CR(U)D operations:
 
+### List schedule
+
 ````powershell
-RotaMster/test/New-OpsGenieOverride.ps1
+RotaMaster/bin/Invoke-OpsGenieMaintenace.ps1 -ScheduleName 'tinu_schedule' -ListSchedule
+````
+
+````powershell
+id          : d23d8864-6895-49eb-9950-147f04d56b43
+name        : tinu_schedule
+description : 
+timezone    : Europe/Belgrade
+enabled     : True
+ownerTeam   : @{id=d148162a-1388-4dde-8b3c-41cf66e0b8e8; name=tinu}
+rotations   : {}
+````
+
+### List all rotations
+
+````powershell
+RotaMaster/bin/Invoke-OpsGenieMaintenace.ps1 -ScheduleName 'tinu_schedule' -ListRotations
+````
+
+````powershell
+id              : 181fe0d8-8728-4ecf-8b94-fb1dce917b1f
+name            : 2025
+startDate       : 1/1/2025 9:00:00 AM
+endDate         : 12/31/2025 9:00:00 AM
+type            : weekly
+length          : 1
+timeRestriction : 
+username        : 
+````
+
+### List all overrides
+
+````powershell
+RotaMaster/bin/Invoke-OpsGenieMaintenace.ps1 -ScheduleName 'tinu_schedule' -ListOverrides
+````
+
+````powershell
+alias     : ec094825-296b-4d12-ab8d-c267db94d137
+username  : bruce.dickinson@company.com
+startDate : 3/3/2025 9:00:00 AM
+endDate   : 3/10/2025 9:00:00 AM
+rotations : 2025
+````
+
+### Remove obsolete override
+
+````powershell
+$alias = 'ec094825-296b-4d12-ab8d-c267db94d137'
+RotaMaster/bin/Invoke-OpsGenieMaintenace.ps1 -ScheduleName 'tinu_schedule' -RemoveOverride -Alias $alias
+````
+
+````powershell
+result   took requestId
+------   ---- ---------
+Deleted 0.236 aeb16668-18c0-42ae-8af1-68b95341de59
 ````
 
 ## Modules
