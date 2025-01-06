@@ -1,70 +1,4 @@
 /**
- * Configuration object for the FullCalendar instance.
- * 
- * This constant defines the default configuration settings for a FullCalendar instance, 
- * including the application version, time zone, locale, initial view, toolbar layout, 
- * button labels, and various display preferences. It centralizes the calendar setup 
- * to ensure consistency across the application.
- *
- * @constant
- * @type {Object}
- * @property {string} appVersion - The version of the application.
- * @property {string} timeZone - The time zone setting for the calendar (e.g., 'local').
- * @property {string} locale - The locale for date and time formatting (e.g., 'de-CH').
- * @property {string} initialView - The default view when the calendar is loaded (e.g., 'multiMonthYear').
- * @property {number} multiMonthMinWidth - The minimum width for multi-month views in pixels.
- * @property {number} multiMonthMaxColumns - The maximum number of columns in multi-month views.
- * @property {Object} headerToolbar - Defines the layout of the toolbar, including buttons for navigation and views.
- * @property {Object} buttonText - Custom labels for calendar buttons (e.g., 'Heute' for 'today').
- * @property {boolean} weekNumbers - Whether to display week numbers in the calendar.
- * @property {boolean} dayMaxEvents - Whether to limit the number of events displayed per day.
- * @property {boolean} showNonCurrentDates - Whether to show dates from adjacent months in the current view.
- * @property {boolean} fixedWeekCount - Whether each month should be displayed with a fixed number of weeks.
- * @property {string} weekNumberCalculation - The method for calculating week numbers (e.g., 'ISO').
- * @property {boolean} selectable - Whether users can select date ranges in the calendar.
- * @property {boolean} editable - Whether events can be edited directly in the calendar.
- * @property {boolean} displayEventTime - Whether to display the time of events in the calendar.
- * @property {boolean} navLinks - Whether navigation links are enabled for days and weeks.
- *
- * @example
- * const calendar = new FullCalendar.Calendar(calendarElement, calendarConfig);
- * calendar.render();
- */
-const calendarConfig = {
-    appVersion: "5.3.8",
-    opsGenie: true,
-    scheduleName: 'tinu_schedule',
-    rotationName: '2025',
-    timeZone: 'local',
-    locale: 'de-CH',
-    themeSystem: 'standard',
-    initialView: 'multiMonthYear',
-    multiMonthMinWidth: 350,
-    multiMonthMaxColumns: 2,
-    headerToolbar: {
-        left: 'prevYear,prev,today,next,nextYear refreshButton',
-        center: 'title',
-        right: 'multiMonthYear,dayGridMonth,listMonth exportToIcs,filterEvents'
-    },
-    buttonText: {
-        today: 'Heute',
-        year: 'Jahr',
-        month: 'Monat',
-        list: 'Liste'
-    },
-    weekNumbers: true,
-    dayMaxEvents: true,
-    showNonCurrentDates: false,
-    fixedWeekCount: false,
-    weekNumberCalculation: 'ISO',
-    selectable: true,
-    editable: true,
-    displayEventTime: false,
-    navLinks: true
-};
-
-
-/**
 * Sends the next year as plain text to the provided API URL and logs the response.
 * 
 * This asynchronous function calculates the next year dynamically,
@@ -633,7 +567,7 @@ async function createOpsGenieOverride(data){
         body: JSON.stringify(data) // Convert form data to JSON string
     });
     if (response.ok) {
-        console.log('DEBUG', response.status, response.statusText, `${data.userName} - ${data.type}`); // Ausgabe: "Record successfully updated"
+        // console.log('DEBUG', response.status, response.statusText, `${data.userName}`, `${data.data.alias}`); // Ausgabe: "Record successfully updated"
         const json = await response.json(); // Convert form data to JSON string
         return json
     } else {
@@ -641,6 +575,25 @@ async function createOpsGenieOverride(data){
         return 'Request failed with status:', response.status, response.statusText;
     }
 }
+
+async function updateOpsGenieOverride(data){
+    const response = await fetch('/api/opsgenie/override/update', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json' // Send as JSON
+        },
+        body: JSON.stringify(data) // Convert form data to JSON string
+    });
+    if (response.ok) {
+        // console.log('DEBUG', response.status, response.statusText, `${data.userName}`, `${data.alias}`); // Ausgabe: "Record successfully updated"
+        const json = await response.json(); // Convert form data to JSON string
+        return json
+    } else {
+        console.error('Failed to update override:', response, data);
+        return 'Request failed with status:', response.status, response.statusText;
+    }
+}
+
 
 async function removeOpsGenieOverride(data){
     const response = await fetch('/api/opsgenie/override/delete', {
@@ -651,7 +604,7 @@ async function removeOpsGenieOverride(data){
         body: JSON.stringify(data) // Convert form data to JSON string
     });
     if (response.ok) {
-        console.log('DEBUG', response.status, response.statusText, response, `${data.userName} - ${data.type}`); // Ausgabe: "Record successfully removed"
+        // console.log('DEBUG', response.status, response.statusText, response, `${data.userName}`, `${data.result}`); // Ausgabe: "Record successfully removed"
         const json = await response.json(); // Convert form data to JSON string
         return json
     } else {
@@ -867,58 +820,6 @@ function setModalEventData(event) {
     }
     */
 }
-
-/**
- * Handles actions triggered by modal buttons for an event.
- * 
- * This function determines which action to perform based on the selected button in the modal:
- * - If the "Export Event" button is selected, it exports the event as an ICS file.
- * - If the "Remove Event" button is selected, it confirms the deletion of the event and removes it 
- *   from the database if an event ID is present. If no ID exists, an alert is displayed.
- *
- * @param {Object} event - The event object containing details about the calendar event.
- * @param {string} event.id - The unique identifier of the event.
- * @param {string} event.title - The title of the event.
- *
- * @example
- * // Example usage triggered by a modal button:
- * handleModalButtonClick(event);
-
-async function handleModalButtonClick(event, calendar, opsGenie) {
-    if (btnExportEvent.checked) {
-        exportCalendarEvents(event, `${event.title}.ics`);
-    }
-    if (btnRemoveEvent.checked) {
-        if(event.id){
-            const message = `Event ${event.id}, ${event.title} wirklich löschen?`;
-            const result = await showConfirm(message);
-            if (result) {
-                if(event.title.includes('Pikett')){
-                    // Remove Override form OpsGenie
-                    if(opsGenie){
-                        const user = event.extendedProps.email;
-                        const start = event.start;
-                        console.log('DEBUG', 'Remove Override form OpsGenie', user, start);
-                    }
-                }
-                deleteDBData('/api/event/delete', event)
-                .then(() => {
-                    // Fetch new data and refresh the calendar
-                    // refreshCalendarData(calendar);
-                })
-                .catch(error => {
-                    console.error('Error deleting event:', error);
-                    showAlert('Fehler beim Löschen des Events, ggf. OpsGenie prüfen!');
-                });
-            }
-        }else{
-            showAlert(`${event.title} kann nicht gelöscht werden!`)
-        }
-    }
-    const exportModal = bootstrap.Modal.getInstance(document.getElementById('singleEvent'));
-    exportModal.hide();
-}
- */
 
 /**
  * Refreshes the calendar by fetching updated event data.

@@ -15,6 +15,7 @@
         <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
         <script src="/assets/rotamaster/fullcalendar.main.min.js"></script>
         <script src="/assets/rotamaster/index.global.min.js"></script>
+        <script src="/assets/rotamaster/rotamaster.config.js"></script>
         <script src="/assets/rotamaster/rotamaster.main.js"></script>
 
         <script>
@@ -67,32 +68,50 @@
                     ...(holidays || []), // Holidays (if available)
                     ...(Array.isArray(events) ? events : [events] || []) // User Events as Array
                 ];
-                            
+                // console.log('DEBUG', 'calendarEvents', calendarEvents);
                 // Fetch the person from the API (from the SQLite table person) and fill the datalist with the person names
-                const person = await readDBData('/api/person/read/*');
-                const personNames = new Array;
-                person.map((item) => {
-                    personNames.push(item.fullname);
-                });
-                if (personNames.length) {
-                    fillDatalistOptions('datalistOptions', personNames);
-                    fillDropdownOptions('nameDropdownPerson', personNames);
-                    fillDropdownOptions('nameDropdownPersonModal', personNames);
-                } else {
-                    console.error('No person found.');
+                try {
+                    const person = await readDBData('/api/person/read/*');
+                    const personNames = new Array;
+                    if(Array.isArray(person)){
+                        person.map((item) => {
+                            personNames.push(item.fullname);
+                        });
+                    }else{
+                        personNames.push(person.fullname);
+                    }
+
+                    if (personNames.length) {
+                        fillDatalistOptions('datalistOptions', personNames);
+                        fillDropdownOptions('nameDropdownPerson', personNames);
+                        fillDropdownOptions('nameDropdownPersonModal', personNames);
+                    } else {
+                        console.error('No person found.');
+                    }
+                } catch (error) {
+                    console.error('Error fetching person:', error);
                 }
 
                 // Fetch the absence from the API (from the SQLite table absence) and fill the dropdown with the absence names
-                const absence = await readDBData('/api/absence/read/*');
-                const absenceNames = new Array;
-                absence.map((item) => {
-                    absenceNames.push(item.name);
-                });
-                if (absenceNames.length) {
-                    fillDropdownOptions('nameDropdownAbsence', absenceNames);
-                    fillDropdownOptions('nameDropdownAbsenceModal', absenceNames);
-                } else {
-                    console.error('No absence found.');
+                try {
+                    const absence = await readDBData('/api/absence/read/*');
+                    const absenceNames = new Array;
+                    if(Array.isArray(absence)){
+                        absence.map((item) => {
+                            absenceNames.push(item.name);
+                        });
+                    }else{
+                        absenceNames.push(absence.name);
+                    }
+
+                    if (absenceNames.length) {
+                        fillDropdownOptions('nameDropdownAbsence', absenceNames);
+                        fillDropdownOptions('nameDropdownAbsenceModal', absenceNames);
+                    } else {
+                        console.error('No absence found.');
+                    }
+                } catch (error) {
+                    console.error('Error fetching absences:', error);
                 }
 
                 // Create a new FullCalendar instance
@@ -275,18 +294,41 @@
                     // This function is called when an event is moved
                     eventDrop: async function(info) {
                         if(info.event.id){
-                            // Send update to OpsGenie as Override
                             const message = `'${info.event.title}' verschieben nach ${formatDateToShortISOFormat(info.event.start).substring(0,10)}?`;
                             const result = await showConfirm(message);
+                            const event = info.event;
                             if (result) {
+                                // Update the event in the SQLite table event with the new start and end date
                                 const updatedEvent = {
-                                    id: info.event.id,
-                                    type: info.type,
-                                    start: info.event.start,
-                                    end: info.event.end
+                                    id: event.id,
+                                    type: event.extendedProps.type,
+                                    start: event.start,
+                                    end: event.end
                                 };
                                 await updateDBData('/api/event/update', updatedEvent);
-                                console.log('Send update to OpsGenie as Override');
+                                // refreshCalendarData(calendar);
+
+                                // Update Override in OpsGenie if it's Pikett and OpsGenie is enabled and the alias is not empty
+                                if(event.extendedProps.type === 'Pikett'){
+                                    if(calendarConfig.opsGenie){
+                                        if(event.extendedProps.alias){
+                                            const override = {                                    
+                                                scheduleName: calendarConfig.scheduleName,
+                                                rotationName: calendarConfig.rotationName,
+                                                userName: event.extendedProps.email,
+                                                alias: event.extendedProps.alias,
+                                                onCallStart: event.start,
+                                                onCallEnd: event.end
+                                            };
+                                            // console.log('DEBUG', 'Send update to OpsGenie as Override', event);
+                                            const updateOverride = await updateOpsGenieOverride(override);
+                                            // console.log('DEBUG', 'Update OpsGenie Override:', updateOverride);
+                                        }else{
+                                            console.log('DEBUG', 'Alias empty', event.extendedProps);
+                                            showAlert(`'${event.title} von ${formatDateToShortISOFormat(event.start).substring(0,10)} bis ${formatDateToShortISOFormat(event.end).substring(0,10)}'\nBitte im OpsGenie prüfen und ggf. manuell anpassen!`, `${calendarConfig.appPrefix}RotaMaster - OpsGenie Alias ist leer!`)
+                                        }
+                                    }
+                                }
                             } else {
                                 info.revert();
                             }
@@ -295,21 +337,24 @@
                             showAlert(`'${info.event.title}' ist von einem CSV und kann nicht verschoben werden!`)
                         }
                     }
-                    
                 });
 
                 // Render the calendar
                 calendar.render();
                 
-                // Add the App-Version to the Navbar-Brand
-                const pageTitle = `RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
+                // Add the App-Version and App-Prefix to the Navbar-Brand
+                const pageTitle = `${calendarConfig.appPrefix}RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
                 const navbarBrandElement = document.getElementById('navbarBrand');
                 if (navbarBrandElement) {
                     navbarBrandElement.textContent = pageTitle;
                 };
 
                 // Set the title of the page
-                document.getElementById('title').textContent = pageTitle;
+                document.getElementById('title').textContent = `${pageTitle} - Home`;
+                document.getElementById('exampleModalLabel').textContent = `${pageTitle} - Export multiple Events`;
+                document.getElementById('updateExportEventTitle').textContent = `${pageTitle} - Single Events`;
+                document.getElementById('alertTitle').textContent = `${pageTitle} - Alert!`;
+                document.getElementById('confirmTitle').textContent = `${pageTitle} - Confirm?`;
 
                 // Add an event listener to the start date input field to set the end date to the start date
                 document.getElementById('start').addEventListener('change', function() {
@@ -702,13 +747,9 @@
                             </select><br>
                         </div>
 
-                        <div class="col-auto">
-                            <label for="start" class="form-label">Startdatum</label><br>
+                        <label for="start" class="form-label">Startdatum und Enddatum wählen</label><br>
+                        <div class="input-group mb-3">
                             <input type="date" class="form-control" id="start" name="start"><br>
-                        </div>
-
-                        <div class="col-auto">
-                            <label for="end" class="form-label">Enddatum</label><br>
                             <input type="date" class="form-control" id="end" name="end"><br>
                         </div>
 

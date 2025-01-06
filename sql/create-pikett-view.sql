@@ -4,8 +4,10 @@ AS
 SELECT 
   e.person,
   e.type,
+  e.alias,
   e.start,
   e.end,
+  e.deleted,
   p.login,
   p.email
 FROM

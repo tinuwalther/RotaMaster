@@ -1,4 +1,3 @@
-## Create a synopsis for the script
 <#
 .SYNOPSIS
     Import events from a file into the SQLite database.

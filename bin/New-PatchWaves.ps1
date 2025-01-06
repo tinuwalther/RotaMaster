@@ -1,3 +1,19 @@
+<#
+.SYNOPSIS
+    This script is used to generate the patching schedule for the specified year.
+.DESCRIPTION
+    This script generates the patching schedule for the specified year.
+    It creates two patch waves for each month, with the first wave on the first full week and the second wave on the second full week.
+.PARAMETER Title
+    The title for the patching events.
+.PARAMETER Year
+    The year for which to generate the patching schedule.
+.OUTPUTS
+    A CSV file containing the patching schedule for the specified year.
+.EXAMPLE
+    New-PatchWaves -Title "Hyper-V Cluster Patching" -Year 2022
+    Generate the patching schedule for the year 2022 with the title "Hyper-V Cluster Patching".
+#>
 [CmdletBinding()]
 param(
     # Define the Title for the events. For example: Hyper-V Cluster Patching or better HV/ESXi Patching

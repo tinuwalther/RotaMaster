@@ -1,4 +1,3 @@
-## Create a synopsis for the script
 <#
 .SYNOPSIS
     Generate an on-call schedule for a given time.

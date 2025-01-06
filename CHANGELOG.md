@@ -3,6 +3,7 @@
 ## 2024-12-30
 
 ### 1. OpsGenie integration
+
 Adding the OpsGenie integration with add and remove override. To remove the override, the events table requires a column for the OpsGenie override alias.
 
 New structure in table events:
@@ -63,6 +64,7 @@ ALTER TABLE events
 ALTER TABLE events 
   ADD deleted TEXT;
 ````
+
 and create a new view v_events_deleted:
 
 ````sql  
@@ -89,4 +91,34 @@ FROM
 WHERE e.active = 0
 ORDER BY 
   e.id ASC;
+````
+
+### 3. Re-create View for Pikett
+
+Re-create the View for Pikett.
+
+````sql
+DROP VIEW v_pikett;
+````
+
+````sql
+-- Create the view for pikett
+CREATE VIEW v_pikett
+AS 
+SELECT 
+  e.person,
+  e.type,
+  e.alias,
+  e.start,
+  e.end,
+  e.deleted,
+  p.login,
+  p.email
+FROM
+  events e
+  INNER JOIN person p ON (p.name || ' ' || p.firstname) = e.person
+WHERE
+  e.type = 'Pikett'
+ORDER BY 
+  e.start ASC;
 ````

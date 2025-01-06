@@ -12,6 +12,7 @@
     <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
     <script src="/assets/rotamaster/fullcalendar.main.min.js"></script>
     <script src="/assets/rotamaster/index.global.min.js"></script>
+    <script src="/assets/rotamaster/rotamaster.config.js"></script>
     <script src="/assets/rotamaster/rotamaster.main.js"></script>
 
     <title id="title" >RotaMaster: About</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
@@ -110,12 +111,15 @@
     <script>
         // Wait until the DOM is fully loaded
         document.addEventListener('DOMContentLoaded', async () => {
-            // Add the App-Version to the Navbar-Brand
-            const pageTitle = `RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
+            // Add the App-Version and App-Prefix to the Navbar-Brand
+            const pageTitle = `${calendarConfig.appPrefix}RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
             const navbarBrandElement = document.getElementById('navbarBrand');
             if (navbarBrandElement) {
                 navbarBrandElement.textContent = pageTitle;
             };
+
+            // Set the title of the page
+            document.getElementById('title').textContent = `${pageTitle} - About`;
 
             // Set appVersion from calendarConfig
             if (typeof calendarConfig !== 'undefined' && calendarConfig.appVersion) {
