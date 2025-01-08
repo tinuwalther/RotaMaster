@@ -121,6 +121,33 @@
             // Set the title of the page
             document.getElementById('title').textContent = `${pageTitle} - About`;
 
+            const userCookie = getCookie('CurrentUser');
+            let username = null;
+            if (userCookie) {
+                // console.log(`Name: ${userCookie.name}`);
+                // console.log(`Login: ${userCookie.login}`);
+                // console.log(`Email: ${userCookie.email}`);
+                try {
+                    username = userCookie.name;
+                    if (username) {
+                        const welcomeElement = document.getElementById('currentUser');
+                        if (welcomeElement) {
+                            welcomeElement.textContent = `${username}`;
+                        } else {
+                            console.error("Element with ID 'welcomeMessage' not found.");
+                        }
+                    }else{
+                        showAlert("No username found!");
+                    }
+                } catch (error) {
+                    showAlert("There is something wrong with the userCookie!");
+                    console.log("There is something wrong with the userCookie!" + error);
+                }
+            }else{
+                console.log('User cookie not found or invalid');
+                showAlert('User cookie not found or invalid');
+            }
+            
             // Set appVersion from calendarConfig
             if (typeof calendarConfig !== 'undefined' && calendarConfig.appVersion) {
                 document.getElementById('appVersion').textContent = `${calendarConfig.appVersion} installed`;

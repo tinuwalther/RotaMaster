@@ -405,3 +405,7 @@ You can check this rotation in the RotaMaster-calendar and if the rotation passe
 ````powershell
 RotaMaster/bin/Import-ToSqLiteTable.ps1 -FilePath ../api/on-call-rota-2025.csv -ImportToDatabase
 ````
+
+## Video
+
+Sorry, but the video is only in (swiss)-german on YouTube as [RotaMaster](https://youtu.be/GWp0dQvSQC8).
