@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 2025-01-08
+
+Fix if the user set the startdate less than the enddate in index.html on
+
+````javascript
+// Default form submit and to call the API to add the event
+document.querySelector('form');
+````
+
 ## 2024-12-30
 
 ### 1. OpsGenie integration
