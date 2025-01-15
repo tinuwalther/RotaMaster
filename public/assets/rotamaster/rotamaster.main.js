@@ -786,7 +786,7 @@ function exportFilteredEvents(events, filterFn, filename, exportFn) {
  * @param {Object} event - Das Event-Objekt.
  */
 function setModalEventData(event) {
-
+    let swissHolidays = getSwissHolidays(event.start.getFullYear());
     const eventStartDate = formatDateToShortISOFormat(event.start);
     //const eventEndDate = formatDateToShortISOFormat(new Date(event.end.setDate(event.end.getDate() - 1))); // remove one day from the end-date
     const eventEndDate = formatDateToShortISOFormat(event.end); // remove one day from the end-date
@@ -796,7 +796,11 @@ function setModalEventData(event) {
         if(value === 'Pikett'){
             days = calculatePikettkdays(event.start,event.end)
         }else{
-            days = calculateWorkdays(event.start,event.end)
+            if(value === 'Feiertag'){
+                days = calculateWorkdays(event.start, event.end, [])
+            }else{
+                days = calculateWorkdays(event.start, event.end, swissHolidays)
+            }
         }
     };
 
