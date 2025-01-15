@@ -1,5 +1,82 @@
 # CHANGELOG
 
+## 2025-01-15
+
+After implementing the following code, increase the appVersion to 5.4.2.
+
+### Add login to the extendedProps in RotaMaster.psm1
+
+````powershell
+Add-PodeRoute -Method Get -Path 'api/event/read/:person' ... -ScriptBlock {
+  ...
+  $sql = 'SELECT id,person,login,email,"type",start,end,alias FROM v_events'
+  ...
+  $sql = "SELECT id,person,login,email,""type"",start,end,alias FROM v_events WHERE person = '$($person'"
+  ...
+  extendedProps = [PSCustomObject]@{
+      login = $item.login
+      email = $item.email
+      alias = $item.alias
+  }
+  ...
+}
+````
+
+### Fix swissHolidays for Summary in rotamaster.main.js
+
+````javascript
+async function getEventSummary(calendarData, selectedYear) {
+  ...
+  let swissHolidays = getSwissHolidays(selectedYear)
+  ...
+  result[person].ferienIntervals.forEach(interval => {
+      totalVacationDays += calculateWorkdays(interval.start, interval.end, swissHolidays);
+  });
+  ...
+  result[person].PikettPeerIntervals.forEach(interval => {
+      totalPikettPeerDays += calculateWorkdays(interval.start, interval.end, swissHolidays);
+  });
+  ...
+}
+````
+
+### Add a parameter holidays in calculateWorkdays
+
+````javascript
+function calculateWorkdays(startDate, endDate, holidays) 
+  ...
+  while (currentDate.getTime() < endDate.getTime()) {
+      const dayOfWeek = currentDate.getDay(); // Get the day of the week (0-6)
+      const formattedDate = formatDateToLocalISO(currentDate); // Format the date as 'YYYY-MM-DD'
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday = 0, Saturday = 6
+      const isSwissHoliday = holidays.includes(formattedDate); // Check if the current date is a Swiss holiday
+      if(!isSwissHoliday && !isWeekend){
+          count++; // Count only weekdays
+      }
+      // Move to the next day
+      currentDate.setDate(currentDate.getDate() + 1);
+  }
+}
+````
+
+### Add new function getEasterSunday
+
+````javascript
+function getEasterSunday(year) 
+````
+
+### Add new function getSwissHolidays
+
+````javascript
+function getSwissHolidays(year)
+````
+
+### Add new function formatDateToLocalISO
+
+````javascript
+function formatDateToLocalISO(date) 
+````
+
 ## 2025-01-08
 
 Fix if the user set the startdate less than the enddate in index.html on
