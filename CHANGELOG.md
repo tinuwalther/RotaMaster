@@ -59,6 +59,23 @@ function calculateWorkdays(startDate, endDate, holidays)
 }
 ````
 
+### Add a parameter holidays in setModalEventData
+
+````javascript
+function setModalEventData(event) {
+    let swissHolidays = getSwissHolidays(event.start.getFullYear());
+    ...
+        for (const [key, value] of Object.entries(event.extendedProps)) {
+        if(value === 'Pikett'){
+            days = calculatePikettkdays(event.start,event.end)
+        }else{
+            days = calculateWorkdays(event.start, event.end, swissHolidays)
+        }
+    };
+    ...
+}
+````
+
 ### Add new function getEasterSunday
 
 ````javascript
