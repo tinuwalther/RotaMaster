@@ -27,7 +27,7 @@ async function getNextYear(url) {
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain' // Specify that the request body contains plain text
+                'Content-Type': 'text/plain; charset=UTF-8' // Specify that the request body contains plain text
             },
             body: data // Send the year as plain text in the request body
         });
@@ -907,20 +907,19 @@ function getCookie(name) {
     if (parts.length === 2) {
         let cookieValue = parts.pop().split(';').shift();
         try {
-            // Entferne unerwartete Zeichen (z. B. überflüssige Leerzeichen)
-            cookieValue = cookieValue.trim();
+            // URL-Dekodierung und Umwandlung von "+" zurück in Leerzeichen
+            cookieValue = decodeURIComponent(cookieValue).replace(/\+/g, " ");
+
             // JSON parsen
             const parsedValue = JSON.parse(cookieValue);
-            // Optional: Debugging
-            // console.log('DEBUG', "getCookie parsed value:", parsedValue);
             return parsedValue;
         } catch (error) {
             console.error('Error parsing cookie value:', error, cookieValue);
-            return null; // Gebe null zurück, wenn das Parsen fehlschlägt
+            return null;
         }
     }
 
-    return null; // Gebe null zurück, wenn der Cookie nicht gefunden wird
+    return null;
 }
 
 /**
