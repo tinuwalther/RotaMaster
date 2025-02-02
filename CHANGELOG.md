@@ -1,8 +1,52 @@
 # CHANGELOG
 
+## 2025-02-02
+
+Fix Issue with ä, ö, ü in usernames. After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.3.
+
+### Fix write Cookie in PodeServer.ps1
+
+````powershell
+  # encode JSON explicit to UTF-8 no BOM
+  $utf8Bytes = [System.Text.Encoding]::UTF8.GetBytes($jsonData)
+  $utf8Json = [System.Text.Encoding]::UTF8.GetString($utf8Bytes)
+
+  # encode JSON to URL
+  $encodedJson = [System.Web.HttpUtility]::UrlEncode($utf8Json)
+
+  # Set cookie with encoded JSON no BOM and URL encoded, add 1 day to expiry date
+  Set-PodeCookie -Name "CurrentUser" -Value $encodedJson -ExpiryDate (Get-Date).AddDays(1)
+````
+
+### Fix getCookie in rotamaster.main.js
+
+````javascript
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+
+    if (parts.length === 2) {
+        let cookieValue = parts.pop().split(';').shift();
+        try {
+            // URL-Dekodierung und Umwandlung von "+" zurück in Leerzeichen
+            cookieValue = decodeURIComponent(cookieValue).replace(/\+/g, " ");
+
+            // JSON parsen
+            const parsedValue = JSON.parse(cookieValue);
+            return parsedValue;
+        } catch (error) {
+            console.error('Error parsing cookie value:', error, cookieValue);
+            return null;
+        }
+    }
+
+    return null;
+}
+````
+
 ## 2025-01-15
 
-After implementing the following code, increase the appVersion to 5.4.2.
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.2.
 
 ### Add login to the extendedProps in RotaMaster.psm1
 
