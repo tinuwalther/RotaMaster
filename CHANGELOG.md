@@ -1,8 +1,18 @@
 # CHANGELOG
 
+## Table of Contents
+
+- [2025-02-02](#2025-02-02)
+- [2025-01-15](#2025-01-15)
+- [2025-01-08](#2025-01-08)
+- [2024-12-30](#2024-12-30)
+
 ## 2025-02-02
 
 Fix Issue with ä, ö, ü in usernames. After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.3.
+
+- [Fix write Cookie in PodeServer.ps1](#fix-write-cookie-in-podeserverps1)
+- [Fix getCookie in rotamaster.main.js](#fix-getcookie-in-rotamastermainjs)
 
 ### Fix write Cookie in PodeServer.ps1
 
@@ -44,9 +54,19 @@ function getCookie(name) {
 }
 ````
 
+[Top](#changelog)
+
 ## 2025-01-15
 
 After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.2.
+
+- [Add login to the extendedProps in RotaMaster.psm1](#add-login-to-the-extendedprops-in-rotamasterpsm1)
+- [Fix swissHolidays for Summary in rotamaster.main.js](#fix-swissholidays-for-summary-in-rotamastermainjs)
+- [Add a parameter holidays in calculateWorkdays](#add-a-parameter-holidays-in-calculateworkdays)
+- [Add a parameter holidays in setModalEventData](#add-a-parameter-holidays-in-setmodaleventdata)
+- [Add new function getEasterSunday](#add-new-function-geteastersunday)
+- [Add new function getSwissHolidays](#add-new-function-getswissholidays)
+- [Add new function formatDateToLocalISO](#add-new-function-formatdatetolocaliso)
 
 ### Add login to the extendedProps in RotaMaster.psm1
 
@@ -138,6 +158,8 @@ function getSwissHolidays(year)
 function formatDateToLocalISO(date) 
 ````
 
+[Top](#changelog)
+
 ## 2025-01-08
 
 Fix if the user set the startdate less than the enddate in index.html on
@@ -147,7 +169,13 @@ Fix if the user set the startdate less than the enddate in index.html on
 document.querySelector('form');
 ````
 
+[Top](#changelog)
+
 ## 2024-12-30
+
+- [OpsGenie integration](#1-opsgenie-integration)
+- [Mark deleted events](#2-mark-deleted-events)
+- [Re-create View for Pikett](#3-re-create-view-for-pikett)
 
 ### 1. OpsGenie integration
 
@@ -269,3 +297,5 @@ WHERE
 ORDER BY 
   e.start ASC;
 ````
+
+[Top](#changelog)
