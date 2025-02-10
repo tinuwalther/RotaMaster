@@ -460,7 +460,7 @@
                     });
                 }, 0);                
                 
-                // Add an event Listener to the form to prevent the default form submit and to call the API to add the event
+                // Default form submit and to call the API to add the event
                 const form = document.querySelector('form');
                 form.addEventListener('submit', async function(event) {
                     event.preventDefault(); // Prevent default form submission
@@ -474,57 +474,61 @@
 
                     // Add the event to the SQLite table event
                     try {
-                        // console.log('DEBUG', data.type, data);
-                        // Perform the API call using fetch add data
-                        // console.log('DEBUG', calendarConfig.opsGenie);
-                        if(data.type === 'Pikett'){
-                            const username = data.name;
-                            // Fetch the current user from the API (from the SQLite table person)
-                            const response = await fetch(`/api/person/read/${username}`);
-                            if (!response.ok) {
-                                throw new Error(`Failed to fetch user ${username}`);
-                            }
-                            const currentUser = await response.json();
-                            if(currentUser){
-                                // Create Override in OpsGenie
-                                if(calendarConfig.opsGenie){
-                                    const override = {                                    
-                                        scheduleName: calendarConfig.scheduleName,
-                                        rotationName: calendarConfig.rotationName,
-                                        userName: currentUser.email,
-                                        onCallStart: data.start,
-                                        onCallEnd: data.end
-                                    };
-                                    const opsGenieResult = await createOpsGenieOverride(override);
-                                    console.log('DEBUG', 'OpsGenie Override:', opsGenieResult);
-                                    if(opsGenieResult){
-                                        // showAlert(`OpsGenie Override ${opsGenieResult.data.alias} created`)
-                                        // const message = `Override in OpsGenie für ${currentUser.email} als ${opsGenieResult.data.alias} erstellt. Kalender aktualisieren?`;
-                                        // const messageResult = await showConfirm(message);
-                                        // if (messageResult) {
-                                            // Add the event to the SQLite table event
-                                            data.alias = opsGenieResult.data.alias;
-                                            // console.log('DEBUG', data);
-                                            await createDBData('/api/event/create', data, currentUser);
-                                        // }
+                        if(data.start <= data.end){
+                            // Perform the API call using fetch add data
+                            // console.log('DEBUG', calendarConfig.opsGenie);
+                            if(data.type === 'Pikett'){
+                                const username = data.name;
+                                // Fetch the current user from the API (from the SQLite table person)
+                                const response = await fetch(`/api/person/read/${username}`);
+                                if (!response.ok) {
+                                    throw new Error(`Failed to fetch user ${username}`);
+                                }
+                                const currentUser = await response.json();
+                                if(currentUser){
+                                    // Create Override in OpsGenie
+                                    if(calendarConfig.opsGenie){
+                                        const override = {                                    
+                                            scheduleName: calendarConfig.scheduleName,
+                                            rotationName: calendarConfig.rotationName,
+                                            userName: currentUser.email,
+                                            onCallStart: data.start,
+                                            onCallEnd: data.end
+                                        };
+                                        const opsGenieResult = await createOpsGenieOverride(override);
+                                        console.log('DEBUG', 'OpsGenie Override:', opsGenieResult);
+                                        if(opsGenieResult){
+                                            // showAlert(`OpsGenie Override ${opsGenieResult.data.alias} created`)
+                                            // const message = `Override in OpsGenie für ${currentUser.email} als ${opsGenieResult.data.alias} erstellt. Kalender aktualisieren?`;
+                                            // const messageResult = await showConfirm(message);
+                                            // if (messageResult) {
+                                                // Add the event to the SQLite table event
+                                                data.alias = opsGenieResult.data.alias;
+                                                // console.log('DEBUG', data);
+                                                await createDBData('/api/event/create', data, currentUser);
+                                            // }
+                                        }else{
+                                            showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
+                                            throw new Error(`Failed to create Override in OpsGenie for user ${currentUser.email}`);
+                                        }
                                     }else{
-                                        showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
-                                        throw new Error(`Failed to create Override in OpsGenie for user ${currentUser.email}`);
+                                        // Add the event to the SQLite table event
+                                        data.alias = null;
+                                        // console.log('DEBUG', data);
+                                        await createDBData('/api/event/create', data, currentUser);
                                     }
                                 }else{
-                                    // Add the event to the SQLite table event
-                                    data.alias = null;
-                                    // console.log('DEBUG', data);
-                                    await createDBData('/api/event/create', data, currentUser);
+                                    throw new Error(`Failed to create Override in OpsGenie for user ${username}`);
                                 }
                             }else{
-                                throw new Error(`Failed to create Override in OpsGenie for user ${username}`);
+                                // Add the event to the SQLite table event
+                                data.alias = null;
+                                // console.log('DEBUG', data);
+                                await createDBData('/api/event/create', data, currentUser);
+                                refreshCalendarData(calendar);
                             }
                         }else{
-                            // Add the event to the SQLite table event
-                            data.alias = null;
-                            // console.log('DEBUG', data);
-                            await createDBData('/api/event/create', data, currentUser);
+                            showAlert(`Das Enddatum kann nicht vor dem Startdatum liegen!\n${data.name} - ${data.type}\nStart: ${data.start}, End: ${data.end}`);
                         }
                     } catch (error) {
                         console.error('Error occurred:', error);

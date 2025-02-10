@@ -1,5 +1,5 @@
 -- Create the view for pikett with email
-CREATE VIEW v_pikett
+CREATE VIEW IF NOT EXISTS v_pikett
 AS 
 SELECT 
   e.person,

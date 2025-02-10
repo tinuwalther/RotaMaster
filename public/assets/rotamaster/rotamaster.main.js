@@ -27,7 +27,7 @@ async function getNextYear(url) {
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain' // Specify that the request body contains plain text
+                'Content-Type': 'text/plain; charset=UTF-8' // Specify that the request body contains plain text
             },
             body: data // Send the year as plain text in the request body
         });
@@ -344,6 +344,9 @@ async function getEventSummary(calendarData, selectedYear) {
 
     });
 
+    let swissHolidays = getSwissHolidays(selectedYear)
+    // console.log('DEBUG', 'swissHolidays', swissHolidays);
+
     // Calculate the number of vacation days after processing all events
     for (const person in result) {
         let totalVacationDays = 0;
@@ -351,7 +354,7 @@ async function getEventSummary(calendarData, selectedYear) {
         let totalPikettPeerDays = 0;
 
         result[person].ferienIntervals.forEach(interval => {
-            totalVacationDays += calculateWorkdays(interval.start, interval.end);
+            totalVacationDays += calculateWorkdays(interval.start, interval.end, swissHolidays);
         });
         
         result[person].pikettIntervals.forEach(interval => {
@@ -359,7 +362,7 @@ async function getEventSummary(calendarData, selectedYear) {
         });
 
         result[person].PikettPeerIntervals.forEach(interval => {
-            totalPikettPeerDays += calculateWorkdays(interval.start, interval.end);
+            totalPikettPeerDays += calculateWorkdays(interval.start, interval.end, swissHolidays);
         });
 
         result[person].ferien = totalVacationDays;
@@ -395,7 +398,7 @@ async function getEventSummary(calendarData, selectedYear) {
  * @example
  * const vacationDays = calculateWorkdays(new Date('2024-01-01'), new Date('2024-01-07')); // Returns the number of vacation days excluding weekends.
  */
-function calculateWorkdays(startDate, endDate) {
+function calculateWorkdays(startDate, endDate, holidays) {
     let count = 0; // Counter for weekdays
     let currentDate = new Date(startDate); // Create a copy of the start date
 
@@ -405,20 +408,17 @@ function calculateWorkdays(startDate, endDate) {
 
     // Iterate over each day in the period, including the end date
     while (currentDate.getTime() < endDate.getTime()) {
-        const dayOfWeek = currentDate.getDay();
-
-        // Check if the current day is a weekday (not Saturday or Sunday)
-        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        const dayOfWeek = currentDate.getDay(); // Get the day of the week (0-6)
+        const formattedDate = formatDateToLocalISO(currentDate); // Format the date as 'YYYY-MM-DD'
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday = 0, Saturday = 6
+        const isSwissHoliday = holidays.includes(formattedDate); // Check if the current date is a Swiss holiday
+        if(!isSwissHoliday && !isWeekend){
+            // console.log('DEBUG', 'WorkingDay', formattedDate, currentDate)
             count++; // Count only weekdays
-        } else {
-            // console.log('DEBUG', `calculateWorkdays - Skipping weekend: ${currentDate.toDateString()}`);
         }
-        // console.log('DEBUG', `calculateWorkdays - currentDate: ${currentDate.toDateString()}, count: ${count}`);
-
         // Move to the next day
         currentDate.setDate(currentDate.getDate() + 1);
     }
-
     // console.log('DEBUG', 'calculateWorkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of weekdays:', count);
     return count;
 }
@@ -786,7 +786,7 @@ function exportFilteredEvents(events, filterFn, filename, exportFn) {
  * @param {Object} event - Das Event-Objekt.
  */
 function setModalEventData(event) {
-
+    let swissHolidays = getSwissHolidays(event.start.getFullYear());
     const eventStartDate = formatDateToShortISOFormat(event.start);
     //const eventEndDate = formatDateToShortISOFormat(new Date(event.end.setDate(event.end.getDate() - 1))); // remove one day from the end-date
     const eventEndDate = formatDateToShortISOFormat(event.end); // remove one day from the end-date
@@ -796,7 +796,11 @@ function setModalEventData(event) {
         if(value === 'Pikett'){
             days = calculatePikettkdays(event.start,event.end)
         }else{
-            days = calculateWorkdays(event.start,event.end)
+            if(value === 'Feiertag'){
+                days = calculateWorkdays(event.start, event.end, [])
+            }else{
+                days = calculateWorkdays(event.start, event.end, swissHolidays)
+            }
         }
     };
 
@@ -903,20 +907,19 @@ function getCookie(name) {
     if (parts.length === 2) {
         let cookieValue = parts.pop().split(';').shift();
         try {
-            // Entferne unerwartete Zeichen (z. B. überflüssige Leerzeichen)
-            cookieValue = cookieValue.trim();
+            // URL-Dekodierung und Umwandlung von "+" zurück in Leerzeichen
+            cookieValue = decodeURIComponent(cookieValue).replace(/\+/g, " ");
+
             // JSON parsen
             const parsedValue = JSON.parse(cookieValue);
-            // Optional: Debugging
-            // console.log('DEBUG', "getCookie parsed value:", parsedValue);
             return parsedValue;
         } catch (error) {
             console.error('Error parsing cookie value:', error, cookieValue);
-            return null; // Gebe null zurück, wenn das Parsen fehlschlägt
+            return null;
         }
     }
 
-    return null; // Gebe null zurück, wenn der Cookie nicht gefunden wird
+    return null;
 }
 
 /**
@@ -969,4 +972,86 @@ async function showConfirm(message,title) {
 
         confirmModal.show();
     });
+}
+
+/*
+* Returns the date of Easter Sunday for a specific year.
+* @param {number} year - The year for which to calculate Easter Sunday.
+* @returns {Date} - The date of Easter Sunday in local time.
+*/
+function getEasterSunday(year) {
+    // Algorithm by Carl Friedrich Gauss to calculate Easter Sunday
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+
+    return new Date(year, month - 1, day);
+}
+
+/*
+* Returns a list of Swiss holidays for a specific year.
+* @param {number} year - The year for which to calculate the holidays.
+* @returns {Array} - An array of Swiss holidays in local ISO date format (YYYY-MM-DD).
+*/
+function getSwissHolidays(year) {
+    if (year < 1970 || year > 2999) {
+        throw new Error("Year must be between 1970 and 2999");
+    }
+
+    const easterSunday = getEasterSunday(year);
+    const goodFriday = new Date(easterSunday);
+    goodFriday.setDate(easterSunday.getDate() - 2);
+
+    const easterMonday = new Date(easterSunday);
+    easterMonday.setDate(easterSunday.getDate() + 1);
+
+    const ascensionDay = new Date(easterSunday);
+    ascensionDay.setDate(easterSunday.getDate() + 39);
+
+    const pentecostSunday = new Date(easterSunday);
+    pentecostSunday.setDate(easterSunday.getDate() + 49);
+
+    const pentecostMonday = new Date(easterSunday);
+    pentecostMonday.setDate(easterSunday.getDate() + 50);
+
+    const holidays = [
+        formatDateToLocalISO(new Date(year, 0, 1)),   // title: "Neujahrstag", canton: "ALL" },
+        formatDateToLocalISO(new Date(year, 0, 2)),   // title: "Berchtoldstag", canton: "ALL" }
+        formatDateToLocalISO(goodFriday),             // title: "Karfreitag", canton: "ALL" },
+        formatDateToLocalISO(easterSunday),           // title: "Ostern", canton: "ALL" },
+        formatDateToLocalISO(easterMonday),           // title: "Ostermontag", canton: "ALL" },
+        formatDateToLocalISO(new Date(year, 4, 1)),   // title: "Tag der Arbeit (ZH, GR)", canton: "ZH, GR" },
+        formatDateToLocalISO(ascensionDay),           // title: "Auffahrt", canton: "ALL" },
+        formatDateToLocalISO(pentecostSunday),        // title: "Pfingsten", canton: "ALL" },
+        formatDateToLocalISO(pentecostMonday),        // title: "Pfingstmontag", canton: "ALL" },
+        formatDateToLocalISO(new Date(year, 7, 1)),   // title: "Bundesfeier", canton: "ALL" },
+        formatDateToLocalISO(new Date(year, 10, 1)),  // title: "Allerheiligen (SG, BE)", canton: "SG, BE" },
+        formatDateToLocalISO(new Date(year, 11, 25)), // title: "Weihnachtstag", canton: "ALL" },
+        formatDateToLocalISO(new Date(year, 11, 26))  // title: "Stephanstag", canton: "ALL" }
+    ];
+
+    return holidays;
+}
+
+/*
+* Formats a date object to a local ISO date string (YYYY-MM-DD).
+* @param {Date} date - The date object to format.
+* @returns {string} - The formatted date string in local ISO format.
+*/
+function formatDateToLocalISO(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
