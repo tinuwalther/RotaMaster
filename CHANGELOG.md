@@ -2,6 +2,7 @@
 
 ## Table of Contents
 
+- [2025-02-19](#2025-02-19)
 - [2025-02-02](#2025-02-02)
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
@@ -29,6 +30,8 @@ After implementing the following code, increase the appVersion in rotamaster.con
 ````javascript
 document.getElementById('Loading').remove(); // Remove the loading spinner
 ````
+
+[Top](#changelog)
 
 ## 2025-02-02
 
