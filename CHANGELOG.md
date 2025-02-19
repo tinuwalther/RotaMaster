@@ -7,6 +7,29 @@
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
 
+## 2025-02-19
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.4.
+
+- Move the script code from index.html to rotamaster.main.js
+- Move script src to the bottom of the body
+
+- Add header 'Loading FullCalendar' into index.html
+
+````javascript
+<!-- Begin Palceholder Calendar -->
+<div id="calendar">
+    <h2 id="Loading" Style="text-align:center;margin-top:250px;color:#000"  >Loading FullCalendar ...</h2>
+</div>
+<!-- End Calendar -->
+````
+
+- Remove header 'Loading FullCalendar', add the code below at the end of DOMContentLoaded
+
+````javascript
+document.getElementById('Loading').remove(); // Remove the loading spinner
+````
+
 ## 2025-02-02
 
 Fix Issue with ä, ö, ü in usernames. After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.3.
