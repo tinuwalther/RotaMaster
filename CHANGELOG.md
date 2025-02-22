@@ -2,19 +2,21 @@
 
 ## Table of Contents
 
-- [2025-02-19](#2025-02-19)
+- [2025-02-22](#2025-02-22)
 - [2025-02-02](#2025-02-02)
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
 
-## 2025-02-19
+## 2025-02-22
 
 After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.4.
 
-- Move the script code from index.html to rotamaster.main.js
-- Move script src to the bottom of the body
+## index.html
 
+- Remove /assets/rotamaster/fullcalendar.main.min.js in index.html
+- Move script src to the bottom of the body in index.html
+- Move the script code from index.html to rotamaster.index.js
 - Add header 'Loading FullCalendar' into index.html
 
 ````javascript
@@ -25,10 +27,33 @@ After implementing the following code, increase the appVersion in rotamaster.con
 <!-- End Calendar -->
 ````
 
-- Remove header 'Loading FullCalendar', add the code below at the end of DOMContentLoaded
+## about.html
+
+- Move script src to the bottom of the body in about.html
+- Add script into rotamaster.about.js
+
+## absence.html
+
+- Move script src to the bottom of the body in absence.html
+- Add script into rotamaster.absence.js
+
+## person.html
+
+- Move script src to the bottom of the body in person.html
+- Add script into rotamaster.person.js
+
+## rotamaster.main.js
+
+- Add document.title check for Home, remove header 'Loading FullCalendar', add the code below at the end of DOMContentLoaded
 
 ````javascript
-document.getElementById('Loading').remove(); // Remove the loading spinner
+if(document.title.match(/Home/)){
+  document.addEventListener('DOMContentLoaded', async function() {
+    ...
+    document.getElementById('Loading').remove(); // Remove the loading spinner
+    ...
+  }
+}
 ````
 
 [Top](#changelog)
