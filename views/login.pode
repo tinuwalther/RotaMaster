@@ -10,14 +10,6 @@
         
         <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
         <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
-        <script src="/assets/rotamaster/rotamaster.config.js"></script>
-        <script src="/assets/rotamaster/rotamaster.main.js"></script>
-        <script>
-            window.addEventListener('load', () => {
-                const d = new Date();
-                document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
-            });
-        </script>
 
         <title >RotaMaster - Login</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
 
@@ -104,6 +96,15 @@
                 </article>
 		
 		</div>
+        
+        <script src="/assets/rotamaster/rotamaster.config.js"></script>
+        <script src="/assets/rotamaster/rotamaster.main.js"></script>
+        <script>
+            window.addEventListener('load', () => {
+                const d = new Date();
+                document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
+            });
+        </script>
 
     </body>
 
