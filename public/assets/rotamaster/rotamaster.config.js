@@ -16,7 +16,7 @@ const calendarConfig = {
     locale: 'de-CH',
     themeSystem: 'standard',
     initialView: 'multiMonthYear',
-    multiMonthMinWidth: 350,
+    multiMonthMinWidth: 400,
     multiMonthMaxColumns: 2,
     headerToolbar: {
         left: 'prevYear,prev,today,next,nextYear refreshButton',
