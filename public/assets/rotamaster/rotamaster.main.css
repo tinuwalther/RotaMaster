@@ -336,6 +336,7 @@ a:active {
 
 footer {
   padding: 20px;
+  height: 70px;
   background: #343a40;
   color: var(--bs-gray-200);
   text-align: center;
