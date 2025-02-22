@@ -27,6 +27,16 @@ After implementing the following code, increase the appVersion in rotamaster.con
 <!-- End Calendar -->
 ````
 
+## rotamaster.index.js
+
+ Add height = auto in calendar.
+
+````javascript
+let calendar = new FullCalendar.Calendar(calendarEl, {
+  height : 'auto',
+  ...
+````
+
 ## about.html
 
 - Move script src to the bottom of the body in about.html
