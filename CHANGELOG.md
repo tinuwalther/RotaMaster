@@ -18,8 +18,13 @@ After implementing the following code, increase the appVersion in rotamaster.con
 - Move script src to the bottom of the body in index.html
 - Move the script code from index.html to rotamaster.index.js
 - Add header 'Loading FullCalendar' into index.html
+- Change the hfre from /logout to # and add an id to address it from a function
 
 ````javascript
+...
+<!-- <li Class="nav-item"  ><a Class="nav-link" href="/logout"  >Logoff</a></li> -->
+<li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Logoff</a></li>
+...
 <!-- Begin Palceholder Calendar -->
 <div id="calendar">
     <h2 id="Loading" Style="text-align:center;margin-top:250px;color:#000"  >Loading FullCalendar ...</h2>
@@ -27,14 +32,16 @@ After implementing the following code, increase the appVersion in rotamaster.con
 <!-- End Calendar -->
 ````
 
-## rotamaster.index.js
+## rotamaster.config.js
 
  Add height = auto in calendar.
 
 ````javascript
-let calendar = new FullCalendar.Calendar(calendarEl, {
+const calendarConfig = {
+  ...
   height : 'auto',
   ...
+}
 ````
 
 ## about.html
@@ -52,18 +59,38 @@ let calendar = new FullCalendar.Calendar(calendarEl, {
 - Move script src to the bottom of the body in person.html
 - Add script into rotamaster.person.js
 
-## rotamaster.main.js
+## rotamaster.index.js
 
-- Add document.title check for Home, remove header 'Loading FullCalendar', add the code below at the end of DOMContentLoaded
+- Remove header 'Loading FullCalendar', add the code below at the end of DOMContentLoaded
+- Add an event listener to the logout link at the end of DOMContentLoaded
 
 ````javascript
-if(document.title.match(/Home/)){
-  document.addEventListener('DOMContentLoaded', async function() {
-    ...
-    document.getElementById('Loading').remove(); // Remove the loading spinner
-    ...
+document.addEventListener('DOMContentLoaded', async function() {
+  ...
+  document.getElementById('Loading').remove(); // Remove the loading spinner
+  ...
+    // Add an event listener to the logout link
+  const logoutLink = document.getElementById('logoutLink');
+  if (logoutLink) {
+      logoutLink.addEventListener('click', function(event) {
+          event.preventDefault(); // Prevent default form submission
+          deleteCookie('CurrentUser'); // Delete the user cookie
+          window.location.href = '/logout'; // Redirect to the logout page
+      });
   }
 }
+````
+
+## rotamaster.main.js
+
+- Add a function for deleteCookie
+
+````javascript
+...
+function deleteCookie(name) {
+    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+}
+...
 ````
 
 [Top](#changelog)
