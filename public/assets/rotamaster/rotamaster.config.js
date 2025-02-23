@@ -14,6 +14,7 @@ const calendarConfig = {
     rotationName: '2025',
     timeZone: 'local',
     locale: 'de-CH',
+    height: 'auto',
     themeSystem: 'standard',
     initialView: 'multiMonthYear',
     multiMonthMinWidth: 400,
