@@ -97,7 +97,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Create a new FullCalendar instance
     let calendarEl = document.getElementById('calendar');
     let calendar = new FullCalendar.Calendar(calendarEl, {
-        height : 'auto',
         // Concatenate the calendarConfig from the rotamaster.js file
         ...calendarConfig,
 
