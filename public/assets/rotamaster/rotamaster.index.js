@@ -6,14 +6,13 @@ window.addEventListener('load', () => {
 let db;
 
 // Listener for DOMContentLoaded event
-if(document.title.match(/Home/)){
 document.addEventListener('DOMContentLoaded', async function() {
     
     // Load userCookie and display the username
     const userCookie = getCookie('CurrentUser');
     let username = null;
     if (userCookie) {
-        // console.log(`Name: ${userCookie.name}, Login: ${userCookie.login}, Email: ${userCookie.email}`);
+        console.log(`Name: ${userCookie.name}, Login: ${userCookie.login}, Email: ${userCookie.email}`);
         try {
             username = userCookie.name;
             if (username) {
@@ -521,5 +520,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     document.getElementById('Loading').remove(); // Remove the loading spinner
 
+    // Add an event listener to the logout link
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            deleteCookie('CurrentUser'); // Delete the user cookie
+            window.location.href = '/logout'; // Redirect to the logout page
+        });
+    }
 });
-}
