@@ -52,8 +52,13 @@ Describe "Test the Login Page" {
     Context "check with valid credentials" {
         It "should return a successful response and redirect to /" {
             $response = Invoke-Login -Credential $script:validCredential -Url $script:loginUrl 
-            $response.StatusCode | Should -Be 302
+            # Write-Host ($response.Headers | Out-String)
+            $cookieValue = ($response.Headers).Where({$_.Key -match 'Set-Cookie'}).Value
+            $CurrentUser = $cookieValue.Split(", ").Where({$_ -Match "CurrentUser"})
             $locationHeader = ($response.Headers).Where({$_.Key -match 'Location'}).Value
+
+            $response.StatusCode | Should -Be 302
+            $CurrentUser    | Should -Match "CurrentUser"
             $locationHeader | Should -Be "/"
         }
     }
@@ -62,8 +67,13 @@ Describe "Test the Login Page" {
         It "should return an error message and redirect to /login" {
             $credential = New-Object -TypeName PSCredential -ArgumentList "invalidUser", (ConvertTo-SecureString "invalidPassword" -AsPlainText -Force)
             $response = Invoke-Login -Credential $credential -Url $script:loginUrl 
-            $response.StatusCode | Should -Be 302
+            # Write-Host ($response.Headers | Out-String)
+            $cookieValue = ($response.Headers).Where({$_.Key -match 'Set-Cookie'}).Value
+            $CurrentUser = $cookieValue.Split(", ").Where({$_ -Match "CurrentUser"})
             $locationHeader = ($response.Headers).Where({$_.Key -match 'Location'}).Value
+
+            $response.StatusCode | Should -Be 302
+            $CurrentUser    | Should -Be $null
             $locationHeader | Should -Be "/login"
         }
     }
