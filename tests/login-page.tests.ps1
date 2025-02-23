@@ -2,7 +2,7 @@ Import-Module Pester
 
 Describe "Test the Login Page" {
     BeforeAll {
-        $script:validCredential = Get-Credential -UserName "admin" -Message "Enter your credentials" 
+        $script:validCredential = Get-Credential -Message "Enter your credentials" 
         $script:loginUrl = "https://localhost:8443/login" # Passe die URL an deine lokale Entwicklungsumgebung an
 
         function Invoke-Login {
