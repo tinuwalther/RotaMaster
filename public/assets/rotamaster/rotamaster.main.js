@@ -830,17 +830,28 @@ function setModalEventData(event) {
  */
 async function refreshCalendarData(calendar) {
     try {
+        const button = document.querySelector('.fc-filterEvents-button');
+        const userCookie = getCookie('CurrentUser');
         const holidays = await loadApiData('/api/csv/read');
-        const events = await readDBData('/api/event/read/*');
+
+        let events = [];
+        if(userCookie.events === 'all'){
+            events = await readDBData('/api/event/read/*');
+            button.textContent = 'My Events';
+        }else if(userCookie.events === 'personal'){
+            events = await readDBData(`/api/event/read/${userCookie.name}`);
+            button.textContent = 'All Events';
+        }
+
         let calendarEvents = [];
         calendarEvents = [
             ...(holidays || []), // Feiertage (falls vorhanden)
             ...(Array.isArray(events) ? events : [events] || []) // User Events als Array
         ];
+        
         calendar.removeAllEvents();
         calendar.addEventSource(calendarEvents);
-        const button = document.querySelector('.fc-filterEvents-button');
-        button.textContent = 'My Events';
+        
     } catch (error) {
         console.error('Error refreshing calendar data:', error);
         showAlert('Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
@@ -920,6 +931,16 @@ function getCookie(name) {
     }
 
     return null;
+}
+
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }
 
 function deleteCookie(name) {

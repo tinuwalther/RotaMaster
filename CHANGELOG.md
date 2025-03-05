@@ -2,17 +2,103 @@
 
 ## Table of Contents
 
+- [2025-03-05](#2025-03-05)
 - [2025-02-22](#2025-02-22)
 - [2025-02-02](#2025-02-02)
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
 
+## 2025-03-05
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.5.
+
+### rotamaster.main.js
+
+````javascript
+async function refreshCalendarData(calendar) {
+  ...
+  let events = [];
+  if(userCookie.events === 'all'){
+      events = await readDBData('/api/event/read/*');
+      button.textContent = 'My Events';
+  }else if(userCookie.events === 'personal'){
+      events = await readDBData(`/api/event/read/${userCookie.name}`);
+      button.textContent = 'All Events';
+  }
+  ...
+}
+
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+...
+````
+
+### rotamaster.index.js
+
+````javascript
+...
+// Load userCookie and display the username
+const userCookie = getCookie('CurrentUser');
+userCookie.events = "all";
+setCookie('CurrentUser', JSON.stringify(userCookie), 1);
+...
+
+datesSet: function(info) {
+  ...
+  refreshCalendarData(calendar);
+  if(userCookie.events === 'all'){
+      document.querySelector('.fc-filterEvents-button').textContent = 'My Events';
+  }else if(userCookie.events === 'personal'){
+      document.querySelector('.fc-filterEvents-button').textContent = 'All Events';
+  }
+  ...
+}
+...
+// Button to export person specific events as iCalendar (.ics) file
+filterEvents: {
+    text: 'My Events',
+    click: async function() {
+      ...
+      if (isMyEvents.includes('My Events')) {
+          // Export events of the current user
+          const response = await fetch(`/api/event/read/${username}`);
+          if (!response.ok) {
+              throw new Error(`Failed to fetch user events of ${username}`);
+          }
+          currentEvents = await response.json();
+          userCookie.events = "personal";
+          button.textContent = 'All Events';
+          
+      }else if(isMyEvents.includes('All Events')) {
+          // Export events of all users
+          const response = await fetch('/api/event/read/*');
+          if (!response.ok) {
+              throw new Error('Failed to fetch user events of all users');
+          }
+          currentEvents = await response.json();
+          userCookie.events = "all";
+          button.textContent = 'My Events';
+          
+      }
+      setCookie('CurrentUser', JSON.stringify(userCookie), 1);
+      ...
+    }
+}
+````
+
 ## 2025-02-22
 
 After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.4.
 
-## index.html
+### index.html
 
 - Remove /assets/rotamaster/fullcalendar.main.min.js in index.html
 - Move script src to the bottom of the body in index.html
@@ -32,7 +118,7 @@ After implementing the following code, increase the appVersion in rotamaster.con
 <!-- End Calendar -->
 ````
 
-## rotamaster.config.js
+### rotamaster.config.js
 
  Add height = auto in calendar.
 
@@ -44,22 +130,22 @@ const calendarConfig = {
 }
 ````
 
-## about.html
+### about.html
 
 - Move script src to the bottom of the body in about.html
 - Add script into rotamaster.about.js
 
-## absence.html
+### absence.html
 
 - Move script src to the bottom of the body in absence.html
 - Add script into rotamaster.absence.js
 
-## person.html
+### person.html
 
 - Move script src to the bottom of the body in person.html
 - Add script into rotamaster.person.js
 
-## rotamaster.index.js
+### rotamaster.index.js
 
 - Remove header 'Loading FullCalendar', add the code below at the end of DOMContentLoaded
 - Add an event listener to the logout link at the end of DOMContentLoaded
@@ -81,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 }
 ````
 
-## rotamaster.main.js
+### rotamaster.main.js
 
 - Add a function for deleteCookie
 

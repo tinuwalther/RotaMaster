@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Load userCookie and display the username
     const userCookie = getCookie('CurrentUser');
+    userCookie.events = "all";
+    setCookie('CurrentUser', JSON.stringify(userCookie), 1);
+    
     let username = null;
     if (userCookie) {
         console.log(`Name: ${userCookie.name}, Login: ${userCookie.login}, Email: ${userCookie.email}`);
@@ -146,7 +149,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                             throw new Error(`Failed to fetch user events of ${username}`);
                         }
                         currentEvents = await response.json();
+                        userCookie.events = "personal";
                         button.textContent = 'All Events';
+                        
                     }else if(isMyEvents.includes('All Events')) {
                         // Export events of all users
                         const response = await fetch('/api/event/read/*');
@@ -154,8 +159,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                             throw new Error('Failed to fetch user events of all users');
                         }
                         currentEvents = await response.json();
+                        userCookie.events = "all";
                         button.textContent = 'My Events';
+                        
                     }
+                    setCookie('CurrentUser', JSON.stringify(userCookie), 1);
 
                     calendarEvents = [
                         ...(holidays || []), // Holidays (if available)
@@ -188,7 +196,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
 
             refreshCalendarData(calendar);
-            document.querySelector('.fc-filterEvents-button').textContent = 'My Events';
+            if(userCookie.events === 'all'){
+                document.querySelector('.fc-filterEvents-button').textContent = 'My Events';
+            }else if(userCookie.events === 'personal'){
+                document.querySelector('.fc-filterEvents-button').textContent = 'All Events';
+            }
         },
 
         // This function is called when an event is clicked
