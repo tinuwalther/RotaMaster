@@ -42,6 +42,43 @@ document.addEventListener('DOMContentLoaded', async function() {
     const d = new Date();
     document.getElementById('footerDate').textContent = 'Last refresh: ' + d.toLocaleString();
 
+    // Add an event listener to the toggle button to show/hide the events section
+    const toggleButton = document.getElementById('toggleButton');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const eventsSection = document.getElementById('showEvents');
+
+    const toggleFormButton = document.getElementById('toggleFormButton');
+    const toggleFormIcon = document.getElementById('toggleFormIcon');
+    const formSection = document.getElementById('eventForm');
+
+    toggleButton.addEventListener('click', function() {
+        if (eventsSection.classList.contains('show')) {
+            eventsSection.classList.remove('show');
+            toggleIcon.classList.remove('bi-chevron-left');
+            toggleIcon.classList.add('bi-chevron-right');
+            toggleFormButton.hidden = true;
+            resizeCalendar(180);
+        } else {
+            eventsSection.classList.add('show');
+            toggleIcon.classList.remove('bi-chevron-right');
+            toggleIcon.classList.add('bi-chevron-left');
+            toggleFormButton.hidden = false;
+            resizeCalendar(380);
+        }
+    });
+
+    toggleFormButton.addEventListener('click', function() {
+        if (formSection.classList.contains('show')) {
+            formSection.classList.remove('show');
+            toggleFormIcon.classList.remove('bi-chevron-up');
+            toggleFormIcon.classList.add('bi-chevron-down');
+        } else {
+            formSection.classList.add('show');
+            toggleFormIcon.classList.remove('bi-chevron-down');
+            toggleFormIcon.classList.add('bi-chevron-up');
+        }
+    });
+
     // Fetch the events from the API (from the SQLite view v_events) and fill the calendar with the events
     const events = await readDBData('/api/event/read/*');
     const holidays = await loadApiData('/api/csv/read');
@@ -333,6 +370,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Render the calendar
     calendar.render();
     
+    function resizeCalendar(space) {
+        const windowWidth = window.innerWidth;
+        const newWidth = windowWidth - space;
+        calendarEl.style.width = `${newWidth}px`;
+        calendar.updateSize();
+    }
+
     // Add the App-Version and App-Prefix to the Navbar-Brand
     const pageTitle = `${calendarConfig.appPrefix}RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
     const navbarBrandElement = document.getElementById('navbarBrand');

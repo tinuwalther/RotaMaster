@@ -2,12 +2,94 @@
 
 ## Table of Contents
 
+- [2025-03-12](#2025-03-12)
 - [2025-03-05](#2025-03-05)
 - [2025-02-22](#2025-02-22)
 - [2025-02-02](#2025-02-02)
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
+
+## 2025-03-12
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.6.
+
+### index.html
+
+````html
+<!-- Begin Section Events -->
+...
+<!-- Begin Toggle Button for Events and Form Section -->
+<button id="toggleButton" class="btn btn-dark" title="Toggle Events" aria-expanded="true" aria-controls="events">
+    <span id="toggleIcon" class="bi bi-chevron-left"></span>
+</button>
+<button id="toggleFormButton" class="btn btn-dark" title="Toggle Form" aria-expanded="true" aria-controls="eventForm">
+    <span id="toggleFormIcon" class="bi bi-chevron-up"></span>
+</button>
+<!-- End Toggle Button for Events and Form Section -->
+...
+<div id="showEvents" class="collapse show">
+...
+    <!-- Begin Palceholder Form -->
+    <div id="eventForm" class="collapse show">
+        <form action="/api/event/new" method="POST" >
+        ...
+        </form>
+    </div>
+    <!-- End Form -->
+````
+
+### rotamaster.index.js
+
+````javascript
+document.addEventListener('DOMContentLoaded', async function() {
+  ...
+  // Add an event listener to the toggle button to show/hide the events section
+  const toggleButton = document.getElementById('toggleButton');
+  const toggleIcon = document.getElementById('toggleIcon');
+  const eventsSection = document.getElementById('showEvents');
+
+  const toggleFormButton = document.getElementById('toggleFormButton');
+  const toggleFormIcon = document.getElementById('toggleFormIcon');
+  const formSection = document.getElementById('eventForm');
+
+    toggleButton.addEventListener('click', function() {
+        if (eventsSection.classList.contains('show')) {
+            eventsSection.classList.remove('show');
+            toggleIcon.classList.remove('bi-chevron-left');
+            toggleIcon.classList.add('bi-chevron-right');
+            toggleFormButton.hidden = true;
+            resizeCalendar(180);
+        } else {
+            eventsSection.classList.add('show');
+            toggleIcon.classList.remove('bi-chevron-right');
+            toggleIcon.classList.add('bi-chevron-left');
+            toggleFormButton.hidden = false;
+            resizeCalendar(380);
+        }
+    });
+
+    toggleFormButton.addEventListener('click', function() {
+        if (formSection.classList.contains('show')) {
+            formSection.classList.remove('show');
+            toggleFormIcon.classList.remove('bi-chevron-up');
+            toggleFormIcon.classList.add('bi-chevron-down');
+        } else {
+            formSection.classList.add('show');
+            toggleFormIcon.classList.remove('bi-chevron-down');
+            toggleFormIcon.classList.add('bi-chevron-up');
+        }
+    });
+  ...
+  function resizeCalendar(space) {
+      const windowWidth = window.innerWidth;
+      const newWidth = windowWidth - space;
+      calendarEl.style.width = `${newWidth}px`;
+      calendar.updateSize();
+  }
+  ...
+});
+````
 
 ## 2025-03-05
 
@@ -106,7 +188,7 @@ After implementing the following code, increase the appVersion in rotamaster.con
 - Add header 'Loading FullCalendar' into index.html
 - Change the hfre from /logout to # and add an id to address it from a function
 
-````javascript
+````html
 ...
 <!-- <li Class="nav-item"  ><a Class="nav-link" href="/logout"  >Logoff</a></li> -->
 <li class="nav-item"><a class="nav-link" id="logoutLink" href="#">Logoff</a></li>
