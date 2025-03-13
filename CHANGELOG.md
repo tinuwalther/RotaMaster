@@ -67,12 +67,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             toggleIcon.classList.add('bi-chevron-right');
             toggleFormButton.hidden = true;
             resizeCalendar(180);
+            refreshCalendarData(calendar);
         } else {
             eventsSection.classList.add('show');
             toggleIcon.classList.remove('bi-chevron-right');
             toggleIcon.classList.add('bi-chevron-left');
             toggleFormButton.hidden = false;
             resizeCalendar(380);
+            refreshCalendarData(calendar);
         }
     });
 
