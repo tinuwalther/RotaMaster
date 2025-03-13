@@ -42,6 +42,13 @@ After implementing the following code, increase the appVersion in rotamaster.con
 ### rotamaster.index.js
 
 ````javascript
+window.addEventListener('resize', () => {
+    const eventsSection = document.getElementById('showEvents');
+    let space = 180;
+    if (eventsSection.classList.contains('show')) space = 380;
+    resizeCalendar(space);
+});
+
 document.addEventListener('DOMContentLoaded', async function() {
   ...
   // Add an event listener to the toggle button to show/hide the events section
@@ -80,15 +87,23 @@ document.addEventListener('DOMContentLoaded', async function() {
             toggleFormIcon.classList.add('bi-chevron-up');
         }
     });
-  ...
-  function resizeCalendar(space) {
-      const windowWidth = window.innerWidth;
-      const newWidth = windowWidth - space;
-      calendarEl.style.width = `${newWidth}px`;
-      calendar.updateSize();
-  }
-  ...
+
 });
+````
+
+### rotamaster.main.js
+
+````javascript
+...
+function resizeCalendar(space) {
+    const calendarEl = document.getElementById('calendar');
+    let calendar = new FullCalendar.Calendar(calendarEl, {});
+    const windowWidth = window.innerWidth;
+    const newWidth = windowWidth - space;
+    calendarEl.style.width = `${newWidth}px`;
+    calendar.updateSize();
+}
+...
 ````
 
 ## 2025-03-05
