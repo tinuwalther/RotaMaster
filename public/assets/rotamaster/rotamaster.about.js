@@ -41,20 +41,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Set appVersion from calendarConfig
     if (typeof calendarConfig !== 'undefined' && calendarConfig.appVersion) {
-        document.getElementById('appVersion').textContent = `${calendarConfig.appVersion} installed`;
+        document.getElementById('appVersion').textContent = `${calendarConfig.appVersion}`;
     } else {
         document.getElementById('appVersion').textContent = "Unknown";
     }
 
     // Fetch FullCalendar version from the minified JS file
     try {
-        const response = await fetch('/assets/rotamaster/index.global.min.js');
+        const response = await fetch('/assets/fullcalendar/index.global.min.js');
         if (response.ok) {
             const jsContent = await response.text();
             const versionMatch = jsContent.match(/\/\*!\s*FullCalendar.+v([\d.]+)/);
             // console.log('DEBUG', versionMatch);
             if (versionMatch && versionMatch[1]) {
-                document.getElementById('fcVersion').textContent = `${versionMatch[1]} installed`;
+                document.getElementById('fcVersion').textContent = `${versionMatch[1]}`;
             } else {
                 document.getElementById('fcVersion').textContent = "Unknown";
             }
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const versionMatch = jsContent.match(/\/\*![^]*?Bootstrap v([\d.]+)/);
             // console.log('DEBUG', versionMatch);
             if (versionMatch && versionMatch[1]) {
-                document.getElementById('bsVersion').textContent = `${versionMatch[1]} installed`;
+                document.getElementById('bsVersion').textContent = `${versionMatch[1]}`;
             }else{
                 document.getElementById('bsVersion').textContent = "Unknown";
             }
@@ -97,11 +97,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const schedule = calendarConfig.scheduleName
         const rotation = calendarConfig.rotationName
         if(integration){
-            document.getElementById('opsGenieIntegration').textContent = "integrated";
+            document.getElementById('opsGenieIntegration').textContent = "OpsGenie is integrated";
             document.getElementById('opsGenieSchedule').textContent = schedule;
             document.getElementById('opsGenieRotation').textContent = rotation;
         }else{
-            document.getElementById('opsGenieIntegration').textContent = "not integrated";
+            document.getElementById('opsGenieIntegration').textContent = "OpsGenie is not integrated";
             document.getElementById('opsGenieSchedule').textContent = "not integrated";
             document.getElementById('opsGenieRotation').textContent = "not integrated";
         }
@@ -109,4 +109,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Error reading OpsGenie integration:', error);
         document.getElementById('bsVersion').textContent = "Error";
     }
+
+    // Fetch psModules
+    try{
+        calendarConfig.psModules.map(module => {
+            if(module.moduleName === "Pode"){
+                document.getElementById('podeVersion').textContent = module.moduleVersion;
+            }
+            if(module.moduleName === "PSSQLite"){
+                document.getElementById('psSqliteVersion').textContent = module.moduleVersion;
+            }
+        });
+
+    } catch (error) {
+        console.error('Error reading PowerShell Modules:', error);
+        document.getElementById('podeVersion').textContent = "Error eading PowerShell Modules";
+        document.getElementById('psSqliteVersion').textContent = "Error eading PowerShell Modules";
+    }    
 });

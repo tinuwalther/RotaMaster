@@ -1080,3 +1080,12 @@ function formatDateToLocalISO(date) {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
+
+function resizeCalendar(space) {
+    const calendarEl = document.getElementById('calendar');
+    let calendar = new FullCalendar.Calendar(calendarEl, {});
+    const windowWidth = window.innerWidth;
+    const newWidth = windowWidth - space;
+    calendarEl.style.width = `${newWidth}px`;
+    calendar.updateSize();
+}

@@ -5,6 +5,13 @@ window.addEventListener('load', () => {
 
 let db;
 
+window.addEventListener('resize', () => {
+    const eventsSection = document.getElementById('showEvents');
+    let space = 180;
+    if (eventsSection.classList.contains('show')) space = 380;
+    resizeCalendar(space);
+});
+
 // Listener for DOMContentLoaded event
 document.addEventListener('DOMContentLoaded', async function() {
     
@@ -58,12 +65,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             toggleIcon.classList.add('bi-chevron-right');
             toggleFormButton.hidden = true;
             resizeCalendar(180);
+            refreshCalendarData(calendar);
         } else {
             eventsSection.classList.add('show');
             toggleIcon.classList.remove('bi-chevron-right');
             toggleIcon.classList.add('bi-chevron-left');
             toggleFormButton.hidden = false;
             resizeCalendar(380);
+            refreshCalendarData(calendar);
         }
     });
 
@@ -370,13 +379,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Render the calendar
     calendar.render();
     
-    function resizeCalendar(space) {
-        const windowWidth = window.innerWidth;
-        const newWidth = windowWidth - space;
-        calendarEl.style.width = `${newWidth}px`;
-        calendar.updateSize();
-    }
-
     // Add the App-Version and App-Prefix to the Navbar-Brand
     const pageTitle = `${calendarConfig.appPrefix}RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
     const navbarBrandElement = document.getElementById('navbarBrand');

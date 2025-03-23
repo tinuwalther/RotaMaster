@@ -2,6 +2,7 @@
 
 ## Table of Contents
 
+- [2025-03-23](#2025-03-23)
 - [2025-03-12](#2025-03-12)
 - [2025-03-05](#2025-03-05)
 - [2025-02-22](#2025-02-22)
@@ -9,6 +10,77 @@
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
+
+## 2025-03-23
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.7.
+
+### rotamaster.config.js
+
+Add the psModules and Verions.
+
+````javascript
+    psModules: [
+        {
+            moduleName: "Pode",
+            moduleVersion: "2.x" // fill in your correct version
+        },
+        {
+            moduleName: "PSSQLite",
+            moduleVersion: "1.x" // fill in your correct version
+        }
+    ],
+````
+
+### about.html
+
+Add the placeholder of psModules.
+
+````html
+<tr>
+    <td>Pode (PowerShell Module)</td>
+    <td id="podeVersion">...</td>
+</tr>
+<tr>
+    <td>PSSQLite (PowerShell Module)</td>
+    <td id="psSqliteVersion">...</td>
+</tr>
+...
+<h2>On Call Management</h2>
+<p>
+    On-call and alert management <a href="https://www.atlassian.com/software/opsgenie" Target="_blank"> OpsGenie</a> will be <span class="badge text-bg-warning">End of Support at 5. April 2027!</span> You can migrate to <a href="https://www.atlassian.com/software/jira/service-management" Target="_blank">Jira Service Management</a> or to <a href="https://www.atlassian.com/software/compass" Target="_blank">Compass.</a>
+</p>
+...
+<h2>License</h2>
+<p>
+    All components are licensed under <a href="https://mit-license.org/" Target="_blank">MIT</a> except On Call Management. RotaMaster is written by <a href="https://github.com/tinuwalther" Target="_blank">tinuwalther</a>,
+    you contact me via <a href="https://github.com/tinuwalther" Target="_blank">GitHub</a> or <a href="https://tinuwalther.bsky.social" Target="_blank">Bluesky</a>.
+</p>
+````
+
+### rotamaster.about.js
+
+Add the psModules form rotamaster.config.js.
+
+````javascript
+    // Fetch psModules
+    try{
+        calendarConfig.psModules.map(module => {
+            if(module.moduleName === "Pode"){
+                document.getElementById('podeVersion').textContent = module.moduleVersion;
+            }
+            if(module.moduleName === "PSSQLite"){
+                document.getElementById('psSqliteVersion').textContent = module.moduleVersion;
+            }
+        });
+
+    } catch (error) {
+        console.error('Error reading PowerShell Modules:', error);
+        document.getElementById('podeVersion').textContent = "Error eading PowerShell Modules";
+        document.getElementById('psSqliteVersion').textContent = "Error eading PowerShell Modules";
+    }    
+});
+````
 
 ## 2025-03-12
 

@@ -1756,5 +1756,26 @@ function ConvertTo-SaltedSHA256 {
     }
 }
 
+function Update-PSModuleVersion{
+    [CmdletBinding()]
+    param()
+    try {
+        # Read from rotamaster.config.js
+        $configFilePath = Join-Path -Path $PSScriptRoot.Replace('bin','public/assets/rotamaster') -ChildPath 'rotamaster.config.js'
+        $configContent  = Get-Content -Path $configFilePath -Raw
 
+        # Get the latest versions of Pode and PSSQLite
+        $podeVersion     = (Get-Module -Name Pode -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).Version
+        $psSqliteVersion = (Get-Module -Name PSSQLite -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).Version
+
+        # Update the module versions in the config file content
+        $configContent = $configContent -replace '(moduleName: "Pode",\s*moduleVersion: ")([^"]+)', "`$1$podeVersion"
+        $configContent = $configContent -replace '(moduleName: "PSSQLite",\s*moduleVersion: ")([^"]+)', "`$1$psSqliteVersion"
+
+        # Write the updated content back to the config file
+        Set-Content -Path $configFilePath -Value $configContent
+} catch {
+        Write-Error "An error occurred: $_"
+    }
+}
 #endregion
