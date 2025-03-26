@@ -23,11 +23,11 @@ Add the psModules and Verions.
     psModules: [
         {
             moduleName: "Pode",
-            moduleVersion: "2.x" // fill in your correct version
+            moduleVersion: "1.0.0"
         },
         {
             moduleName: "PSSQLite",
-            moduleVersion: "1.x" // fill in your correct version
+            moduleVersion: "1.0.0"
         }
     ],
 ````
