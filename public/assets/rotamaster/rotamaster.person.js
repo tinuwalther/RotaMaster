@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if(personId){
             // Update existing person
             try {
+                // console.log('PersonId:', personId, data);
                 response = await fetch(`/api/person/update/${personId}`, {
                     method: 'PUT',
                     headers: {
@@ -124,6 +125,7 @@ async function readPersons() {
                 <td>${person.firstname}</td>
                 <td>${person.name}</td>
                 <td>${person.email}</td>
+                <td>${person.topic}</td>
                 <td>${person.active}</td>
                 <td>${person.workload}</td>
                 <td>${person.created}</td>
@@ -182,6 +184,7 @@ async function updatePerson(personId, login) {
         document.querySelector('#firstname').value = person.firstname;
         document.querySelector('#name').value = person.name;
         document.querySelector('#email').value = person.email;
+        document.querySelector('#topic').value = person.topic;
         document.querySelector('#active').value = person.active;
         document.querySelector('#workload').value = person.workload;
 
