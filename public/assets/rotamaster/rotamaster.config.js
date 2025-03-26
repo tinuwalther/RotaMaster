@@ -7,7 +7,7 @@
  * to ensure consistency across the application.
  */
 const calendarConfig = {
-    appVersion: "5.4.7",
+    appVersion: "5.5.0",
     appPrefix: "PS",
     opsGenie: true,
     scheduleName: 'tinu_schedule',
@@ -42,7 +42,7 @@ const calendarConfig = {
     psModules: [
         {
             moduleName: "Pode",
-            moduleVersion: "2.11.1"
+            moduleVersion: "2.12.0"
         },
         {
             moduleName: "PSSQLite",
@@ -50,6 +50,8 @@ const calendarConfig = {
         }
     ],
 }
+
+
 
 
 
