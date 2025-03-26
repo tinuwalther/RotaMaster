@@ -1769,8 +1769,8 @@ function Update-PSModuleVersion{
         $psSqliteVersion = (Get-Module -Name PSSQLite -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).Version
 
         # Update the module versions in the config file content
-        $configContent = $configContent -replace '(moduleName: "Pode",\s*moduleVersion: ")([^"]+)', "`$1$podeVersion"
-        $configContent = $configContent -replace '(moduleName: "PSSQLite",\s*moduleVersion: ")([^"]+)', "`$1$psSqliteVersion"
+        $configContent = $configContent -replace '(?<=moduleName: "Pode",\s*moduleVersion: ")([^"]+)', $podeVersion
+        $configContent = $configContent -replace '(?<=moduleName: "PSSQLite",\s*moduleVersion: ")([^"]+)', $pssqliteVersion
 
         # Write the updated content back to the config file
         Set-Content -Path $configFilePath -Value $configContent

@@ -113,7 +113,7 @@ Start-PodeServer -Browse -Threads 2 {
     Initialize-ApiEndpoints
 
     # Update-PSModuleVersion in rotamaster.config.js
-    # Update-PSModuleVersion
+    Update-PSModuleVersion
 
 } -Verbose 
 

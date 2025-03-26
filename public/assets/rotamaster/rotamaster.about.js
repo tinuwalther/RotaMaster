@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (error) {
         console.error('Error reading PowerShell Modules:', error);
-        document.getElementById('podeVersion').textContent = "Error eading PowerShell Modules";
-        document.getElementById('psSqliteVersion').textContent = "Error eading PowerShell Modules";
+        document.getElementById('podeVersion').textContent = "Error reading PowerShell Modules";
+        document.getElementById('psSqliteVersion').textContent = "Error reading PowerShell Modules";
     }    
 });
