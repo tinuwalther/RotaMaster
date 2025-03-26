@@ -62,13 +62,14 @@ function Get-Participants {
     )
 
     # Assumption: Order is fixed, but can be made adjustable.
-    $sql = 'SELECT name,firstname,workload FROM person WHERE active = 1 ORDER BY firstname'
+    $sql = 'SELECT name,firstname,workload,topic FROM person WHERE active = 1 ORDER BY firstname'
     $connection = New-SQLiteConnection -DataSource $dbPath
     $data = Invoke-SqliteQuery -Connection $connection -Query $sql
     $data | ForEach-Object{
         [PSCustomObject]@{
             Name = $_.name + ' ' + $_.firstname
             Workload = $_.workload
+            Topic = $_.topic
         }
     }
 }
@@ -281,131 +282,6 @@ function Get-Availability{
 # On-call rotation
 # The on-call rotation is based on the availability of the employees.
 # You could also check in each rotation if percentPerson has had enough assignments.
-function New-OnCallRotation {
-    <#
-    .SYNOPSIS
-        Generate a new on-call rotation based on the availability of the participants.
-    .DESCRIPTION
-        This function generates a new on-call rotation based on the availability of the participants.
-        The function takes a list of participants, a percentPerson, a hashtable with the availability of each participant, and a list of weeks as input.
-        The function assigns participants to the weeks based on their availability and the rotation order.
-        The function uses a simple heuristic to handle the percentPerson's 80% workload.
-    .PARAMETER participants
-        The list of participants in rotation order.
-    .PARAMETER percentPerson
-        The person who has a 80% workload.
-    .PARAMETER Availability
-        The hashtable with the availability of each participant.
-    .PARAMETER weeks
-        The list of weeks for which to generate the rotation.
-    .EXAMPLE
-        New-OnCallRotation -participants $participants -percentPerson 'Mercury Freddie' -Availability $Availability -weeks $weeks
-    .NOTES
-        Assumptions:
-
-        We assume that the rotation of the employees is cyclical.
-        We assume that the availability of the employees is given in the form of time blocks.
-        We assume that the weekly intervals go from Monday 09:00 to Monday 09:00.
-        We assume that percentPerson has only 80% workload and skips one out of every 5 assignments.
-    #>
-
-    param(
-        [Parameter(Mandatory=$true)]
-        [Array]$participants,
-
-        [Parameter(Mandatory=$true)]
-        [Array]$percentPersons,  # Ändere hier
-
-        [Parameter(Mandatory=$true)]
-        [hashtable]$Availability,
-
-        [Parameter(Mandatory=$true)]
-        [Array]$weeks
-    )
-
-    $percentCounter = @{}
-    $percentSkipRate = 5  # skip one percentPerson assignment every 5 rotations
-
-    # Initialize the counter for each 80% person
-    foreach ($person in $percentPersons) {
-        $percentCounter[$person] = 0
-    }
-
-    # Calculate rotation
-    $assignments = New-Object System.Collections.Generic.List[System.Object]
-
-    # An index for the rotation of employees
-    $personIndex = 0
-    # A counter to track how often each 80% person has been scheduled
-    $percentAssignedCount = @{}
-    foreach ($person in $percentPersons) {
-        $percentAssignedCount[$person] = 0
-    }
-
-    foreach ($week in $weeks) {
-        $weekStart = $week.Start
-        $weekEnd = $week.End
-
-        # Choose the next person who is available
-        $chosenPerson = $null
-
-        # We try to go through the participants in a circle until we find someone who is available.
-        for ($i=0; $i -lt $participants.Count; $i++) {
-            $candidate = $participants[$personIndex]
-
-            # Check availability
-            if (Test-IsPersonAvailable -Person $candidate -Availability $Availability -Start $weekStart -End $weekEnd) {
-                # If the candidate is in the list of 80% persons, we check if we take them due to their 80% quota:
-                if ($percentPersons -contains $candidate) {
-                    $percentCounter[$candidate]++
-                    $percentAssignedCount[$candidate]++
-                    # Every 5 assignments, the 80% person should only do 4 => i.e., if $percentCounter mod 5 == 0, the 80% person is skipped
-                    if (($percentCounter[$candidate] % $percentSkipRate) -eq 0) {
-                        # => the 80% person will be skipped this time
-                        # => we increment $personIndex and try the next person
-                        $personIndex = ($personIndex + 1) % $participants.Count
-                        # => "continue" goes directly to the next $i in the for-loop
-                        continue
-                    }
-                }
-                # If we get here, the person is available and not skipped
-                $chosenPerson = $candidate
-                break
-            }
-
-            # Person not available or rejected, we try the next one
-            $personIndex = ($personIndex + 1) % $participants.Count
-            Write-Host "INFO: $($candidate) is not available for $($weekStart) - $($weekEnd)" -ForegroundColor Green
-        }
-
-        if (-not $chosenPerson) {
-            # If no one is available, you can add logic (substitute rule, failure).
-            $chosenPerson = "No one available"
-        } else {
-            # we have $chosenPerson,
-            # so that's it for this week – loop ended with break
-            # => The index was NOT incremented for the "break" person in the for-loop
-            #    so we do it now:
-            $personIndex = ($personIndex + 1) % $participants.Count
-        }
-
-        # Add the assignment to the list
-        $assignments.Add([PSCustomObject]@{
-            id = [System.Guid]::NewGuid().ToString()
-            title = $chosenPerson
-            type = "Pikett - proposal"
-            start = $weekStart.ToString("o")
-            end = $weekEnd.ToString("o")
-            created = Get-Date -Format 'yyyy-MM-dd HH:mm'
-        })
-    }
-
-    foreach ($person in $percentPersons) {
-        Write-Host "INFO: 80% workload person '$person' was assigned $($percentAssignedCount[$person]) times." -ForegroundColor Green
-    }
-    $assignments
-}
-
 function New-OnCallRotationBalanced {
     <#
     .SYNOPSIS
@@ -451,20 +327,26 @@ function New-OnCallRotationBalanced {
 
     # Initialize the counter for each 80% person
     foreach ($person in $percentPersons) {
-        $percentCounter[$person] = 0
+        $percentCounter[$person.Name] = 0
     }
 
     # Initialize the assignment count for each participant
     $assignmentCount = @{}
     foreach ($person in $participants) {
-        $assignmentCount[$person] = 0
+        $assignmentCount[$person.Name] = 0
     }
+
+    # Separate participants by topic
+    $esxiParticipants = $participants | Where-Object { $_.Topic -eq 'ESXi' }
+    $hypervParticipants = $participants | Where-Object { $_.Topic -eq 'Hyper-V' }
 
     # Calculate rotation
     $assignments = New-Object System.Collections.Generic.List[System.Object]
 
     # An index for the rotation of employees
-    $personIndex = 0
+    $esxiIndex = 0
+    $hypervIndex = 0
+    $useEsxi = $true
 
     foreach ($week in $weeks) {
         $weekStart = $week.Start
@@ -473,31 +355,28 @@ function New-OnCallRotationBalanced {
         # Choose the next person who is available and has the least assignments
         $chosenPerson = $null
 
-        # We try to go through the participants in a circle until we find someone who is available and has the least assignments.
-        for ($i=0; $i -lt $participants.Count; $i++) {
-            $candidate = $participants[$personIndex]
+        # Alternate between ESXi and Hyper-V participants
+        $currentParticipants = $useEsxi ? $esxiParticipants : $hypervParticipants
 
+        # Sort the current participants by the number of assignments to balance the load
+        $sortedParticipants = $currentParticipants | Sort-Object { $assignmentCount[$_.Name] }
+
+        foreach ($candidate in $sortedParticipants) {
             # Check availability
-            if (Test-IsPersonAvailable -Person $candidate -Availability $Availability -Start $weekStart -End $weekEnd) {
+            if (Test-IsPersonAvailable -Person $candidate.Name -Availability $Availability -Start $weekStart -End $weekEnd) {
                 # If the candidate is in the list of 80% persons, we check if we take them due to their 80% quota:
-                if ($percentPersons -contains $candidate) {
-                    $percentCounter[$candidate]++
+                if ($percentPersons -contains $candidate.Name) {
+                    $percentCounter[$candidate.Name]++
                     # Every 5 assignments, the 80% person should only do 4 => i.e., if $percentCounter mod 5 == 0, the 80% person is skipped
-                    if (($percentCounter[$candidate] % $percentSkipRate) -eq 0) {
+                    if (($percentCounter[$candidate.Name] % $percentSkipRate) -eq 0) {
                         # => the 80% person will be skipped this time
-                        # => we increment $personIndex and try the next person
-                        $personIndex = ($personIndex + 1) % $participants.Count
-                        # => "continue" goes directly to the next $i in the for-loop
                         continue
                     }
                 }
                 # If we get here, the person is available and not skipped
-                $chosenPerson = $candidate
+                $chosenPerson = $candidate.Name
                 break
             }
-
-            # Person not available or rejected, we try the next one
-            $personIndex = ($personIndex + 1) % $participants.Count
         }
 
         if (-not $chosenPerson) {
@@ -506,16 +385,14 @@ function New-OnCallRotationBalanced {
         } else {
             # we have $chosenPerson,
             # so that's it for this week – loop ended with break
-            # => The index was NOT incremented for the "break" person in the for-loop
-            #    so we do it now:
-            $personIndex = ($personIndex + 1) % $participants.Count
+            $useEsxi = -not $useEsxi
         }
 
         # Add the assignment to the list
         $assignments.Add([PSCustomObject]@{
             id = [System.Guid]::NewGuid().ToString()
             title = $chosenPerson
-            type = "Pikett - proposal"
+            type = "Pikett - proposal - $($candidate.Topic)"
             start = $weekStart.ToString("o")
             end = $weekEnd.ToString("o")
             created = Get-Date -Format 'yyyy-MM-dd HH:mm'
@@ -527,8 +404,8 @@ function New-OnCallRotationBalanced {
         }
     }
 
-    foreach ($person in $percentPersons) {
-        Write-Host "INFO: 80% workload person '$person' was assigned $($assignmentCount[$person]) times." -ForegroundColor Green
+    foreach ($person in $participants) {
+        Write-Host ("INFO: {0} % workload person '{1}' for '{2}' was assigned {3} times." -f $($person.Workload), $($person.Name), $($person.Topic), $($assignmentCount[$chosenPerson]))
     }
     $assignments
 }
@@ -540,7 +417,7 @@ $dbPath = Join-Path -Path $ApiPath -ChildPath 'rotamaster.db'
 
 # Load the list of participants in rotation order
 $participants   = Get-Participants -dbPath $dbPath
-$percentPersons = $participants | Where-Object Workload -le 80 | Select-Object -ExpandProperty Name
+$percentPersons = $participants | Where-Object Workload -In 60,70,80 #| Select-Object -ExpandProperty Name
 # $participants | Format-Table
 
 # Load all events for the given year
@@ -551,7 +428,7 @@ $allEvents = Get-AllEvents -dbPath $dbPath -year $Year
 
 # Determine the availability of the participants based on the events
 if($allEvents){
-    $Availability = Get-Availability -participants ($participants| Select-Object -ExpandProperty Name) -events $allEvents
+    $Availability = Get-Availability -participants ($participants | Select-Object -ExpandProperty Name) -events $allEvents
     # $Availability | Format-Table
 }else{
     Write-Host "INFO: No events found for the year $year" -ForegroundColor Green
@@ -563,8 +440,8 @@ $weeks = New-OnCallSchedule -StartDate $StartDate -EndDate $EndDate
 # $weeks | Format-Table
 
 # Generate new on-call rotation
-# $assignments = New-OnCallRotation -participants ($participants| Select-Object -ExpandProperty Name) -percentPersons $percentPersons -Availability $Availability -weeks $weeks
-$assignments = New-OnCallRotationBalanced -participants ($participants | Where-Object Workload -ge 60 | Select-Object -ExpandProperty Name) -percentPersons $percentPersons -Availability $Availability -weeks $weeks
+#$assignments = New-OnCallRotationBalanced -participants ($participants | Where-Object Workload -ge 60 | Select-Object -ExpandProperty Name) -percentPersons $percentPersons -Availability $Availability -weeks $weeks
+$assignments = New-OnCallRotationBalanced -participants ($participants | Where-Object Workload -ge 60) -percentPersons $percentPersons -Availability $Availability -weeks $weeks
 
 #region Export to CSV
 # Define the output CSV file path
