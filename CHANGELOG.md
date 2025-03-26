@@ -11,6 +11,90 @@
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
 
+## 2025-03-26
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.0.
+
+### person
+
+Add Field topic in to table person.
+
+````sql
+ALTER TABLE person
+ADD COLUMN topic TEXT;
+
+ALTER TABLE person RENAME TO person_old;
+
+-- Create the new table with the desired column order
+CREATE TABLE person (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    login TEXT NOT NULL,
+    name TEXT NOT NULL,
+    firstname TEXT NOT NULL,
+    email TEXT NOT NULL,
+    topic TEXT, -- New column added here
+    active INTEGER NOT NULL DEFAULT 1,
+    workload INTEGER NOT NULL DEFAULT 100,
+    created TEXT NOT NULL DEFAULT current_timestamp,
+    author TEXT NOT NULL
+);
+
+-- Copy data from the old table to the new table
+INSERT INTO person (id, login, name, firstname, email, active, workload, created, author)
+SELECT id, login, name, firstname, email, active, workload, created, author
+FROM person_old;
+
+-- Drop the old table
+DROP TABLE person_old;
+````
+
+### person.html
+
+Add dropdown for topics.
+
+````html
+...
+<select id="topic" name="topic" class="form-select" required>
+    <option value="ESXi">ESXi</option>
+    <option value="Hyper-V">Hyper-V</option>
+</select>
+...
+<th>Topic</th>
+...
+````
+
+### rotamaster.person.js
+
+````javascript
+// Update existing person
+...
+...<td>${person.topic}</td>
+...
+document.querySelector('#topic').value = person.topic;
+...
+````
+
+### RotaMaster.psm1
+
+````powershell
+...
+$sql = "INSERT INTO person (login, firstname, name, email,topic, active, workload, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($email)', '$($topic)', '$($active)', '$($workload)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+...
+$sql = 'SELECT id,login,name,firstname, active, workload, email, topic,created FROM person ORDER BY firstname ASC'
+} elseif ($isInteger) {
+    $sql = "SELECT id,login,name,firstname, active, workload, email,topic,created FROM person WHERE id = $searchFor"
+} else {
+    $sql = "SELECT id,login,name,firstname, active, workload, email,topic,created FROM person WHERE (name || ' ' || firstname) = '$($searchFor)'"
+}
+...
+topic     = $item.topic
+...
+$topic     = $WebEvent.Data['topic']
+...
+topic     = '$topic',
+...
+````
+
 ## 2025-03-23
 
 After implementing the following code, increase the appVersion in rotamaster.config.js to 5.4.7.
