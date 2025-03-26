@@ -113,6 +113,11 @@
                         <input type="text" id="active" name="active" placeholder="1" class="form-control" required>
                         <span class="input-group-text" id="basic-addon1">Workload</span>
                         <input type="text" id="workload" name="workload" placeholder="100" class="form-control" required>
+                        <span class="input-group-text" id="basic-addon1">Topic</span>
+                        <select id="topic" name="topic" class="form-select" required>
+                            <option value="ESXi">ESXi</option>
+                            <option value="Hyper-V">Hyper-V</option>
+                        </select>
                     </div>
 
                     <button type="submit" id="submit" class="btn btn-dark">Add Person</button>
@@ -126,6 +131,7 @@
                             <th>Firstname</th>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Topic</th>
                             <th>Active</th>
                             <th>Workload</th>
                             <th>Created</th>
