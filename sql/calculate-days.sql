@@ -6,3 +6,8 @@ FROM
         WHERE person LIKE 'plant%'
         AND type = 'Pikett'
     ) subquery;
+
+
+SELECT * FROM v_events_days;
+
+SELECT person, COUNT(*) AS AssignmentCount FROM v_events_days GROUP BY person

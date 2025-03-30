@@ -279,6 +279,37 @@ function Get-Availability{
     
 }
 
+function Get-PastAssignments {
+    <#
+    .SYNOPSIS
+        Load past Pikett assignments from the database or a CSV file.
+    .DESCRIPTION
+        This function retrieves past Pikett assignments for participants.
+        The data is used to ensure a balanced schedule by considering historical assignments.
+    .PARAMETER dbPath
+        The path to the SQLite database.
+    .EXAMPLE
+        Get-PastAssignments -dbPath 'C:\path\to\database.db'
+    .NOTES
+        The function assumes that the database contains a table or view with past assignments.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$dbPath
+    )
+
+    # Example: Load past assignments from a database table
+    $sql = 'SELECT person, COUNT(*) AS AssignmentCount FROM v_events_days GROUP BY person'
+    $connection = New-SQLiteConnection -DataSource $dbPath
+    $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+    $data | ForEach-Object {
+        [PSCustomObject]@{
+            Name = $_.person
+            AssignmentCount = [int]$_.AssignmentCount
+        }
+    }
+}
+
 # On-call rotation
 # The on-call rotation is based on the availability of the employees.
 # You could also check in each rotation if percentPerson has had enough assignments.
@@ -344,8 +375,6 @@ function New-OnCallRotationBalanced {
     $assignments = New-Object System.Collections.Generic.List[System.Object]
 
     # An index for the rotation of employees
-    $esxiIndex = 0
-    $hypervIndex = 0
     $useEsxi = $true
 
     foreach ($week in $weeks) {
@@ -404,9 +433,9 @@ function New-OnCallRotationBalanced {
         }
     }
 
-    foreach ($person in $participants) {
-        Write-Host ("INFO: {0} % workload person '{1}' for '{2}' was assigned {3} times." -f $($person.Workload), $($person.Name), $($person.Topic), $($assignmentCount[$chosenPerson]))
-    }
+    # foreach ($person in $participants) {
+    #     Write-Host ("INFO: {0} % workload person '{1}' for '{2}' was assigned {3} times." -f $($person.Workload), $($person.Name), $($person.Topic), $($assignmentCount[$chosenPerson]))
+    # }
     $assignments
 }
 #endregion
