@@ -215,6 +215,7 @@ function New-Tables {
             name TEXT NOT NULL,
             firstname TEXT NOT NULL,
             email TEXT NOT NULL,
+            topic TEXT,
             active INTEGER NOT NULL DEFAULT 1,
             workload INTEGER NOT NULL DEFAULT 100,
             created TEXT NOT NULL DEFAULT current_timestamp,
@@ -227,6 +228,7 @@ function New-Tables {
                 'name',
                 'firstname',
                 'email',
+                'topic',
                 'active',
                 'workload',
                 'author'
@@ -236,6 +238,7 @@ function New-Tables {
                 'Cooper',
                 'Alice',
                 'acooper@local.com',
+                'none',
                 0,
                 0,
                 'Administrator'
