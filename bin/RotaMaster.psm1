@@ -962,11 +962,12 @@ function Initialize-ApiEndpoints {
                     $firstname = $WebEvent.Data['firstname']
                     $lastname  = $WebEvent.Data['name']
                     $email     = $WebEvent.Data['email']
+                    $topic     = $WebEvent.Data['topic']
                     $active    = $WebEvent.Data['active']
                     $workload  = $WebEvent.Data['workload']
                     $created   = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
                     
-                    $sql = "INSERT INTO person (login, firstname, name, email, active, workload, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($email)', '$($active)', '$($workload)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+                    $sql = "INSERT INTO person (login, firstname, name, email,topic, active, workload, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($email)', '$($topic)', '$($active)', '$($workload)', '$($created)', '$($WebEvent.Auth.User.Name)')"
                     $connection = New-SQLiteConnection -DataSource $dbPath
                     Invoke-SqliteQuery -Connection $connection -Query $sql
                     $Connection.Close()
@@ -992,11 +993,11 @@ function Initialize-ApiEndpoints {
                 $isInteger = [int]::TryParse($searchFor, [ref]$null)
 
                 if ($searchFor -eq '*') {
-                    $sql = 'SELECT id,login,name,firstname, active, workload, email,created FROM person ORDER BY firstname ASC'
+                    $sql = 'SELECT id,login,name,firstname, active, workload, email, topic,created FROM person ORDER BY firstname ASC'
                 } elseif ($isInteger) {
-                    $sql = "SELECT id,login,name,firstname, active, workload, email,created FROM person WHERE id = $searchFor"
+                    $sql = "SELECT id,login,name,firstname, active, workload, email,topic,created FROM person WHERE id = $searchFor"
                 } else {
-                    $sql = "SELECT id,login,name,firstname, active, workload, email,created FROM person WHERE (name || ' ' || firstname) = '$($searchFor)'"
+                    $sql = "SELECT id,login,name,firstname, active, workload, email,topic,created FROM person WHERE (name || ' ' || firstname) = '$($searchFor)'"
                 }
 
                 $connection = New-SQLiteConnection -DataSource $dbPath
@@ -1011,6 +1012,7 @@ function Initialize-ApiEndpoints {
                         active     = $item.active
                         workload   = $item.workload
                         email      = $item.email
+                        topic     = $item.topic
                         fullname   = "$($item.name) $($item.firstname)"
                         created    = $item.created
                     } 
@@ -1035,6 +1037,7 @@ function Initialize-ApiEndpoints {
             $active    = $WebEvent.Data['active']
             $workload  = $WebEvent.Data['workload']
             $email     = $WebEvent.Data['email']
+            $topic     = $WebEvent.Data['topic']
             $created   = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
             $author    = $WebEvent.Auth.User.Name
 
@@ -1047,6 +1050,7 @@ function Initialize-ApiEndpoints {
             active    = '$active',
             workload  = '$workload',
             email     = '$email',
+            topic     = '$topic',
             created   = '$created',
             author    = '$author'
         WHERE id = '$id';
@@ -1756,5 +1760,26 @@ function ConvertTo-SaltedSHA256 {
     }
 }
 
+function Update-PSModuleVersion{
+    [CmdletBinding()]
+    param()
+    try {
+        # Read from rotamaster.config.js
+        $configFilePath = Join-Path -Path $PSScriptRoot.Replace('bin','public/assets/rotamaster') -ChildPath 'rotamaster.config.js'
+        $configContent  = Get-Content -Path $configFilePath -Raw
 
+        # Get the latest versions of Pode and PSSQLite
+        $podeVersion     = (Get-Module -Name Pode -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).Version
+        $psSqliteVersion = (Get-Module -Name PSSQLite -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).Version
+
+        # Update the module versions in the config file content
+        $configContent = $configContent -replace '(?<=moduleName: "Pode",\s*moduleVersion: ")([^"]+)', $podeVersion
+        $configContent = $configContent -replace '(?<=moduleName: "PSSQLite",\s*moduleVersion: ")([^"]+)', $pssqliteVersion
+
+        # Write the updated content back to the config file
+        Set-Content -Path $configFilePath -Value $configContent
+} catch {
+        Write-Error "An error occurred: $_"
+    }
+}
 #endregion

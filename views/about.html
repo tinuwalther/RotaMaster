@@ -9,13 +9,8 @@
     <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
 
-    <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
-    <script src="/assets/rotamaster/fullcalendar.main.min.js"></script>
-    <script src="/assets/rotamaster/index.global.min.js"></script>
-    <script src="/assets/rotamaster/rotamaster.config.js"></script>
-    <script src="/assets/rotamaster/rotamaster.main.js"></script>
-
     <title id="title" >RotaMaster: About</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
+
 </head>
 <body>
     <Section Id="section"  >
@@ -38,10 +33,51 @@
                 <span class="navbar-text ms-auto" id="currentUser">
                     <!-- logged-in as Username -->
                 </span>
-                </div>
+            </div>
             </div>
         </nav>
         <!-- End NavBar -->
+
+        <!-- Begin Modal Alert -->
+        <div class="modal fade" id="alert" tabindex="-1" aria-labelledby="alertLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="alertTitle">RotaMaster - Alert</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="alertText"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="btnOk" class="btn btn-dark" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Modal Alert -->
+            
+        <!-- Begin Modal Confirm -->
+        <div class="modal fade" id="confirm" tabindex="-1" aria-labelledby="confirmLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="confirmTitle">RotaMaster - Confirm</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmText"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <!-- return false -->
+                        <button type="button" id="btnNo" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        <!-- return true -->
+                        <button type="button" id="btnYes" class="btn btn-dark">Yes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Modal Confirm -->
 
         <div class="container mt-4">
             <h2>About</h2>
@@ -57,15 +93,15 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>RotaMaster (Web service)</td>
+                    <td><a href="https://github.com/tinuwalther/RotaMaster/" Target="_blank">RotaMaster</a> (Web service)</td>
                     <td id="appVersion">Loading...</td>
                 </tr>
                 <tr>
-                    <td>FullCalendar (Framework)</td>
+                    <td><a href="https://fullcalendar.io/" Target="_blank">FullCalendar</a> (Framework)</td>
                     <td id="fcVersion">Loading...</td>
                 </tr>
                 <tr>
-                    <td>Bootstrap (Framework)</td>
+                    <td><a href="https://getbootstrap.com/" Target="_blank">Bootstrap</a> (Framework)</td>
                     <td id="bsVersion">Loading...</td>
                 </tr>
                 <tr>
@@ -74,19 +110,19 @@
                 </tr>
                 <tr>
                     <td>PSSQLite (PowerShell Module)</td>
-                    <td id="pssqliteVersion">...</td>
+                    <td id="psSqliteVersion">...</td>
                 </tr>
             </tbody>
         </table>
 
-        <h2>OpsGenie</h2>
+        <h2>On Call Management</h2>
         <p>
-            On-call and alert management <a href="https://www.atlassian.com/software/opsgenie" Target="_blank">OpsGenie</a>
+            On-call and alert management <a href="https://www.atlassian.com/software/opsgenie" Target="_blank"> OpsGenie</a> will be <span class="badge text-bg-warning">End of Support at 5. April 2027!</span> You can migrate to <a href="https://www.atlassian.com/software/jira/service-management" Target="_blank">Jira Service Management</a> or to <a href="https://www.atlassian.com/software/compass" Target="_blank">Compass.</a>
         </p>
         <table class="table table-striped mt-4">
             <thead>
                 <tr>
-                    <th>OpsGenie</th>
+                    <th>Software</th>
                     <th>Schedule name</th>
                     <th>Rotation name</th>
                 </tr>
@@ -102,123 +138,17 @@
 
         <h2>License</h2>
         <p>
-            All components are licensed under <a href="https://mit-license.org/" Target="_blank">MIT</a>. RotaMaster is written by <a href="https://github.com/tinuwalther" Target="_blank">tinuwalther</a>,
-            contact via <a href="https://tinuwalther.bsky.social" Target="_blank">Bluesky</a>.
+            All components are licensed under <a href="https://mit-license.org/" Target="_blank">MIT</a> except On Call Management. RotaMaster is written by <a href="https://github.com/tinuwalther" Target="_blank">tinuwalther</a>,
+            you contact me via <a href="https://github.com/tinuwalther" Target="_blank">GitHub</a> or <a href="https://tinuwalther.bsky.social" Target="_blank">Bluesky</a>.
         </p>
 
     </div>
 
-    <script>
-        // Wait until the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Add the App-Version and App-Prefix to the Navbar-Brand
-            const pageTitle = `${calendarConfig.appPrefix}RotaMaster V${calendarConfig.appVersion.substring(0,1)}`;
-            const navbarBrandElement = document.getElementById('navbarBrand');
-            if (navbarBrandElement) {
-                navbarBrandElement.textContent = pageTitle;
-            };
+    <script src="/assets/BootStrap/bootstrap.bundle.min.js"></script>
+    <script src="/assets/fullcalendar/index.global.min.js"></script>
+    <script src="/assets/rotamaster/rotamaster.config.js"></script>
+    <script src="/assets/rotamaster/rotamaster.main.js"></script>
+    <script src="/assets/rotamaster/rotamaster.about.js"></script>
 
-            // Set the title of the page
-            document.getElementById('title').textContent = `${pageTitle} - About`;
-
-            const userCookie = getCookie('CurrentUser');
-            let username = null;
-            if (userCookie) {
-                // console.log(`Name: ${userCookie.name}`);
-                // console.log(`Login: ${userCookie.login}`);
-                // console.log(`Email: ${userCookie.email}`);
-                try {
-                    username = userCookie.name;
-                    if (username) {
-                        const welcomeElement = document.getElementById('currentUser');
-                        if (welcomeElement) {
-                            welcomeElement.textContent = `${username}`;
-                        } else {
-                            console.error("Element with ID 'welcomeMessage' not found.");
-                        }
-                    }else{
-                        showAlert("No username found!");
-                    }
-                } catch (error) {
-                    showAlert("There is something wrong with the userCookie!");
-                    console.log("There is something wrong with the userCookie!" + error);
-                }
-            }else{
-                console.log('User cookie not found or invalid');
-                showAlert('User cookie not found or invalid');
-            }
-            
-            // Set appVersion from calendarConfig
-            if (typeof calendarConfig !== 'undefined' && calendarConfig.appVersion) {
-                document.getElementById('appVersion').textContent = `${calendarConfig.appVersion} installed`;
-            } else {
-                document.getElementById('appVersion').textContent = "Unknown";
-            }
-
-            // Fetch FullCalendar version from the minified JS file
-            try {
-                const response = await fetch('/assets/rotamaster/fullcalendar.main.min.js');
-                if (response.ok) {
-                    const jsContent = await response.text();
-                    const versionMatch = jsContent.match(/\/\*!\s*FullCalendar\s*v([\d.]+)/);
-                    // console.log('DEBUG', versionMatch);
-                    if (versionMatch && versionMatch[1]) {
-                        document.getElementById('fcVersion').textContent = `${versionMatch[1]} installed`;
-                    } else {
-                        document.getElementById('fcVersion').textContent = "Unknown";
-                    }
-                } else {
-                    console.error('Failed to fetch FullCalendar JS file:', response.status);
-                    document.getElementById('fcVersion').textContent = "Error fetching version";
-                }
-            } catch (error) {
-                console.error('Error reading FullCalendar version:', error);
-                document.getElementById('fcVersion').textContent = "Error";
-            }
-
-            // Fetch Bootstrap version from the minified JS file
-            try {
-                const response = await fetch('/assets/bootstrap/bootstrap.bundle.min.js');
-                // console.error('DEBUG: Response Status:', response.status);
-                if (response.ok) {
-                    const jsContent = await response.text();
-                    // console.log('DEBUG: Bootstrap JS Content:', jsContent.slice(0, 500)); // Zeigt die ersten 500 Zeichen der Datei
-                    // RegEx für Bootstrap-Version
-                    const versionMatch = jsContent.match(/\/\*![^]*?Bootstrap v([\d.]+)/);
-                    // console.log('DEBUG', versionMatch);
-                    if (versionMatch && versionMatch[1]) {
-                        document.getElementById('bsVersion').textContent = `${versionMatch[1]} installed`;
-                    }else{
-                        document.getElementById('bsVersion').textContent = "Unknown";
-                    }
-                } else {
-                    document.getElementById('bsVersion').textContent = "Error fetching version";
-                    console.error('Failed to fetch Bootstrap JS file:', response.status);
-                }
-            } catch (error) {
-                console.error('Error reading Bootstrap version:', error);
-                document.getElementById('bsVersion').textContent = "Error";
-            }
-
-            // Fetch OpsGenie integration
-            try{
-                const integration = calendarConfig.opsGenie
-                const schedule = calendarConfig.scheduleName
-                const rotation = calendarConfig.rotationName
-                if(integration){
-                    document.getElementById('opsGenieIntegration').textContent = "integrated";
-                    document.getElementById('opsGenieSchedule').textContent = schedule;
-                    document.getElementById('opsGenieRotation').textContent = rotation;
-                }else{
-                    document.getElementById('opsGenieIntegration').textContent = "not integrated";
-                    document.getElementById('opsGenieSchedule').textContent = "not integrated";
-                    document.getElementById('opsGenieRotation').textContent = "not integrated";
-                }
-            } catch (error) {
-                console.error('Error reading OpsGenie integration:', error);
-                document.getElementById('bsVersion').textContent = "Error";
-            }
-        });
-    </script>
 </body>
 </html>

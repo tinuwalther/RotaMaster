@@ -7,16 +7,17 @@
  * to ensure consistency across the application.
  */
 const calendarConfig = {
-    appVersion: "5.4.3",
+    appVersion: "5.5.1",
     appPrefix: "PS",
     opsGenie: true,
     scheduleName: 'tinu_schedule',
     rotationName: '2025',
     timeZone: 'local',
     locale: 'de-CH',
+    height: 'auto',
     themeSystem: 'standard',
     initialView: 'multiMonthYear',
-    multiMonthMinWidth: 350,
+    multiMonthMinWidth: 400,
     multiMonthMaxColumns: 2,
     headerToolbar: {
         left: 'prevYear,prev,today,next,nextYear refreshButton',
@@ -37,5 +38,21 @@ const calendarConfig = {
     selectable: true,
     editable: true,
     displayEventTime: false,
-    navLinks: true
-};
+    navLinks: true,
+    psModules: [
+        {
+            moduleName: "Pode",
+            moduleVersion: "2.12.0"
+        },
+        {
+            moduleName: "PSSQLite",
+            moduleVersion: "1.1.0"
+        }
+    ],
+}
+
+
+
+
+
+

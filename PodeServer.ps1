@@ -112,6 +112,9 @@ Start-PodeServer -Browse -Threads 2 {
     # Set Pode endpoints for the api
     Initialize-ApiEndpoints
 
+    # Update-PSModuleVersion in rotamaster.config.js
+    Update-PSModuleVersion
+
 } -Verbose 
 
 #endregion

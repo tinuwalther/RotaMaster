@@ -261,6 +261,11 @@ function renderTable(data) {
     const tableBody = document.querySelector('#pikettTable tbody');
     tableBody.innerHTML = ''; // Clear the table to ensure no old data is present
 
+    // Initialize variables to store column sums
+    let totalPikett = 0;
+    let totalPikettPeer = 0;
+    let totalFerien = 0;
+
     // Loop through the data and insert it into the table
     Object.keys(data).forEach(person => {
         const row = document.createElement('tr'); // Create a new table row
@@ -272,17 +277,42 @@ function renderTable(data) {
         const pikettCell = document.createElement('td'); // Cell for the Pikett count
         pikettCell.textContent = data[person].pikett; // Set the Pikett count
         row.appendChild(pikettCell);
+        totalPikett += data[person].pikett; // Add to total Pikett count
 
         const PikettPeerCell = document.createElement('td'); // Cell for the Pikett-Peer count
         PikettPeerCell.textContent = data[person].PikettPeer; // Set the Pikett-Peer count
         row.appendChild(PikettPeerCell);
+        totalPikettPeer += data[person].PikettPeer; // Add to total Pikett-Peer count
 
         const ferienCell = document.createElement('td'); // Cell for the vacation count
         ferienCell.textContent = data[person].ferien; // Set the vacation count
         row.appendChild(ferienCell);
+        totalFerien += data[person].ferien; // Add to total vacation count
 
         tableBody.appendChild(row); // Append the row to the table body
     });
+
+    // Add a row for the totals
+    const totalRow = document.createElement('tr');
+    totalRow.style.fontWeight = 'bold'; // Make the total row bold
+
+    const totalNameCell = document.createElement('td'); // Empty cell for the name column
+    totalNameCell.textContent = 'Total';
+    totalRow.appendChild(totalNameCell);
+
+    const totalPikettCell = document.createElement('td'); // Cell for the total Pikett count
+    totalPikettCell.textContent = totalPikett;
+    totalRow.appendChild(totalPikettCell);
+
+    const totalPikettPeerCell = document.createElement('td'); // Cell for the total Pikett-Peer count
+    totalPikettPeerCell.textContent = totalPikettPeer;
+    totalRow.appendChild(totalPikettPeerCell);
+
+    const totalFerienCell = document.createElement('td'); // Cell for the total vacation count
+    totalFerienCell.textContent = totalFerien;
+    totalRow.appendChild(totalFerienCell);
+
+    tableBody.appendChild(totalRow); // Append the total row to the table body
 }
 
 /**
@@ -830,17 +860,28 @@ function setModalEventData(event) {
  */
 async function refreshCalendarData(calendar) {
     try {
+        const button = document.querySelector('.fc-filterEvents-button');
+        const userCookie = getCookie('CurrentUser');
         const holidays = await loadApiData('/api/csv/read');
-        const events = await readDBData('/api/event/read/*');
+
+        let events = [];
+        if(userCookie.events === 'all'){
+            events = await readDBData('/api/event/read/*');
+            button.textContent = 'My Events';
+        }else if(userCookie.events === 'personal'){
+            events = await readDBData(`/api/event/read/${userCookie.name}`);
+            button.textContent = 'All Events';
+        }
+
         let calendarEvents = [];
         calendarEvents = [
             ...(holidays || []), // Feiertage (falls vorhanden)
             ...(Array.isArray(events) ? events : [events] || []) // User Events als Array
         ];
+        
         calendar.removeAllEvents();
         calendar.addEventSource(calendarEvents);
-        const button = document.querySelector('.fc-filterEvents-button');
-        button.textContent = 'My Events';
+        
     } catch (error) {
         console.error('Error refreshing calendar data:', error);
         showAlert('Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
@@ -920,6 +961,20 @@ function getCookie(name) {
     }
 
     return null;
+}
+
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+
+function deleteCookie(name) {
+    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 }
 
 /**
@@ -1054,4 +1109,13 @@ function formatDateToLocalISO(date) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+function resizeCalendar(space) {
+    const calendarEl = document.getElementById('calendar');
+    let calendar = new FullCalendar.Calendar(calendarEl, {});
+    const windowWidth = window.innerWidth;
+    const newWidth = windowWidth - space;
+    calendarEl.style.width = `${newWidth}px`;
+    calendar.updateSize();
 }
