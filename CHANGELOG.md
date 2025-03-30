@@ -2,6 +2,7 @@
 
 ## Table of Contents
 
+- [2025-03-30](#2025-03-30)
 - [2025-03-23](#2025-03-23)
 - [2025-03-12](#2025-03-12)
 - [2025-03-05](#2025-03-05)
@@ -10,6 +11,75 @@
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
+
+## 2025-03-30
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.1.
+
+### rotamaster.main.js
+
+Replace the function renderTable.
+
+````javascript
+function renderTable(data) {
+    // console.log('DEBUG', 'renderTable:', data);
+    const tableBody = document.querySelector('#pikettTable tbody');
+    tableBody.innerHTML = ''; // Clear the table to ensure no old data is present
+
+    // Initialize variables to store column sums
+    let totalPikett = 0;
+    let totalPikettPeer = 0;
+    let totalFerien = 0;
+
+    // Loop through the data and insert it into the table
+    Object.keys(data).forEach(person => {
+        const row = document.createElement('tr'); // Create a new table row
+
+        const nameCell = document.createElement('td'); // Cell for the person's name
+        nameCell.textContent = person; // Set the person's name
+        row.appendChild(nameCell);
+
+        const pikettCell = document.createElement('td'); // Cell for the Pikett count
+        pikettCell.textContent = data[person].pikett; // Set the Pikett count
+        row.appendChild(pikettCell);
+        totalPikett += data[person].pikett; // Add to total Pikett count
+
+        const PikettPeerCell = document.createElement('td'); // Cell for the Pikett-Peer count
+        PikettPeerCell.textContent = data[person].PikettPeer; // Set the Pikett-Peer count
+        row.appendChild(PikettPeerCell);
+        totalPikettPeer += data[person].PikettPeer; // Add to total Pikett-Peer count
+
+        const ferienCell = document.createElement('td'); // Cell for the vacation count
+        ferienCell.textContent = data[person].ferien; // Set the vacation count
+        row.appendChild(ferienCell);
+        totalFerien += data[person].ferien; // Add to total vacation count
+
+        tableBody.appendChild(row); // Append the row to the table body
+    });
+
+    // Add a row for the totals
+    const totalRow = document.createElement('tr');
+    totalRow.style.fontWeight = 'bold'; // Make the total row bold
+
+    const totalNameCell = document.createElement('td'); // Empty cell for the name column
+    totalNameCell.textContent = 'Total';
+    totalRow.appendChild(totalNameCell);
+
+    const totalPikettCell = document.createElement('td'); // Cell for the total Pikett count
+    totalPikettCell.textContent = totalPikett;
+    totalRow.appendChild(totalPikettCell);
+
+    const totalPikettPeerCell = document.createElement('td'); // Cell for the total Pikett-Peer count
+    totalPikettPeerCell.textContent = totalPikettPeer;
+    totalRow.appendChild(totalPikettPeerCell);
+
+    const totalFerienCell = document.createElement('td'); // Cell for the total vacation count
+    totalFerienCell.textContent = totalFerien;
+    totalRow.appendChild(totalFerienCell);
+
+    tableBody.appendChild(totalRow); // Append the total row to the table body
+}
+````
 
 ## 2025-03-26
 
