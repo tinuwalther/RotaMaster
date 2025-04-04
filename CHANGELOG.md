@@ -2,6 +2,7 @@
 
 ## Table of Contents
 
+- [2025-03-30](#2025-04-04)
 - [2025-03-30](#2025-03-30)
 - [2025-03-23](#2025-03-23)
 - [2025-03-12](#2025-03-12)
@@ -11,6 +12,123 @@
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
+
+## 2025-04-04
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.2.
+
+## rotamaster.about.js
+
+````javascript
+...
+    <span class="navbar-text ms-auto p-2" id="currentUser">
+        <!-- logged-in as Username -->
+    </span>
+    <span class="navbar-text p-2" id="language">
+        <!-- current browser language -->
+    </span>
+...
+````
+
+## rotamaster.absence.js
+
+````javascript
+...
+    const welcomeElement  = document.getElementById('currentUser');
+    const languageElement = document.getElementById('language');
+    if (welcomeElement) {
+        welcomeElement.textContent = `${username}`;
+        languageElement.textContent = `${navigator.language}`;
+    } else {
+        console.error("Element with ID 'welcomeMessage' not found.");
+    }
+...
+````
+
+## rotamaster.index.js
+
+````javascript
+...
+    const welcomeElement  = document.getElementById('currentUser');
+    const languageElement = document.getElementById('language');
+    if (welcomeElement) {
+        welcomeElement.textContent = `${username}`;
+        languageElement.textContent = `${navigator.language}`;
+        document.getElementById('datalistName').value = username;
+    } else {
+        console.error("Element with ID 'welcomeMessage' not found.");
+    }
+...
+````
+
+## rotamaster.person.js
+
+````javascript
+...
+    const welcomeElement  = document.getElementById('currentUser');
+    const languageElement = document.getElementById('language');
+    if (welcomeElement) {
+        welcomeElement.textContent = `${username}`;
+        languageElement.textContent = `${navigator.language}`;
+    } else {
+        console.error("Element with ID 'welcomeMessage' not found.");
+    }
+...
+````
+
+## about.html
+
+````html
+...
+    const welcomeElement  = document.getElementById('currentUser');
+    const languageElement = document.getElementById('language');
+    if (welcomeElement) {
+        welcomeElement.textContent = `${username}`;
+        languageElement.textContent = `${navigator.language}`;
+    } else {
+        console.error("Element with ID 'welcomeMessage' not found.");
+    }
+...
+````
+
+## absence.html
+
+````html
+...
+    <span class="navbar-text ms-auto p-2" id="currentUser">
+        <!-- logged-in as Username -->
+    </span>
+    <span class="navbar-text p-2" id="language">
+        <!-- current browser language -->
+    </span>
+...
+````
+
+## index.html
+
+````html
+...
+    <span class="navbar-text ms-auto p-2" id="currentUser">
+        <!-- logged-in as Username -->
+    </span>
+    <span class="navbar-text p-2" id="language">
+        <!-- current browser language -->
+    </span>
+...
+````
+
+## person.html
+
+````html
+...
+    <span class="navbar-text ms-auto p-2" id="currentUser">
+        <!-- logged-in as Username -->
+    </span>
+    <span class="navbar-text p-2" id="language">
+        <!-- current browser language -->
+    </span>
+...
+````
 
 ## 2025-03-30
 
