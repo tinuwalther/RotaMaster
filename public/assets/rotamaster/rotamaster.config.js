@@ -7,7 +7,7 @@
  * to ensure consistency across the application.
  */
 const calendarConfig = {
-    appVersion: "5.5.1",
+    appVersion: "5.5.2",
     appPrefix: "PS",
     opsGenie: true,
     scheduleName: 'tinu_schedule',
@@ -50,6 +50,7 @@ const calendarConfig = {
         }
     ],
 }
+
 
 
 
