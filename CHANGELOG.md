@@ -80,14 +80,12 @@ After implementing the following code, increase the appVersion in rotamaster.con
 
 ````html
 ...
-    const welcomeElement  = document.getElementById('currentUser');
-    const languageElement = document.getElementById('language');
-    if (welcomeElement) {
-        welcomeElement.textContent = `${username}`;
-        languageElement.textContent = `${navigator.language}`;
-    } else {
-        console.error("Element with ID 'welcomeMessage' not found.");
-    }
+    <span class="navbar-text ms-auto p-2" id="currentUser">
+        <!-- logged-in as Username -->
+    </span>
+    <span class="navbar-text p-2" id="language">
+        <!-- current browser language -->
+    </span>
 ...
 ````
 
