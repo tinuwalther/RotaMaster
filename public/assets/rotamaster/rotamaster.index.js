@@ -26,9 +26,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             username = userCookie.name;
             if (username) {
-                const welcomeElement = document.getElementById('currentUser');
+                const welcomeElement  = document.getElementById('currentUser');
+                const languageElement = document.getElementById('language');
                 if (welcomeElement) {
                     welcomeElement.textContent = `${username}`;
+                    languageElement.textContent = `${navigator.language}`;
                     document.getElementById('datalistName').value = username;
                 } else {
                     console.error("Element with ID 'welcomeMessage' not found.");
