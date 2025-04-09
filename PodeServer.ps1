@@ -79,16 +79,8 @@ Start-PodeServer -Browse -Threads 2 {
         }
         $jsonData = $cookieData | ConvertTo-Json -Depth 10 -Compress
 
-        # encode JSON explicit to UTF-8 no BOM
-        $utf8Bytes = [System.Text.Encoding]::UTF8.GetBytes($jsonData)
-        $utf8Json = [System.Text.Encoding]::UTF8.GetString($utf8Bytes)
-
-        # encode JSON to URL
-        $encodedJson = [System.Web.HttpUtility]::UrlEncode($utf8Json)
-
-        # Set cookie with encoded JSON no BOM and URL encoded, add 1 day to expiry date
-        Set-PodeCookie -Name "CurrentUser" -Value $encodedJson -ExpiryDate (Get-Date).AddDays(1)
-
+        Set-PodeCookie -Name "CurrentUser" -Value $jsonData -ExpiryDate (Get-Date).AddDays(1)
+        
         return @{ User = $user }
     }
 
