@@ -143,7 +143,7 @@ begin{
     $ApiPath = $($BinPath).Replace('bin','api')
     $LogPath = $($BinPath).Replace('bin','logs')
     $Logfile = Join-Path -Path $LogPath -ChildPath "informational_$(Get-Date -f 'yyyy-MM-dd').log"
-    $dbName  = 'ts-i-ci.db'
+    $dbName  = 'rotamaster.db'
     $dbPath  = Join-Path -Path $($ApiPath) -ChildPath $dbName
 
 }
