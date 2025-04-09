@@ -1777,7 +1777,7 @@ function Update-PSModuleVersion{
         $configContent = $configContent -replace '(?<=moduleName: "PSSQLite",\s*moduleVersion: ")([^"]+)', $pssqliteVersion
 
         # Write the updated content back to the config file
-        Set-Content -Path $configFilePath -Value $configContent
+        Set-Content -Path $configFilePath -Value $configContent.Trim()
 } catch {
         Write-Error "An error occurred: $_"
     }
