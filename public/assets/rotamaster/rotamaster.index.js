@@ -17,11 +17,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Load userCookie and display the username
     const userCookie = getCookie('CurrentUser');
-    userCookie.events = "all";
-    setCookie('CurrentUser', JSON.stringify(userCookie), 1);
     
     let username = null;
     if (userCookie) {
+        userCookie.events = "all";
+        setCookie('CurrentUser', JSON.stringify(userCookie), 1);
+
         console.log(`Name: ${userCookie.name}, Login: ${userCookie.login}, Email: ${userCookie.email}`);
         try {
             username = userCookie.name;
