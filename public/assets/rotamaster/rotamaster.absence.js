@@ -14,15 +14,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     const userCookie = getCookie('CurrentUser');
     let username = null;
     if (userCookie) {
-        // console.log(`Name: ${userCookie.name}`);
-        // console.log(`Login: ${userCookie.login}`);
-        // console.log(`Email: ${userCookie.email}`);
+        console.log(`Name: ${userCookie.name}, Login: ${userCookie.login}, Email: ${userCookie.email}`);
         try {
             username = userCookie.name;
             if (username) {
-                const welcomeElement = document.getElementById('currentUser');
+                const welcomeElement  = document.getElementById('currentUser');
+                const languageElement = document.getElementById('language');
                 if (welcomeElement) {
                     welcomeElement.textContent = `${username}`;
+                    languageElement.textContent = `${navigator.language}`;
                 } else {
                     console.error("Element with ID 'welcomeMessage' not found.");
                 }

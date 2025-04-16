@@ -589,7 +589,7 @@ function getEventColors(type) {
  * const response = await createOpsGenieOverride(data);
  */
 async function createOpsGenieOverride(data){
-    const response = await fetch('/api/opsgenie/override/create', {
+    const response = await fetch('/api/ggf. OpsGenie prüfen/override/create', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json' // Send as JSON
@@ -680,7 +680,11 @@ async function createDBData(url, data){
         }
     } else {
         console.error('Failed to create event:', response, data);
-        showAlert(`Fehler beim Erstellen des Events ${data.name}, ggf. OpsGenie prüfen - ${data.type}: ${response.status}, ${response.statusText}`);
+        if(data.type.includes('Pikett')){
+            showAlert(`Fehler beim Erstellen des Pikett-Events ${data.name}, ggf. OpsGenie prüfen - ${data.type}: ${response.status}, ${response.statusText}`);
+        }else{
+            showAlert(`Fehler beim Erstellen des Events ${data.name} - ${data.type}: ${response.status}, ${response.statusText}`);
+        }
     }
 }
 
@@ -941,36 +945,59 @@ function getFormData(form) {
  * console.log(username); // Output: 'JohnDoe'
  *
 */
+// function getCookie(name) {
+//     const value = `; ${document.cookie}`;
+//     const parts = value.split(`; ${name}=`);
+
+//     if (parts.length === 2) {
+//         let cookieValue = parts.pop().split(';').shift();
+//         try {
+//             // URL-Dekodierung und Umwandlung von "+" zurück in Leerzeichen
+//             cookieValue = decodeURIComponent(cookieValue).replace(/\+/g, " ");
+
+//             // JSON parsen
+//             const parsedValue = JSON.parse(cookieValue);
+//             return parsedValue;
+//         } catch (error) {
+//             console.error('Error parsing cookie value:', error, cookieValue);
+//             return null;
+//         }
+//     }
+
+//     return null;
+// }
+
 function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-
-    if (parts.length === 2) {
-        let cookieValue = parts.pop().split(';').shift();
-        try {
-            // URL-Dekodierung und Umwandlung von "+" zurück in Leerzeichen
-            cookieValue = decodeURIComponent(cookieValue).replace(/\+/g, " ");
-
-            // JSON parsen
-            const parsedValue = JSON.parse(cookieValue);
-            return parsedValue;
-        } catch (error) {
-            console.error('Error parsing cookie value:', error, cookieValue);
-            return null;
+    const cookies = document.cookie.split('; ');
+    for (const cookie of cookies) {
+        const [key, value] = cookie.split('=');
+        if (key === name) {
+            try {
+                const decoded = decodeURIComponent(value); // Dekodiere den Cookie-Wert
+                return JSON.parse(decoded); // Parsen als JSON
+            } catch (err) {
+                console.error(`Fehler beim Parsen des Cookies "${name}":`, err, value);
+                return null;
+            }
         }
     }
-
     return null;
 }
 
+// function setCookie(name, value, days) {
+//     let expires = "";
+//     if (days) {
+//         const date = new Date();
+//         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+//         expires = "; expires=" + date.toUTCString();
+//     }
+//     document.cookie = name + "=" + (value || "") + expires + "; path=/";
+// }
+
 function setCookie(name, value, days) {
-    let expires = "";
-    if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
 }
 
 function deleteCookie(name) {

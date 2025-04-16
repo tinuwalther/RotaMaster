@@ -70,7 +70,7 @@ PowerShellVersion = '7.4'
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Get-MonthCalendar','Get-MonthAbbreviation','Get-SwissHolidays','Get-EventColor','Initialize-WebEndpoints','Initialize-ApiEndpoints','Update-PSModuleVersion'
+    'Get-MonthCalendar','Get-MonthAbbreviation','Get-SwissHolidays','Get-EventColor','Initialize-WebEndpoints','Initialize-ApiEndpoints','Update-PSModuleVersion','New-OpsGenieOverride'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

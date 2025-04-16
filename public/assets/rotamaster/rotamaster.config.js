@@ -7,9 +7,9 @@
  * to ensure consistency across the application.
  */
 const calendarConfig = {
-    appVersion: "5.5.1",
+    appVersion: "5.5.3",
     appPrefix: "PS",
-    opsGenie: true,
+    opsGenie: false,
     scheduleName: 'tinu_schedule',
     rotationName: '2025',
     timeZone: 'local',
@@ -50,9 +50,4 @@ const calendarConfig = {
         }
     ],
 }
-
-
-
-
-
 

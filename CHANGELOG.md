@@ -2,6 +2,8 @@
 
 ## Table of Contents
 
+- [2025-04-09](#2025-04-09)
+- [2025-04-04](#2025-04-04)
 - [2025-03-30](#2025-03-30)
 - [2025-03-23](#2025-03-23)
 - [2025-03-12](#2025-03-12)
@@ -11,6 +13,198 @@
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
+
+## 2025-04-09
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.3.
+
+### PodeServer.ps1
+
+Replace Set-PodeCookie in New-PodeAuthScheme.
+
+````powershell
+...
+$jsonData = $cookieData | ConvertTo-Json -Depth 10 -Compress
+
+Set-PodeCookie -Name "CurrentUser" -Value $jsonData -ExpiryDate (Get-Date).AddDays(1)
+...
+````
+
+### rotamaster.index.js
+
+````javascript
+if (userCookie) {
+    userCookie.events = "all";
+    setCookie('CurrentUser', JSON.stringify(userCookie), 1);
+...
+````
+
+### rotamaster.main.js
+
+Replace function getCookie, setCookie and createDBData.
+
+````javascript
+function getCookie(name) {
+    const cookies = document.cookie.split('; ');
+    for (const cookie of cookies) {
+        const [key, value] = cookie.split('=');
+        if (key === name) {
+            try {
+                const decoded = decodeURIComponent(value); // Dekodiere den Cookie-Wert
+                return JSON.parse(decoded); // Parsen als JSON
+            } catch (err) {
+                console.error(`Fehler beim Parsen des Cookies "${name}":`, err, value);
+                return null;
+            }
+        }
+    }
+    return null;
+}
+
+function setCookie(name, value, days) {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
+}
+
+async function createDBData(url, data){
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json' // Send as JSON
+        },
+        body: JSON.stringify(data) // Convert form data to JSON string
+    });
+    if (response.ok) {
+        // console.log('DEBUG', response.status, response.statusText, `${data.name} - ${data.type}`); // Ausgabe: "Record successfully updated"
+        if(data.type.includes('Pikett') || data.type.includes('Ferien')){
+            window.location.reload();
+        }
+    } else {
+        console.error('Failed to create event:', response, data);
+        if(data.type.includes('Pikett')){
+            showAlert(`Fehler beim Erstellen des Pikett-Events ${data.name}, ggf. OpsGenie prüfen - ${data.type}: ${response.status}, ${response.statusText}`);
+        }else{
+            showAlert(`Fehler beim Erstellen des Events ${data.name} - ${data.type}: ${response.status}, ${response.statusText}`);
+        }
+    }
+}
+````
+
+## 2025-04-04
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.2.
+
+### rotamaster.about.js
+
+````javascript
+...
+    <span class="navbar-text ms-auto p-2" id="currentUser">
+        <!-- logged-in as Username -->
+    </span>
+    <span class="navbar-text p-2" id="language">
+        <!-- current browser language -->
+    </span>
+...
+````
+
+### rotamaster.absence.js
+
+````javascript
+...
+    const welcomeElement  = document.getElementById('currentUser');
+    const languageElement = document.getElementById('language');
+    if (welcomeElement) {
+        welcomeElement.textContent = `${username}`;
+        languageElement.textContent = `${navigator.language}`;
+    } else {
+        console.error("Element with ID 'welcomeMessage' not found.");
+    }
+...
+````
+
+### rotamaster.index.js
+
+````javascript
+...
+    const welcomeElement  = document.getElementById('currentUser');
+    const languageElement = document.getElementById('language');
+    if (welcomeElement) {
+        welcomeElement.textContent = `${username}`;
+        languageElement.textContent = `${navigator.language}`;
+        document.getElementById('datalistName').value = username;
+    } else {
+        console.error("Element with ID 'welcomeMessage' not found.");
+    }
+...
+````
+
+### rotamaster.person.js
+
+````javascript
+...
+    const welcomeElement  = document.getElementById('currentUser');
+    const languageElement = document.getElementById('language');
+    if (welcomeElement) {
+        welcomeElement.textContent = `${username}`;
+        languageElement.textContent = `${navigator.language}`;
+    } else {
+        console.error("Element with ID 'welcomeMessage' not found.");
+    }
+...
+````
+
+### about.html
+
+````html
+...
+    <span class="navbar-text ms-auto p-2" id="currentUser">
+        <!-- logged-in as Username -->
+    </span>
+    <span class="navbar-text p-2" id="language">
+        <!-- current browser language -->
+    </span>
+...
+````
+
+### absence.html
+
+````html
+...
+    <span class="navbar-text ms-auto p-2" id="currentUser">
+        <!-- logged-in as Username -->
+    </span>
+    <span class="navbar-text p-2" id="language">
+        <!-- current browser language -->
+    </span>
+...
+````
+
+### index.html
+
+````html
+...
+    <span class="navbar-text ms-auto p-2" id="currentUser">
+        <!-- logged-in as Username -->
+    </span>
+    <span class="navbar-text p-2" id="language">
+        <!-- current browser language -->
+    </span>
+...
+````
+
+### person.html
+
+````html
+...
+    <span class="navbar-text ms-auto p-2" id="currentUser">
+        <!-- logged-in as Username -->
+    </span>
+    <span class="navbar-text p-2" id="language">
+        <!-- current browser language -->
+    </span>
+...
+````
 
 ## 2025-03-30
 

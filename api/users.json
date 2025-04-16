@@ -130,5 +130,17 @@
         "Metadata": {
             "Created": "2024-11-24"
         }
+    },
+    {
+        "Name": "Müller Marius",
+        "Username": "mmueller",
+        "Email": "marius.mueller@company.com",
+        "Password": "EOFHFKqYdtBVagTJ5nbPGnEHoSkAsLkDEy3cVw0r2vA=",
+        "Groups": [
+            "User"
+        ],
+        "Metadata": {
+            "Created": "2024-11-24"
+        }
     }
 ]

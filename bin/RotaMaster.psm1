@@ -406,6 +406,139 @@ function Get-OpsGenieOverride {
     }
 }
 
+function New-OpsGenieOverride {
+    <#
+    .SYNOPSIS
+        A short one-line action-based description, e.g. 'Tests if a function is valid'
+    .DESCRIPTION
+        A longer description of the function, its purpose, common use cases, etc.
+    .NOTES
+        Information or caveats about the function e.g. 'This function is not supported in Linux'
+    .EXAMPLE
+        New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
+        Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+    #>
+    [CmdletBinding(SupportsShouldProcess=$True)]
+    param(
+        # Test-Compute_schedule
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 0
+        )]
+        [String] $Schedule,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 1
+        )]
+        [Object] $Rotation,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 2
+        )]
+        [String] $startDate,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 3
+        )]
+        [String] $endDate,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 4
+        )]
+        [Object] $participants,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 5
+        )]
+        [String] $ApiKey,
+
+        [Parameter(
+            Mandatory=$true,
+            ValueFromPipeline=$true,
+            ValueFromPipelineByPropertyName=$true,
+            Position = 6
+        )]
+        [String] $Logfile
+    )
+
+    begin{
+        #region Do not change this region
+        $StartTime = Get-Date
+        $function = $($MyInvocation.MyCommand.Name)
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
+        #endregion
+    }
+
+    process{
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
+        foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
+        if ($PSCmdlet.ShouldProcess($params.Trim())){
+            try{
+                # Define variables
+                $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule/overrides?scheduleIdentifierType=name"
+
+                # Create headers for the API request
+                $Headers = @{
+                    Authorization = "GenieKey $ApiKey"
+                    "Content-Type" = "application/json"
+                }
+
+                # Create the body the API request
+                $Payload = [PSCustomObject]@{
+                    #alias        = ([guid]::NewGuid()).Guid
+                    user         = $participants[0]
+                    startDate    = (Get-Date $startDate).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                    endDate      = (Get-Date $endDate).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                    rotations    = $Rotation
+                }
+                $JsonPayload = $Payload | ConvertTo-Json -Depth 10 -Compress
+
+                try {
+                    Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method POST -Body $JsonPayload
+                }
+                catch {
+                    $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    $BaseUrl | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    $JsonPayload | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
+                    @{ statusCode = "error"; statusText = $_.Exception.Message}
+                }
+            }catch{
+                Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
+                $Error.Clear()
+            }
+        }
+    }
+
+    end{
+        #region Do not change this region
+        Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
+        $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
+        $Formatted = $TimeSpan | ForEach-Object {
+            '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
+        }
+        Write-Verbose $('Finished in:', $Formatted -Join ' ')
+        #endregion
+    }
+}
+
 function Get-MonthCalendar{
     <#
     .SYNOPSIS
@@ -1245,139 +1378,6 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method POST -Path '/api/opsgenie/override/create' -ArgumentList @($Logfile) -Authentication 'Login' -ScriptBlock {
             param($Logfile)
 
-            function New-OpsGenieOverride {
-                <#
-                .SYNOPSIS
-                    A short one-line action-based description, e.g. 'Tests if a function is valid'
-                .DESCRIPTION
-                    A longer description of the function, its purpose, common use cases, etc.
-                .NOTES
-                    Information or caveats about the function e.g. 'This function is not supported in Linux'
-                .EXAMPLE
-                    New-MwaFunction @{Name='MyName';Value='MyValue'} -Verbose
-                    Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
-                #>
-                [CmdletBinding(SupportsShouldProcess=$True)]
-                param(
-                    # Test-Compute_schedule
-                    [Parameter(
-                        Mandatory=$true,
-                        ValueFromPipeline=$true,
-                        ValueFromPipelineByPropertyName=$true,
-                        Position = 0
-                    )]
-                    [String] $Schedule,
-            
-                    [Parameter(
-                        Mandatory=$true,
-                        ValueFromPipeline=$true,
-                        ValueFromPipelineByPropertyName=$true,
-                        Position = 1
-                    )]
-                    [Object] $Rotation,
-            
-                    [Parameter(
-                        Mandatory=$true,
-                        ValueFromPipeline=$true,
-                        ValueFromPipelineByPropertyName=$true,
-                        Position = 2
-                    )]
-                    [String] $startDate,
-            
-                    [Parameter(
-                        Mandatory=$true,
-                        ValueFromPipeline=$true,
-                        ValueFromPipelineByPropertyName=$true,
-                        Position = 3
-                    )]
-                    [String] $endDate,
-            
-                    [Parameter(
-                        Mandatory=$true,
-                        ValueFromPipeline=$true,
-                        ValueFromPipelineByPropertyName=$true,
-                        Position = 4
-                    )]
-                    [Object] $participants,
-            
-                    [Parameter(
-                        Mandatory=$true,
-                        ValueFromPipeline=$true,
-                        ValueFromPipelineByPropertyName=$true,
-                        Position = 5
-                    )]
-                    [String] $ApiKey,
-            
-                    [Parameter(
-                        Mandatory=$true,
-                        ValueFromPipeline=$true,
-                        ValueFromPipelineByPropertyName=$true,
-                        Position = 6
-                    )]
-                    [String] $Logfile
-                )
-            
-                begin{
-                    #region Do not change this region
-                    $StartTime = Get-Date
-                    $function = $($MyInvocation.MyCommand.Name)
-                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Begin   ]', $function -Join ' ')
-                    #endregion
-                }
-            
-                process{
-                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ Process ]', $function -Join ' ')
-                    foreach($item in $PSBoundParameters.keys){ $params = "$($params) -$($item) $($PSBoundParameters[$item])" }
-                    if ($PSCmdlet.ShouldProcess($params.Trim())){
-                        try{
-                            # Define variables
-                            $BaseUrl = "https://api.eu.opsgenie.com/v2/schedules/$Schedule/overrides?scheduleIdentifierType=name"
-            
-                            # Create headers for the API request
-                            $Headers = @{
-                                Authorization = "GenieKey $ApiKey"
-                                "Content-Type" = "application/json"
-                            }
-            
-                            # Create the body the API request
-                            $Payload = [PSCustomObject]@{
-                                #alias        = ([guid]::NewGuid()).Guid
-                                user         = $participants[0]
-                                startDate    = (Get-Date $startDate).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-                                endDate      = (Get-Date $endDate).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-                                rotations    = $Rotation
-                            }
-                            $JsonPayload = $Payload | ConvertTo-Json -Depth 10 -Compress
-            
-                            try {
-                                Invoke-RestMethod -Uri $BaseUrl -Headers $Headers -Method POST -Body $JsonPayload
-                            }
-                            catch {
-                                $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
-                                $BaseUrl | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
-                                $WebEvent.Data | Out-String | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
-                                $JsonPayload | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
-                                @{ statusCode = "error"; statusText = $_.Exception.Message}
-                            }
-                        }catch{
-                            Write-Warning $('ScriptName:', $($_.InvocationInfo.ScriptName), 'LineNumber:', $($_.InvocationInfo.ScriptLineNumber), 'Message:', $($_.Exception.Message) -Join ' ')
-                            $Error.Clear()
-                        }
-                    }
-                }
-            
-                end{
-                    #region Do not change this region
-                    Write-Verbose $('[', (Get-Date -f 'yyyy-MM-dd HH:mm:ss.fff'), ']', '[ End     ]', $function -Join ' ')
-                    $TimeSpan  = New-TimeSpan -Start $StartTime -End (Get-Date)
-                    $Formatted = $TimeSpan | ForEach-Object {
-                        '{1:0}h {2:0}m {3:0}s {4:000}ms' -f $_.Days, $_.Hours, $_.Minutes, $_.Seconds, $_.Milliseconds
-                    }
-                    Write-Verbose $('Finished in:', $Formatted -Join ' ')
-                    #endregion
-                }
-            }
-
             try{
 
                 $ScheduleName   = $WebEvent.Data['scheduleName']
@@ -1777,7 +1777,7 @@ function Update-PSModuleVersion{
         $configContent = $configContent -replace '(?<=moduleName: "PSSQLite",\s*moduleVersion: ")([^"]+)', $pssqliteVersion
 
         # Write the updated content back to the config file
-        Set-Content -Path $configFilePath -Value $configContent
+        Set-Content -Path $configFilePath -Value $configContent.Trim()
 } catch {
         Write-Error "An error occurred: $_"
     }
