@@ -25,14 +25,21 @@ After implementing the following code, increase the appVersion in rotamaster.con
 ...
 // Load userCookie and display the username
 const userCookie = getCookie('CurrentUser');
+const eventView = userCookie.events || "all";
 const savedView = userCookie.savedView || "dayGridMonth";
+...
+let calendar = new FullCalendar.Calendar(calendarEl, {
+    // Concatenate the calendarConfig from the rotamaster.js file
+    ...calendarConfig,
+    // get initialView from cookie
+    initialView: userCookie.savedView,
 ...
 // This function is called when the view is changed or the date changes
 datesSet: function(info) {
     
+    userCookie.events = eventView;
     userCookie.savedView = info.view.type;
     setCookie('CurrentUser', JSON.stringify(userCookie), 1);
-    console.log(userCookie);
     ...
 }
 ...
