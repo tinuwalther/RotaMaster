@@ -2,6 +2,7 @@
 
 ## Table of Contents
 
+- [2025-04-22](#2025-04-22)
 - [2025-04-09](#2025-04-09)
 - [2025-04-04](#2025-04-04)
 - [2025-03-30](#2025-03-30)
@@ -13,6 +14,29 @@
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
+
+## 2025-04-22
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.4.
+
+### rotamaster.index.js
+
+````javascript
+...
+// Load userCookie and display the username
+const userCookie = getCookie('CurrentUser');
+const savedView = userCookie.savedView || "dayGridMonth";
+...
+// This function is called when the view is changed or the date changes
+datesSet: function(info) {
+    
+    userCookie.savedView = info.view.type;
+    setCookie('CurrentUser', JSON.stringify(userCookie), 1);
+    console.log(userCookie);
+    ...
+}
+...
+````
 
 ## 2025-04-09
 
