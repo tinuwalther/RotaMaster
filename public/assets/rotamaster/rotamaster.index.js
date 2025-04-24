@@ -17,10 +17,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Load userCookie and display the username
     const userCookie = getCookie('CurrentUser');
-    
+    const eventView = userCookie.events || "all";
+    const savedView = userCookie.savedView || "dayGridMonth";
+        
     let username = null;
     if (userCookie) {
-        userCookie.events = "all";
         setCookie('CurrentUser', JSON.stringify(userCookie), 1);
 
         console.log(`Name: ${userCookie.name}, Login: ${userCookie.login}, Email: ${userCookie.email}`);
@@ -150,6 +151,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     let calendar = new FullCalendar.Calendar(calendarEl, {
         // Concatenate the calendarConfig from the rotamaster.js file
         ...calendarConfig,
+        // get initialView from cookie
+        initialView: userCookie.savedView,
 
         // Data from the API is fetched and displayed in the calendar
         events: calendarEvents,
@@ -186,31 +189,38 @@ document.addEventListener('DOMContentLoaded', async function() {
                 text: 'My Events',
                 click: async function() {
                     const button = document.querySelector('.fc-filterEvents-button');
-                    const holidays = await loadApiData('/api/csv/read');
+                    const holidays = await loadApiData('/api/csv/read');                    
                     isMyEvents = button.textContent;
+
                     let currentEvents = [];
                     let calendarEvents = [];
+                    let response = null;
 
                     if (isMyEvents.includes('My Events')) {
                         // Export events of the current user
-                        const response = await fetch(`/api/event/read/${username}`);
+                        response = await fetch(`/api/event/read/${username}`);
                         if (!response.ok) {
-                            throw new Error(`Failed to fetch user events of ${username}`);
+                            // throw new Error(`Failed to fetch user events of ${username}`);
+                            response = await fetch('/api/event/read/*');
+                            if (!response.ok) {
+                                throw new Error('Failed to fetch user events of all users');
+                            }
+                            currentEvents = await response.json();
+                            userCookie.events = "all";
+                            button.textContent = 'My Events';
                         }
                         currentEvents = await response.json();
                         userCookie.events = "personal";
                         button.textContent = 'All Events';
-                        
                     }else if(isMyEvents.includes('All Events')) {
                         // Export events of all users
-                        const response = await fetch('/api/event/read/*');
+                        response = await fetch('/api/event/read/*');
                         if (!response.ok) {
                             throw new Error('Failed to fetch user events of all users');
                         }
                         currentEvents = await response.json();
                         userCookie.events = "all";
                         button.textContent = 'My Events';
-                        
                     }
                     setCookie('CurrentUser', JSON.stringify(userCookie), 1);
 
@@ -228,6 +238,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         // This function is called when the view is changed or the date changes
         datesSet: function(info) {
             
+            userCookie.events = eventView;
+            userCookie.savedView = info.view.type;
+            setCookie('CurrentUser', JSON.stringify(userCookie), 1);
+        
             let displayedYear = calcDisplayedYear(info);
 
             // Display the year after the Summary text
