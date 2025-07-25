@@ -863,17 +863,28 @@ function setModalEventData(event) {
  * Refreshes the calendar by fetching updated event data.
  */
 async function refreshCalendarData(calendar) {
-    try {
+    // try {
         const button = document.querySelector('.fc-filterEvents-button');
         const userCookie = getCookie('CurrentUser');
         const holidays = await loadApiData('/api/csv/read');
+        if (!holidays) throw new Error('Failed to fetch events of holidays');
 
         let events = [];
         if(userCookie.events === 'all'){
             events = await readDBData('/api/event/read/*');
+            if (!events) throw new Error('Failed to fetch user events of all users');
             button.textContent = 'My Events';
         }else if(userCookie.events === 'personal'){
             events = await readDBData(`/api/event/read/${userCookie.name}`);
+            if (!events) {
+                setCookie('CurrentUser', JSON.stringify({ ...userCookie, events: 'all' }), 1);
+                button.textContent = 'My Events';
+                showConfirm(`Ein Fehler ist beim Aktualisieren der Kalenderdaten von ${userCookie.name} aufgetreten. Möchten Sie das Fenster mit allen Daten neu laden?`).then((result) => { 
+                    if (result) {
+                        window.location.reload();
+                    }
+                });
+            }
             button.textContent = 'All Events';
         }
 
@@ -882,14 +893,15 @@ async function refreshCalendarData(calendar) {
             ...(holidays || []), // Feiertage (falls vorhanden)
             ...(Array.isArray(events) ? events : [events] || []) // User Events als Array
         ];
-        
+
+        if (!calendarEvents) throw new Error('Failed to fetch user events!');
         calendar.removeAllEvents();
         calendar.addEventSource(calendarEvents);
         
-    } catch (error) {
-        console.error('Error refreshing calendar data:', error);
-        showAlert('Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
-    }
+    // } catch (error) {
+    //     console.error('Error refreshing calendar data:', error);
+    //     showAlert('Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
+    // }
 }
 
 /**

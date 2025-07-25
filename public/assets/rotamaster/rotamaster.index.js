@@ -4,6 +4,7 @@ window.addEventListener('load', () => {
 });
 
 let db;
+let username = null; // contextMenu V5.5.5
 
 window.addEventListener('resize', () => {
     const eventsSection = document.getElementById('showEvents');
@@ -20,7 +21,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const eventView = userCookie.events || "all";
     const savedView = userCookie.savedView || "dayGridMonth";
         
-    let username = null;
     if (userCookie) {
         setCookie('CurrentUser', JSON.stringify(userCookie), 1);
 
@@ -92,6 +92,110 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
+    //#region Modal contextMenu V5.5.5
+    const contextMenu = document.getElementById("contextMenu");
+    const exportNewEvent = document.getElementById('btnNewEvent');
+
+    // Right-click event to open the contextMenu
+    document.addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+
+        const contextMenuModal = new bootstrap.Modal(document.getElementById('contextMenu'));
+        contextMenuModal.show();
+    });
+
+    // Close the contextMenu when clicking outside of it
+    window.addEventListener("click", function (event) {
+        if (event.target === contextMenu) {
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+    });
+
+    // Add an event listener to the submit button of the contextMenu
+    exportNewEvent.addEventListener('click', async function() {
+
+        const eventType = document.getElementById('nameDropdownAbsence-contextMenu').value.trim();
+        const personName = document.getElementById('nameDropdownPerson-contextMenu').value.trim();
+        const startDate = document.getElementById('start-contextMenu').value.trim();
+        const endDate = document.getElementById('end-contextMenu').value.trim();
+
+        if (!eventType || !personName || !startDate || !endDate){
+            showAlert(`Bitte alle Felder auswählen!\nName: ${personName}\nType: ${eventType}\nStart: ${startDate}\nEnd: ${endDate}`);
+            return;
+        }
+
+        try {
+            const data = {
+                type: eventType,
+                name: personName,
+                start: startDate,
+                end: endDate
+            };
+
+            if(data.start <= data.end){
+                if(data.type === 'Pikett') {
+
+                    const response = await fetch(`/api/person/read/${personName}`);
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch user ${username}`);
+                    }
+                    const currentUser = await response.json();
+                    if(currentUser){
+                        // Create Override in OpsGenie
+                        if(calendarConfig.opsGenie){
+                            const override = {                                    
+                                scheduleName: calendarConfig.scheduleName,
+                                rotationName: calendarConfig.rotationName,
+                                userName: currentUser.email,
+                                onCallStart: data.start,
+                                onCallEnd: data.end
+                            };
+                            const opsGenieResult = await createOpsGenieOverride(override);
+                            console.log('DEBUG', 'OpsGenie Override:', opsGenieResult);
+                            if(opsGenieResult){
+                                // Add the event to the SQLite table event
+                                data.alias = opsGenieResult.data.alias;
+                                // console.log('DEBUG', data);
+                                await createDBData('/api/event/create', data, currentUser);
+                            }else{
+                                showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
+                                throw new Error(`Failed to create Override in OpsGenie for user ${currentUser.email}`);
+                            }
+                        }else{
+                            // Add the event to the SQLite table event
+                            data.alias = null;
+                            // console.log('DEBUG', data);
+                            await createDBData('/api/event/create', data, currentUser);
+                        }
+                    }else{
+                        throw new Error(`Failed to create Override in OpsGenie for user ${username}`);
+                    }
+                }else{
+                    // Add the event to the SQLite table event
+                    data.alias = null;
+                    // console.log('DEBUG', data);
+                    await createDBData('/api/event/create', data, currentUser);
+                    refreshCalendarData(calendar);
+                }
+
+            }else{
+                showAlert(`Das Enddatum kann nicht vor dem Startdatum liegen!\n${data.name} - ${data.type}\nStart: ${data.start}, End: ${data.end}`);
+            }
+        } catch (error) {
+            console.error('Error occurred:', error);
+            showAlert('An error occurred while adding the event.');
+        }
+        finally {
+            // Close the context menu modal
+            const contextMenuModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('contextMenu'));
+            contextMenuModal.hide();
+        }
+    });
+
+    //#endregion Modal contextMenu
+
     // Fetch the events from the API (from the SQLite view v_events) and fill the calendar with the events
     const events = await readDBData('/api/event/read/*');
     const holidays = await loadApiData('/api/csv/read');
@@ -117,6 +221,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             fillDatalistOptions('datalistOptions', personNames);
             fillDropdownOptions('nameDropdownPerson', personNames);
             fillDropdownOptions('nameDropdownPersonModal', personNames);
+            fillDropdownOptions('nameDropdownPerson-contextMenu', personNames); // contextMenu V5.5.5
         } else {
             console.error('No person found.');
         }
@@ -139,6 +244,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (absenceNames.length) {
             fillDropdownOptions('nameDropdownAbsence', absenceNames);
             fillDropdownOptions('nameDropdownAbsenceModal', absenceNames);
+            fillDropdownOptions('nameDropdownAbsence-contextMenu', absenceNames); // contextMenu V5.5.5
         } else {
             console.error('No absence found.');
         }
@@ -148,6 +254,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Create a new FullCalendar instance
     let calendarEl = document.getElementById('calendar');
+
     let calendar = new FullCalendar.Calendar(calendarEl, {
         // Concatenate the calendarConfig from the rotamaster.js file
         ...calendarConfig,
@@ -343,6 +450,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Set values in form elements
             document.getElementById('start').value = formattedStartDate;
             document.getElementById('end').value = formattedEndDate;
+            // contextMenu V5.5.5
+            document.getElementById('start-contextMenu').value = formattedStartDate;
+            document.getElementById('end-contextMenu').value = formattedEndDate;
+
         },
 
         // This function is called when an event is moved
@@ -552,15 +663,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                             const opsGenieResult = await createOpsGenieOverride(override);
                             console.log('DEBUG', 'OpsGenie Override:', opsGenieResult);
                             if(opsGenieResult){
-                                // showAlert(`OpsGenie Override ${opsGenieResult.data.alias} created`)
-                                // const message = `Override in OpsGenie für ${currentUser.email} als ${opsGenieResult.data.alias} erstellt. Kalender aktualisieren?`;
-                                // const messageResult = await showConfirm(message);
-                                // if (messageResult) {
-                                    // Add the event to the SQLite table event
-                                    data.alias = opsGenieResult.data.alias;
-                                    // console.log('DEBUG', data);
-                                    await createDBData('/api/event/create', data, currentUser);
-                                // }
+                                // Add the event to the SQLite table event
+                                data.alias = opsGenieResult.data.alias;
+                                // console.log('DEBUG', data);
+                                await createDBData('/api/event/create', data, currentUser);
                             }else{
                                 showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
                                 throw new Error(`Failed to create Override in OpsGenie for user ${currentUser.email}`);
@@ -587,6 +693,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         } catch (error) {
             console.error('Error occurred:', error);
             showAlert('An error occurred while adding the event.');
+        }
+        // contextMenu V5.5.5
+        finally {
+            // Close the context menu modal
+            const contextMenuModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('contextMenu'));
+            contextMenuModal.hide();
         }
     });
 

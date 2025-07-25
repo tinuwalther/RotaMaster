@@ -2,6 +2,7 @@
 
 ## Table of Contents
 
+- [2025-07-25](#2025-07-25)
 - [2025-04-22](#2025-04-22)
 - [2025-04-09](#2025-04-09)
 - [2025-04-04](#2025-04-04)
@@ -14,6 +15,222 @@
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
+
+## 2025-07-25
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.5. This version implementing a context manu to the calendar.
+
+### rotamaster.index.js
+
+After ````let db````
+
+````javascript
+...
+let username = null; // contextMenu V5.5.5
+...
+````
+
+After ````// Fetch the person from the API (from the SQLite table person) and fill the datalist with the person names````
+
+````javascript
+...
+if (personNames.length) {
+    fillDatalistOptions('datalistOptions', personNames);
+    fillDropdownOptions('nameDropdownPerson', personNames);
+    fillDropdownOptions('nameDropdownPersonModal', personNames);
+    fillDropdownOptions('nameDropdownPerson-contextMenu', personNames); // contextMenu V5.5.5
+} else {
+    console.error('No person found.');
+}
+...
+````
+
+After ````// Fetch the absence from the API (from the SQLite table absence) and fill the dropdown with the absence names````
+
+````javascript
+...
+if (absenceNames.length) {
+    fillDropdownOptions('nameDropdownAbsence', absenceNames);
+    fillDropdownOptions('nameDropdownAbsenceModal', absenceNames);
+    fillDropdownOptions('nameDropdownAbsence-contextMenu', absenceNames); // contextMenu V5.5.5
+} else {
+    console.error('No absence found.');
+}
+...
+````
+
+In ````select: function(info)````
+
+````javascript
+...
+// contextMenu V5.5.5
+document.getElementById('start-contextMenu').value = formattedStartDate;
+document.getElementById('end-contextMenu').value = formattedEndDate;
+...
+````
+
+After ````toggleFormButton.addEventListener````
+
+````javascript
+...
+//#region Modal contextMenu V5.5.5
+const contextMenu = document.getElementById("contextMenu");
+const exportNewEvent = document.getElementById('btnNewEvent');
+
+// Right-click event to open the contextMenu
+document.addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+
+    const contextMenuModal = new bootstrap.Modal(document.getElementById('contextMenu'));
+    contextMenuModal.show();
+});
+
+// Close the contextMenu when clicking outside of it
+window.addEventListener("click", function (event) {
+    if (event.target === contextMenu) {
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    }
+});
+
+// Add an event listener to the submit button of the contextMenu
+exportNewEvent.addEventListener('click', async function() {
+
+    const eventType = document.getElementById('nameDropdownAbsence-contextMenu').value.trim();
+    const personName = document.getElementById('nameDropdownPerson-contextMenu').value.trim();
+    const startDate = document.getElementById('start-contextMenu').value.trim();
+    const endDate = document.getElementById('end-contextMenu').value.trim();
+
+    if (!eventType || !personName || !startDate || !endDate){
+        showAlert(`Bitte alle Felder auswählen!\nName: ${personName}\nType: ${eventType}\nStart: ${startDate}\nEnd: ${endDate}`);
+        return;
+    }
+
+    try {
+        const data = {
+            type: eventType,
+            name: personName,
+            start: startDate,
+            end: endDate
+        };
+
+        if(data.start <= data.end){
+            if(data.type === 'Pikett') {
+
+                const response = await fetch(`/api/person/read/${personName}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch user ${username}`);
+                }
+                const currentUser = await response.json();
+                if(currentUser){
+                    // Create Override in OpsGenie
+                    if(calendarConfig.opsGenie){
+                        const override = {                                    
+                            scheduleName: calendarConfig.scheduleName,
+                            rotationName: calendarConfig.rotationName,
+                            userName: currentUser.email,
+                            onCallStart: data.start,
+                            onCallEnd: data.end
+                        };
+                        const opsGenieResult = await createOpsGenieOverride(override);
+                        console.log('DEBUG', 'OpsGenie Override:', opsGenieResult);
+                        if(opsGenieResult){
+                            // Add the event to the SQLite table event
+                            data.alias = opsGenieResult.data.alias;
+                            // console.log('DEBUG', data);
+                            await createDBData('/api/event/create', data, currentUser);
+                        }else{
+                            showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
+                            throw new Error(`Failed to create Override in OpsGenie for user ${currentUser.email}`);
+                        }
+                    }else{
+                        // Add the event to the SQLite table event
+                        data.alias = null;
+                        // console.log('DEBUG', data);
+                        await createDBData('/api/event/create', data, currentUser);
+                    }
+                }else{
+                    throw new Error(`Failed to create Override in OpsGenie for user ${username}`);
+                }
+            }else{
+                // Add the event to the SQLite table event
+                data.alias = null;
+                // console.log('DEBUG', data);
+                await createDBData('/api/event/create', data, currentUser);
+                refreshCalendarData(calendar);
+            }
+
+        }else{
+            showAlert(`Das Enddatum kann nicht vor dem Startdatum liegen!\n${data.name} - ${data.type}\nStart: ${data.start}, End: ${data.end}`);
+        }
+    } catch (error) {
+        console.error('Error occurred:', error);
+        showAlert('An error occurred while adding the event.');
+    }
+    finally {
+        // Close the context menu modal
+        const contextMenuModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('contextMenu'));
+        contextMenuModal.hide();
+    }
+});
+
+//#endregion Modal contextMenu
+...
+````
+
+### index.html
+
+````html
+...
+<!-- #region Begin Modal contextMenu V5.5.5 -->
+<div class="modal" id="contextMenu" tabindex="-1" aria-labelledby="contextMenu" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+        <div class="modal-header">
+            <h1 class="modal-title fs-5" id="contextMenuTitle">RotaMaster - New Event</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+            <p>Event erstellen:</p>
+
+            <!-- Inputfeld für den Namen -->
+            <div id="personNameContainer-contextMenu" style="margin-top: 10px;">
+            <select class="form-select" id="nameDropdownPerson-contextMenu" name="nameDropdownPerson-contextMenu" title="nameDropdownPerson-contextMenu">
+                <option value="">Please select...</option>
+                <!-- Option values will be filled dynamically by JavaScript -->
+            </select>
+            </div>
+
+            <!-- Inputfeld für den Event-Typ -->
+            <div id="eventTypeContainer-contextMenu" style="margin-top: 10px;">
+            <select class="form-select" id="nameDropdownAbsence-contextMenu" name="nameDropdownAbsence-contextMenu" title="nameDropdownAbsence-contextMenu">
+                <option value="">Please select...</option>
+                <!-- Option values will be filled dynamically -->
+            </select><br>
+            </div>
+
+            <label for="start" class="form-label">Startdatum und Enddatum wählen</label><br>
+            <div class="input-group mb-3">
+                <input type="date" class="form-control" id="start-contextMenu" name="start"><br>
+                <input type="date" class="form-control" id="end-contextMenu" name="end"><br>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" id="btnClose" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" id="btnNewEvent" class="btn btn-dark">Submit</button>
+        </div>
+
+        </div>
+    </div>
+</div>
+<!-- #endregion Modal contextMenu -->
+...
+````
 
 ## 2025-04-22
 

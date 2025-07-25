@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <!-- Begin Head -->
+    <!-- #region Begin Head -->
     <head >
         <meta charset="UTF-8"  /><meta name="author" content="Martin Walther - @tinuwalther"/>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -22,14 +22,14 @@
         <script src="/assets/rotamaster/rotamaster.index.js"></script>
 
     </head>
-    <!-- End Head -->
+    <!-- #endregion Head -->
 
-    <!-- Begin Body -->
+    <!-- #region Begin Body -->
     <Body >    
 
         <Section Id="section"  >
 
-            <!-- Begin NavBar -->
+            <!-- #region Begin NavBar -->
             <nav Class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top"  >
                 <div Class="container-fluid"  >
                     <img src="/assets/img/favicon.png" alt="Bootstrap" width="48" height="48">
@@ -61,9 +61,56 @@
                     </div>
                 </div>
             </nav>
-            <!-- End NavBar -->
+            <!-- #endregion NavBar -->
 
-            <!-- Begin Modal multipleEvents -->
+            <!-- #region Begin Modal contextMenu V5.5.5 -->
+            <div class="modal" id="contextMenu" tabindex="-1" aria-labelledby="contextMenu" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="contextMenuTitle">RotaMaster - New Event</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>Event erstellen:</p>
+
+                        <!-- Inputfeld für den Namen -->
+                        <div id="personNameContainer-contextMenu" style="margin-top: 10px;">
+                        <select class="form-select" id="nameDropdownPerson-contextMenu" name="nameDropdownPerson-contextMenu" title="nameDropdownPerson-contextMenu">
+                            <option value="">Please select...</option>
+                            <!-- Option values will be filled dynamically by JavaScript -->
+                        </select>
+                        </div>
+
+                        <!-- Inputfeld für den Event-Typ -->
+                        <div id="eventTypeContainer-contextMenu" style="margin-top: 10px;">
+                        <select class="form-select" id="nameDropdownAbsence-contextMenu" name="nameDropdownAbsence-contextMenu" title="nameDropdownAbsence-contextMenu">
+                            <option value="">Please select...</option>
+                            <!-- Option values will be filled dynamically -->
+                        </select><br>
+                        </div>
+
+                        <label for="start" class="form-label">Startdatum und Enddatum wählen</label><br>
+                        <div class="input-group mb-3">
+                            <input type="date" class="form-control" id="start-contextMenu" name="start"><br>
+                            <input type="date" class="form-control" id="end-contextMenu" name="end"><br>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" id="btnClose" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="btnNewEvent" class="btn btn-dark">Submit</button>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+            <!-- #endregion Modal contextMenu -->
+
+            <!-- #region Begin Modal multipleEvents -->
             <div class="modal fade" id="multipleEvents" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -104,7 +151,7 @@
                                 <select class="form-select" id="nameDropdownAbsenceModal" name="nameDropdownAbsenceModal" title="nameDropdownAbsenceModal"></select>
                                     <!--option selected>Typ der Abwesenheit</option-->
                                 </select><br>
-                                </div>
+                            </div>
 
                         </div>
                         <div class="modal-footer">
@@ -114,9 +161,9 @@
                     </div>
                 </div>
             </div>
-            <!-- End Modal multipleEvents -->
+            <!-- #endregion Modal multipleEvents -->
 
-            <!-- Begin Modal singleEvent -->
+            <!-- #region Begin Modal singleEvent -->
             <div class="modal fade" id="singleEvent" tabindex="-1" aria-labelledby="updateExportEventsLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -149,9 +196,9 @@
                     </div>
                 </div>
             </div>
-            <!-- End Modal singleEvent -->
+            <!-- #endregion Modal singleEvent -->
 
-            <!-- Begin Modal Alert -->
+            <!-- #region Begin Modal Alert -->
             <div class="modal fade" id="alert" tabindex="-1" aria-labelledby="alertLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -168,9 +215,9 @@
                     </div>
                 </div>
             </div>
-            <!-- End Modal Alert -->
+            <!-- #endregion Modal Alert -->
 
-            <!-- Begin Modal Confirm -->
+            <!-- #region Begin Modal Confirm -->
             <div class="modal fade" id="confirm" tabindex="-1" aria-labelledby="confirmLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -190,25 +237,25 @@
                     </div>
                 </div>
             </div>
-            <!-- End Modal Confirm -->
+            <!-- #endregion Modal Confirm -->
 
             <div Class="Container-fluid">
 
-                <!-- Begin Section Events -->
+                <!-- #region Begin Section Events -->
                 <div id="events-log">
 
-                    <!-- Begin Toggle Button for Events and Form Section -->
+                    <!-- #region Begin Toggle Button for Events and Form Section -->
                     <button id="toggleButton" class="btn btn-dark" title="Toggle Events" aria-expanded="true" aria-controls="showEvents">
                         <span id="toggleIcon" class="bi bi-chevron-left"></span>
                     </button>
                     <button id="toggleFormButton" class="btn btn-dark" title="Toggle Form" aria-expanded="true" aria-controls="eventForm">
                         <span id="toggleFormIcon" class="bi bi-chevron-up"></span>
                     </button>
-                    <!-- End Toggle Button for Events and Form Section -->
+                    <!-- #endregion Toggle Button for Events and Form Section -->
 
                     <div id="showEvents" class="collapse show">
 
-                        <!-- Begin Palceholder Form -->
+                        <!-- #region Begin Palceholder Form -->
                         <div id="eventForm" class="collapse show">
                             <form action="/api/event/new" method="POST" >
 
@@ -255,9 +302,9 @@
                                 </div>
                             </form>
                         </div>
-                        <!-- End Form -->
+                        <!-- #endregion Form -->
 
-                        <!-- Begin Palceholder Summary -->
+                        <!-- #region Begin Palceholder Summary -->
                         <div>
                             <h3 id="eventSummary"><!-- Add the current year --></h3>
                             <p>Angaben in ganzen Tagen</p>
@@ -276,26 +323,26 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- End Summary -->
+                        <!-- #endregion Summary -->
                     </div>
 
                 </div>
-                <!-- End Events -->
+                <!-- #endregion Events -->
 
-                <!-- Begin Palceholder Calendar -->
+                <!-- #region Begin Palceholder Calendar -->
                 <div id="calendar">
                     <h2 id="Loading" Style="text-align:center;margin-top:250px;color:#000"  >Loading FullCalendar ...</h2>
                 </div>
-                <!-- End Calendar -->
+                <!-- #endregion Calendar -->
 
             </div>
 
         </Section>
 
     </Body>
-    <!-- End Body -->
+    <!-- #endregion Body -->
  
-    <!-- Begin Footer -->
+    <!-- #region Begin Footer -->
     <footer>
         <div Class="container-fluid"  >
 
@@ -323,6 +370,6 @@
 
         </div>
     </footer>
-    <!--End Footer -->
+    <!--#endregion Footer -->
 
 </html>
