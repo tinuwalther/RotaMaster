@@ -104,6 +104,12 @@ Select a range fills the selected start- and end date into the formular. Type or
 
 ![RotaMasterSelected](./img/RotaMasterSelected.png)
 
+## Add an event from context menu
+
+Right click on the day, or select one or more days and right click it.
+
+![RotaMasterContextMenu](./img/RotaMasterContextMenu.png)
+
 ## Export
 
 It's possible to export all events,
