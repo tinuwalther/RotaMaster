@@ -18,7 +18,93 @@
 
 ## 2025-07-25
 
-After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.5. This version implementing a context manu to the calendar.
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.5. This version implements a context menu for the calendar.
+
+### rotamaster.main.js
+
+Replace the function ````calculateWorkdays```` with:
+
+````javascript
+...
+function calculateWorkdays(startDate, endDate, holidays, daypart = 'full') {
+    let count = 0; // Counter for weekdays
+    let currentDate = new Date(startDate); // Create a copy of the start date
+
+    // Ensure times are set correctly to midnight
+    currentDate.setHours(1, 0, 0, 0);
+    endDate.setHours(23, 0, 0, 0);
+
+    // Iterate over each day in the period, including the end date
+    while (currentDate.getTime() < endDate.getTime()) {
+        const dayOfWeek = currentDate.getDay(); // Get the day of the week (0-6)
+        const formattedDate = formatDateToLocalISO(currentDate); // Format the date as 'YYYY-MM-DD'
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday = 0, Saturday = 6
+        const isSwissHoliday = holidays.includes(formattedDate); // Check if the current date is a Swiss holiday
+        if(!isSwissHoliday && !isWeekend){
+            if (startDate.toDateString() === endDate.toDateString()) {
+                if (daypart === 'morning' || daypart === 'afternoon') {
+                    count += 0.5;
+                } else {
+                    count += 1;
+                }
+            } else {
+                count += 1;
+            }
+        }
+        // Move to the next day
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    // console.log('DEBUG', 'calculateWorkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of weekdays:', count);
+    return count;
+}
+...
+````
+
+Replace the function ````setModalEventData````
+
+````javascript
+...
+function setModalEventData(event) {
+    let swissHolidays = getSwissHolidays(event.start.getFullYear());
+    const eventStartDate = formatDateToShortISOFormat(event.start);
+    const eventEndDate = formatDateToShortISOFormat(event.end);
+
+    let daypart = 'fullday';
+    const startHour = event.start.getHours();
+    const endHour = event.end.getHours();
+
+    if (startHour === 13 || endHour === 17) {
+        daypart = 'afternoon';
+    }
+
+    if (startHour === 8 && endHour === 12) {
+        daypart = 'morning';
+    }
+
+    var days = 0;
+    for (const [key, value] of Object.entries(event.extendedProps)) {
+        if(value === 'Pikett'){
+            days = calculatePikettkdays(event.start,event.end)
+        }else{
+            if(value === 'Feiertag'){
+                days = calculateWorkdays(event.start, event.end, [], daypart)
+            }else{
+                days = calculateWorkdays(event.start, event.end, swissHolidays, daypart)
+            }
+        }
+    };
+
+    if(event.id){
+        document.getElementById('singleEvent-id').textContent = `id: ${event.id}`;
+    }else{
+        document.getElementById('singleEvent-id').textContent = 'id: n/a, this event is form a file!';
+    }
+    document.getElementById('singleEvent-title').textContent = `${event.title}, ${days} Tage`;
+    document.getElementById('singleEvent-date').textContent = `von: ${eventStartDate} bis: ${eventEndDate}`;
+
+}
+...
+````
 
 ### rotamaster.index.js
 
@@ -77,9 +163,26 @@ After ````toggleFormButton.addEventListener````
 const contextMenu = document.getElementById("contextMenu");
 const exportNewEvent = document.getElementById('btnNewEvent');
 
-// Right-click event to open the contextMenu
-document.addEventListener("contextmenu", function (e) {
+// Right-click on calendar to open the contextMenu
+const calendarElement = document.getElementById('calendar');
+calendarElement.addEventListener("contextmenu", function (e) {
     e.preventDefault();
+
+    const personName = document.getElementById('nameDropdownPerson-contextMenu');
+    const startDate = document.getElementById('start-contextMenu');
+    const endDate = document.getElementById('end-contextMenu');
+    
+    if(!personName.value){
+        document.getElementById('nameDropdownPerson-contextMenu').value = username || '';
+    }
+    if(!startDate.value){
+        document.getElementById('start-contextMenu').value = new Date().toISOString().split('T')[0];
+    }
+    if(!endDate.value){
+        document.getElementById('end-contextMenu').value = new Date().toISOString().split('T')[0];
+    }
+
+    handleDaypartByDateRange(startDate.value, endDate.value);
 
     const contextMenuModal = new bootstrap.Modal(document.getElementById('contextMenu'));
     contextMenuModal.show();
@@ -101,16 +204,44 @@ exportNewEvent.addEventListener('click', async function() {
     const personName = document.getElementById('nameDropdownPerson-contextMenu').value.trim();
     const startDate = document.getElementById('start-contextMenu').value.trim();
     const endDate = document.getElementById('end-contextMenu').value.trim();
+    const fullDay = document.getElementById('fullday-contextMenu').checked;
+    const afternoon = document.getElementById('afternoon-contextMenu').checked;
+    const morning = document.getElementById('morning-contextMenu').checked;
+
+    // alert(`DEBUG: ${eventType}, ${personName}, ${startDate}, ${endDate}, ${fullDay}, ${afternoon}, ${morning}`);
 
     if (!eventType || !personName || !startDate || !endDate){
         showAlert(`Bitte alle Felder auswählen!\nName: ${personName}\nType: ${eventType}\nStart: ${startDate}\nEnd: ${endDate}`);
         return;
     }
 
+    switch (true) {
+        case fullDay:
+            // Handle full day event
+            //showAlert(`${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}`, `${calendarConfig.appPrefix}RotaMaster - Full Day Event`);
+            dayPart = 'fullDay';
+            break;
+        case afternoon && (eventType !== 'Pikett' && eventType !== 'Pikett-Peer' && eventType !== 'Ferien'):
+            // Handle afternoon event
+            //showAlert(`${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}`, `${calendarConfig.appPrefix}RotaMaster - Afternoon Event`);
+            dayPart = 'afternoon';
+            break;
+        case morning && (eventType !== 'Pikett' && eventType !== 'Pikett-Peer' && eventType !== 'Ferien'):
+            // Handle morning event
+            //showAlert(`${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}`, `${calendarConfig.appPrefix}RotaMaster - Morning Event`);
+            dayPart = 'morning';
+            break;
+        default:
+            // unsupported event type
+            showAlert(`Unsupported event combination:\nPerson: ${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}\nDaypart: ${morning ? 'Morning' : ''} ${afternoon ? 'Afternoon' : ''} ${fullDay ? 'Full Day' : ''}`);
+            return;
+    }
+
     try {
         const data = {
             type: eventType,
             name: personName,
+            daypart: dayPart,
             start: startDate,
             end: endDate
         };
@@ -175,11 +306,34 @@ exportNewEvent.addEventListener('click', async function() {
     }
 });
 
+function handleDaypartByDateRange(startStr, endStr) {
+    const startDate = new Date(startStr);
+    const endDate = new Date(endStr);
+
+    // Differenz in Tagen (inclusive)
+    const dayDiff = (endDate - startDate) / (1000 * 60 * 60 * 24);
+
+    const radioFull = document.getElementById('fullday-contextMenu');
+    const radioMorning = document.getElementById('morning-contextMenu');
+    const radioAfternoon = document.getElementById('afternoon-contextMenu');
+
+    if (dayDiff >= 1) {
+        radioFull.checked = true;
+        radioMorning.disabled = true;
+        radioAfternoon.disabled = true;
+    } else {
+        radioFull.checked = true;
+        radioMorning.disabled = false;
+        radioAfternoon.disabled = false;
+    }
+}
 //#endregion Modal contextMenu
 ...
 ````
 
 ### index.html
+
+After ````#region Begin NavBar````
 
 ````html
 ...
@@ -196,26 +350,37 @@ exportNewEvent.addEventListener('click', async function() {
         <div class="modal-body">
             <p>Event erstellen:</p>
 
-            <!-- Inputfeld für den Namen -->
-            <div id="personNameContainer-contextMenu" style="margin-top: 10px;">
-            <select class="form-select" id="nameDropdownPerson-contextMenu" name="nameDropdownPerson-contextMenu" title="nameDropdownPerson-contextMenu">
-                <option value="">Please select...</option>
-                <!-- Option values will be filled dynamically by JavaScript -->
-            </select>
-            </div>
+            <div class="row g-2">
 
-            <!-- Inputfeld für den Event-Typ -->
-            <div id="eventTypeContainer-contextMenu" style="margin-top: 10px;">
-            <select class="form-select" id="nameDropdownAbsence-contextMenu" name="nameDropdownAbsence-contextMenu" title="nameDropdownAbsence-contextMenu">
-                <option value="">Please select...</option>
-                <!-- Option values will be filled dynamically -->
-            </select><br>
-            </div>
+                <!-- inputfield for name -->
+                <div class="input-group" id="personNameContainer-contextMenu" style="margin-top: 10px;">
+                    <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Name</span>
+                    <select class="form-select" id="nameDropdownPerson-contextMenu" name="nameDropdownPerson-contextMenu">
+                        <option value="">Please select...</option>
+                        <!-- Option values will be filled dynamically by JavaScript -->
+                    </select>
+                </div>
 
-            <label for="start" class="form-label">Startdatum und Enddatum wählen</label><br>
-            <div class="input-group mb-3">
-                <input type="date" class="form-control" id="start-contextMenu" name="start"><br>
-                <input type="date" class="form-control" id="end-contextMenu" name="end"><br>
+                <!-- inputfield for event type -->
+                <div class="input-group" id="eventTypeContainer-contextMenu" style="margin-top: 10px;">
+                    <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Absenz</span>
+                    <select class="form-select" id="nameDropdownAbsence-contextMenu" name="nameDropdownAbsence-contextMenu">
+                        <option value="">Please select...</option>
+                        <!-- Option values will be filled dynamically -->
+                    </select><br>
+                </div>
+
+                <!-- inputfield for date range -->
+                <div class="input-group" id="dateRangeContainer-contextMenu" style="margin-top: 10px;">
+                    <!-- label for="start" class="form-label">Startdatum und Enddatum wählen</label><br> -->
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Start</span>
+                        <input type="date" class="form-control" id="start-contextMenu" name="start"><br>
+                        <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Ende</span>
+                        <input type="date" class="form-control" id="end-contextMenu" name="end"><br>
+                    </div>
+                </div>
+
             </div>
 
         </div>
@@ -229,6 +394,30 @@ exportNewEvent.addEventListener('click', async function() {
     </div>
 </div>
 <!-- #endregion Modal contextMenu -->
+...
+````
+
+### RotaMaster.psm1
+
+In ````# Create new record into the table events````
+
+````PowerShell
+...
+# contextMenu V5.5.5
+switch($WebEvent.Data['daypart']){
+    'morning'   {
+        $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 08:00"
+        $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 12:00"
+    }
+    'afternoon' {
+        $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 13:00"
+        $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 17:00"
+    }
+    default     {
+        $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
+        $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
+    }
+}
 ...
 ````
 

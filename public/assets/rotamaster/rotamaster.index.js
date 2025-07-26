@@ -96,9 +96,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     const contextMenu = document.getElementById("contextMenu");
     const exportNewEvent = document.getElementById('btnNewEvent');
 
-    // Right-click event to open the contextMenu
-    document.addEventListener("contextmenu", function (e) {
+    // Right-click on calendar to open the contextMenu
+    const calendarElement = document.getElementById('calendar');
+    calendarElement.addEventListener("contextmenu", function (e) {
         e.preventDefault();
+
+        const personName = document.getElementById('nameDropdownPerson-contextMenu');
+        const startDate = document.getElementById('start-contextMenu');
+        const endDate = document.getElementById('end-contextMenu');
+        
+        if(!personName.value){
+            document.getElementById('nameDropdownPerson-contextMenu').value = username || '';
+        }
+        if(!startDate.value){
+            document.getElementById('start-contextMenu').value = new Date().toISOString().split('T')[0];
+        }
+        if(!endDate.value){
+            document.getElementById('end-contextMenu').value = new Date().toISOString().split('T')[0];
+        }
+
+        handleDaypartByDateRange(startDate.value, endDate.value);
 
         const contextMenuModal = new bootstrap.Modal(document.getElementById('contextMenu'));
         contextMenuModal.show();
@@ -120,16 +137,44 @@ document.addEventListener('DOMContentLoaded', async function() {
         const personName = document.getElementById('nameDropdownPerson-contextMenu').value.trim();
         const startDate = document.getElementById('start-contextMenu').value.trim();
         const endDate = document.getElementById('end-contextMenu').value.trim();
+        const fullDay = document.getElementById('fullday-contextMenu').checked;
+        const afternoon = document.getElementById('afternoon-contextMenu').checked;
+        const morning = document.getElementById('morning-contextMenu').checked;
+
+        // alert(`DEBUG: ${eventType}, ${personName}, ${startDate}, ${endDate}, ${fullDay}, ${afternoon}, ${morning}`);
 
         if (!eventType || !personName || !startDate || !endDate){
             showAlert(`Bitte alle Felder auswählen!\nName: ${personName}\nType: ${eventType}\nStart: ${startDate}\nEnd: ${endDate}`);
             return;
         }
 
+        switch (true) {
+            case fullDay:
+                // Handle full day event
+                //showAlert(`${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}`, `${calendarConfig.appPrefix}RotaMaster - Full Day Event`);
+                dayPart = 'fullDay';
+                break;
+            case afternoon && (eventType !== 'Pikett' && eventType !== 'Pikett-Peer' && eventType !== 'Ferien'):
+                // Handle afternoon event
+                //showAlert(`${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}`, `${calendarConfig.appPrefix}RotaMaster - Afternoon Event`);
+                dayPart = 'afternoon';
+                break;
+            case morning && (eventType !== 'Pikett' && eventType !== 'Pikett-Peer' && eventType !== 'Ferien'):
+                // Handle morning event
+                //showAlert(`${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}`, `${calendarConfig.appPrefix}RotaMaster - Morning Event`);
+                dayPart = 'morning';
+                break;
+            default:
+                // unsupported event type
+                showAlert(`Unsupported event combination:\nPerson: ${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}\nDaypart: ${morning ? 'Morning' : ''} ${afternoon ? 'Afternoon' : ''} ${fullDay ? 'Full Day' : ''}`);
+                return;
+        }
+
         try {
             const data = {
                 type: eventType,
                 name: personName,
+                daypart: dayPart,
                 start: startDate,
                 end: endDate
             };
@@ -194,6 +239,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
+    function handleDaypartByDateRange(startStr, endStr) {
+        const startDate = new Date(startStr);
+        const endDate = new Date(endStr);
+
+        // Differenz in Tagen (inclusive)
+        const dayDiff = (endDate - startDate) / (1000 * 60 * 60 * 24);
+
+        const radioFull = document.getElementById('fullday-contextMenu');
+        const radioMorning = document.getElementById('morning-contextMenu');
+        const radioAfternoon = document.getElementById('afternoon-contextMenu');
+
+        if (dayDiff >= 1) {
+            radioFull.checked = true;
+            radioMorning.disabled = true;
+            radioAfternoon.disabled = true;
+        } else {
+            radioFull.checked = true;
+            radioMorning.disabled = false;
+            radioAfternoon.disabled = false;
+        }
+    }
     //#endregion Modal contextMenu
 
     // Fetch the events from the API (from the SQLite view v_events) and fill the calendar with the events
@@ -381,6 +447,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 keyboard: true
             });
             setModalEventData(event);
+
             document.getElementById('btnExportEvent').checked = true;
             singleEvent.show();
 

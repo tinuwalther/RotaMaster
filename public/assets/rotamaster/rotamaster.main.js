@@ -428,7 +428,7 @@ async function getEventSummary(calendarData, selectedYear) {
  * @example
  * const vacationDays = calculateWorkdays(new Date('2024-01-01'), new Date('2024-01-07')); // Returns the number of vacation days excluding weekends.
  */
-function calculateWorkdays(startDate, endDate, holidays) {
+function calculateWorkdays(startDate, endDate, holidays, daypart = 'full') {
     let count = 0; // Counter for weekdays
     let currentDate = new Date(startDate); // Create a copy of the start date
 
@@ -444,7 +444,18 @@ function calculateWorkdays(startDate, endDate, holidays) {
         const isSwissHoliday = holidays.includes(formattedDate); // Check if the current date is a Swiss holiday
         if(!isSwissHoliday && !isWeekend){
             // console.log('DEBUG', 'WorkingDay', formattedDate, currentDate)
-            count++; // Count only weekdays
+            // count++; // Count only weekdays
+            if (startDate.toDateString() === endDate.toDateString()) {
+                // Nur 1 Tag → beachte daypart
+                if (daypart === 'morning' || daypart === 'afternoon') {
+                    count += 0.5;
+                } else {
+                    count += 1;
+                }
+            } else {
+                // Mehrere Tage → alle vollen Tage zählen
+                count += 1;
+            }
         }
         // Move to the next day
         currentDate.setDate(currentDate.getDate() + 1);
@@ -825,15 +836,27 @@ function setModalEventData(event) {
     //const eventEndDate = formatDateToShortISOFormat(new Date(event.end.setDate(event.end.getDate() - 1))); // remove one day from the end-date
     const eventEndDate = formatDateToShortISOFormat(event.end); // remove one day from the end-date
 
+    let daypart = 'fullday';
+    const startHour = event.start.getHours();
+    const endHour = event.end.getHours();
+
+    if (startHour === 13 || endHour === 17) {
+        daypart = 'afternoon';
+    }
+
+    if (startHour === 8 && endHour === 12) {
+        daypart = 'morning';
+    }
+
     var days = 0;
     for (const [key, value] of Object.entries(event.extendedProps)) {
         if(value === 'Pikett'){
             days = calculatePikettkdays(event.start,event.end)
         }else{
             if(value === 'Feiertag'){
-                days = calculateWorkdays(event.start, event.end, [])
+                days = calculateWorkdays(event.start, event.end, [], daypart)
             }else{
-                days = calculateWorkdays(event.start, event.end, swissHolidays)
+                days = calculateWorkdays(event.start, event.end, swissHolidays, daypart)
             }
         }
     };

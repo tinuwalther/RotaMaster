@@ -1230,8 +1230,21 @@ function Initialize-ApiEndpoints {
                         $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 10:00"
                         $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 10:00"
                     }else{
-                        $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
-                        $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
+                        # contextMenu V5.5.5
+                        switch($WebEvent.Data['daypart']){
+                            'morning'   {
+                                $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 08:00"
+                                $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 12:00"
+                            }
+                            'afternoon' {
+                                $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 13:00"
+                                $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 17:00"
+                            }
+                            default     {
+                                $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
+                                $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
+                            }
+                        }
                     }
                     $alias   = $WebEvent.Data['alias']
                     $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'

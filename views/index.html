@@ -76,26 +76,57 @@
                     <div class="modal-body">
                         <p>Event erstellen:</p>
 
-                        <!-- Inputfeld für den Namen -->
-                        <div id="personNameContainer-contextMenu" style="margin-top: 10px;">
-                        <select class="form-select" id="nameDropdownPerson-contextMenu" name="nameDropdownPerson-contextMenu" title="nameDropdownPerson-contextMenu">
-                            <option value="">Please select...</option>
-                            <!-- Option values will be filled dynamically by JavaScript -->
-                        </select>
-                        </div>
+                        <div class="row g-2">
 
-                        <!-- Inputfeld für den Event-Typ -->
-                        <div id="eventTypeContainer-contextMenu" style="margin-top: 10px;">
-                        <select class="form-select" id="nameDropdownAbsence-contextMenu" name="nameDropdownAbsence-contextMenu" title="nameDropdownAbsence-contextMenu">
-                            <option value="">Please select...</option>
-                            <!-- Option values will be filled dynamically -->
-                        </select><br>
-                        </div>
+                            <!-- inputfield for name -->
+                            <div class="input-group" id="personNameContainer-contextMenu" style="margin-top: 10px;">
+                                <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Name</span>
+                                <select class="form-select" id="nameDropdownPerson-contextMenu" name="nameDropdownPerson-contextMenu">
+                                    <option value="">Please select...</option>
+                                    <!-- Option values will be filled dynamically by JavaScript -->
+                                </select>
+                            </div>
 
-                        <label for="start" class="form-label">Startdatum und Enddatum wählen</label><br>
-                        <div class="input-group mb-3">
-                            <input type="date" class="form-control" id="start-contextMenu" name="start"><br>
-                            <input type="date" class="form-control" id="end-contextMenu" name="end"><br>
+                            <!-- inputfield for event type -->
+                            <div class="input-group" id="eventTypeContainer-contextMenu" style="margin-top: 10px;">
+                                <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Absenz</span>
+                                <select class="form-select" id="nameDropdownAbsence-contextMenu" name="nameDropdownAbsence-contextMenu">
+                                    <option value="">Please select...</option>
+                                    <!-- Option values will be filled dynamically -->
+                                </select><br>
+                            </div>
+
+                            <!-- inputfield for date range -->
+                            <div class="input-group" id="dateRangeContainer-contextMenu" style="margin-top: 10px;">
+                                <!-- label for="start" class="form-label">Startdatum und Enddatum wählen</label><br> -->
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Start</span>
+                                    <input type="date" class="form-control" id="start-contextMenu" name="start"><br>
+                                    <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Ende</span>
+                                    <input type="date" class="form-control" id="end-contextMenu" name="end"><br>
+                                </div>
+                            </div>
+
+                            <!-- inputfield for daypart -->
+                            <div class="col-12 col-md-4">
+                                <div class="form-check radio-spacing radio-dark d-flex align-items-center justify-content-center">
+                                <input class="form-check-input me-2" type="radio" name="daypart" id="fullday-contextMenu" value="full" checked>
+                                <label class="form-check-label" for="fullday-contextMenu">Ganzer Tag</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="form-check radio-spacing radio-dark d-flex align-items-center justify-content-center">
+                                <input class="form-check-input me-2" type="radio" name="daypart" id="morning-contextMenu" value="morning">
+                                <label class="form-check-label" for="morning-contextMenu">Vormittag</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="form-check radio-spacing radio-dark d-flex align-items-center justify-content-center">
+                                <input class="form-check-input me-2" type="radio" name="daypart" id="afternoon-contextMenu" value="afternoon">
+                                <label class="form-check-label" for="afternoon-contextMenu">Nachmittag</label>
+                                </div>
+                            </div>
+
                         </div>
 
                     </div>
