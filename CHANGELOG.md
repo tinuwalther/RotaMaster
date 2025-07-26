@@ -168,13 +168,12 @@ const calendarElement = document.getElementById('calendar');
 calendarElement.addEventListener("contextmenu", function (e) {
     e.preventDefault();
 
-    const personName = document.getElementById('nameDropdownPerson-contextMenu');
     const startDate = document.getElementById('start-contextMenu');
     const endDate = document.getElementById('end-contextMenu');
     
-    if(!personName.value){
-        document.getElementById('nameDropdownPerson-contextMenu').value = username || '';
-    }
+    document.getElementById('nameDropdownPerson-contextMenu').value = username || '';        
+    document.getElementById('nameDropdownAbsence-contextMenu').value = '';
+    
     if(!startDate.value){
         document.getElementById('start-contextMenu').value = new Date().toISOString().split('T')[0];
     }
