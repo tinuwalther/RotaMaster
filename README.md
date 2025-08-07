@@ -10,7 +10,7 @@ Each time the page is loaded, the system checks whether the file for the next ye
 
 If you want to create the holidays for a different year, you can call the API with the desired year. For example with PowerShell:
 
-````Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025````
+````Invoke-WebRequest -Uri https://localhost:8443/api/year/new -Method Post -Body 2025````
 
 It possible to use the [OpsGenie API](https://docs.opsgenie.com/docs/api-overview) to create and delete Pikett-events in OpsGenie.
 
