@@ -14,7 +14,7 @@ To install PowerShell using winget, open a Terminal or Windows PowerShell and ru
 
 ## Install PowerShell Modules
 
-Install-Modele -Name pode, SQLite -Scope AllUsers -Verbose
+`Install-Modele -Name pode, SQLite -Scope AllUsers -Verbose`
 
 ## Clone the RotaMaster - Project
 
