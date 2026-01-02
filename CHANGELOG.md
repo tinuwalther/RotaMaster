@@ -16,6 +16,62 @@
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
 
+## Open: Export from current Year
+
+````javascript
+// ...existing code...
+exportButton.addEventListener('click', function() {
+    const events = calendar.getEvents();
+    const currentYear = new Date().getFullYear();
+
+    // Helper: checks if the event is in the current year
+
+    function isEventInCurrentYear(event) {
+        const start = new Date(event.start);
+        return start.getFullYear() === currentYear;
+    }
+
+    if (btnAllEvents.checked) {
+        // Export only events of the current year
+        exportCalendarEvents(events.filter(isEventInCurrentYear), `all-events-${currentYear}.ics`);
+    } else if (btnPersonEvents.checked) {
+        const personName = document.getElementById('nameDropdownPersonModal').value.trim();
+        if (personName) {
+            exportFilteredEvents(
+                events.filter(isEventInCurrentYear),
+                event => {
+                    const [eventPersonName] = event.title.split(' - ');
+                    return eventPersonName.trim().toLowerCase() === personName.toLowerCase();
+                },
+                `${personName}-events-${currentYear}.ics`,
+                exportCalendarEvents
+            );
+        } else {
+            showAlert('Bitte geben Sie einen Namen ein.');
+        }
+    } else if (btnTypeOfEvents.checked) {
+        const eventType = document.getElementById('nameDropdownAbsenceModal').value.trim();
+        if (eventType) {
+            exportFilteredEvents(
+                events.filter(isEventInCurrentYear),
+                event => {
+                    const [, eventTypeName] = event.title.split(' - ');
+                    return eventTypeName && eventTypeName.trim().toLowerCase() === eventType.toLowerCase();
+                },
+                `${eventType}-events-${currentYear}.ics`,
+                exportCalendarEvents
+            );
+        } else {
+            showAlert('Bitte geben Sie einen Event-Typ ein.');
+        }
+    }
+
+    const exportModal = bootstrap.Modal.getInstance(document.getElementById('multipleEvents'));
+    exportModal.hide();
+});
+// ...existing code...
+`````
+
 ## 2025-07-25
 
 After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.5. This version implements a context menu for the calendar.
