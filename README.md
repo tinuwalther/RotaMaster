@@ -10,7 +10,7 @@ Each time the page is loaded, the system checks whether the file for the next ye
 
 If you want to create the holidays for a different year, you can call the API with the desired year. For example with PowerShell:
 
-````Invoke-WebRequest -Uri http://localhost:8080/api/year/new -Method Post -Body 2025````
+````Invoke-WebRequest -Uri https://localhost:8443/api/year/new -Method Post -Body 2025````
 
 It possible to use the [OpsGenie API](https://docs.opsgenie.com/docs/api-overview) to create and delete Pikett-events in OpsGenie.
 
@@ -103,6 +103,12 @@ Type, or select the person and select absence-type, choose the start- and end da
 Select a range fills the selected start- and end date into the formular. Type or select the person and select the absence-type and press the button to submit the new event.
 
 ![RotaMasterSelected](./img/RotaMasterSelected.png)
+
+## Add an event from context menu
+
+Right click on the day, or select one or more days and right click it.
+
+![RotaMasterContextMenu](./img/RotaMasterContextMenu.png)
 
 ## Export
 

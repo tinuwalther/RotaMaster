@@ -2,6 +2,8 @@
 
 ## Table of Contents
 
+- [2025-07-25](#2025-07-25)
+- [2025-04-22](#2025-04-22)
 - [2025-04-09](#2025-04-09)
 - [2025-04-04](#2025-04-04)
 - [2025-03-30](#2025-03-30)
@@ -13,6 +15,496 @@
 - [2025-01-15](#2025-01-15)
 - [2025-01-08](#2025-01-08)
 - [2024-12-30](#2024-12-30)
+
+## Open: Export from current Year
+
+````javascript
+// ...existing code...
+exportButton.addEventListener('click', function() {
+    const events = calendar.getEvents();
+    const currentYear = new Date().getFullYear();
+
+    // Helper: checks if the event is in the current year
+
+    function isEventInCurrentYear(event) {
+        const start = new Date(event.start);
+        return start.getFullYear() === currentYear;
+    }
+
+    if (btnAllEvents.checked) {
+        // Export only events of the current year
+        exportCalendarEvents(events.filter(isEventInCurrentYear), `all-events-${currentYear}.ics`);
+    } else if (btnPersonEvents.checked) {
+        const personName = document.getElementById('nameDropdownPersonModal').value.trim();
+        if (personName) {
+            exportFilteredEvents(
+                events.filter(isEventInCurrentYear),
+                event => {
+                    const [eventPersonName] = event.title.split(' - ');
+                    return eventPersonName.trim().toLowerCase() === personName.toLowerCase();
+                },
+                `${personName}-events-${currentYear}.ics`,
+                exportCalendarEvents
+            );
+        } else {
+            showAlert('Bitte geben Sie einen Namen ein.');
+        }
+    } else if (btnTypeOfEvents.checked) {
+        const eventType = document.getElementById('nameDropdownAbsenceModal').value.trim();
+        if (eventType) {
+            exportFilteredEvents(
+                events.filter(isEventInCurrentYear),
+                event => {
+                    const [, eventTypeName] = event.title.split(' - ');
+                    return eventTypeName && eventTypeName.trim().toLowerCase() === eventType.toLowerCase();
+                },
+                `${eventType}-events-${currentYear}.ics`,
+                exportCalendarEvents
+            );
+        } else {
+            showAlert('Bitte geben Sie einen Event-Typ ein.');
+        }
+    }
+
+    const exportModal = bootstrap.Modal.getInstance(document.getElementById('multipleEvents'));
+    exportModal.hide();
+});
+// ...existing code...
+`````
+
+## 2025-07-25
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.5. This version implements a context menu for the calendar.
+
+### rotamaster.main.js
+
+Replace the function ````calculateWorkdays```` with:
+
+````javascript
+...
+function calculateWorkdays(startDate, endDate, holidays, daypart = 'full') {
+    let count = 0; // Counter for weekdays
+    let currentDate = new Date(startDate); // Create a copy of the start date
+
+    // Ensure times are set correctly to midnight
+    currentDate.setHours(1, 0, 0, 0);
+    endDate.setHours(23, 0, 0, 0);
+
+    // Iterate over each day in the period, including the end date
+    while (currentDate.getTime() < endDate.getTime()) {
+        const dayOfWeek = currentDate.getDay(); // Get the day of the week (0-6)
+        const formattedDate = formatDateToLocalISO(currentDate); // Format the date as 'YYYY-MM-DD'
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday = 0, Saturday = 6
+        const isSwissHoliday = holidays.includes(formattedDate); // Check if the current date is a Swiss holiday
+        if(!isSwissHoliday && !isWeekend){
+            if (startDate.toDateString() === endDate.toDateString()) {
+                if (daypart === 'morning' || daypart === 'afternoon') {
+                    count += 0.5;
+                } else {
+                    count += 1;
+                }
+            } else {
+                count += 1;
+            }
+        }
+        // Move to the next day
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    // console.log('DEBUG', 'calculateWorkdays - Start date:', startDate.toDateString(), 'End date:', endDate.toDateString(), 'Number of weekdays:', count);
+    return count;
+}
+...
+````
+
+Replace the function ````setModalEventData````
+
+````javascript
+...
+function setModalEventData(event) {
+    let swissHolidays = getSwissHolidays(event.start.getFullYear());
+    const eventStartDate = formatDateToShortISOFormat(event.start);
+    const eventEndDate = formatDateToShortISOFormat(event.end);
+
+    let daypart = 'fullday';
+    const startHour = event.start.getHours();
+    const endHour = event.end.getHours();
+
+    if (startHour === 13 || endHour === 17) {
+        daypart = 'afternoon';
+    }
+
+    if (startHour === 8 && endHour === 12) {
+        daypart = 'morning';
+    }
+
+    var days = 0;
+    for (const [key, value] of Object.entries(event.extendedProps)) {
+        if(value === 'Pikett'){
+            days = calculatePikettkdays(event.start,event.end)
+        }else{
+            if(value === 'Feiertag'){
+                days = calculateWorkdays(event.start, event.end, [], daypart)
+            }else{
+                days = calculateWorkdays(event.start, event.end, swissHolidays, daypart)
+            }
+        }
+    };
+
+    if(event.id){
+        document.getElementById('singleEvent-id').textContent = `id: ${event.id}`;
+    }else{
+        document.getElementById('singleEvent-id').textContent = 'id: n/a, this event is form a file!';
+    }
+    document.getElementById('singleEvent-title').textContent = `${event.title}, ${days} Tage`;
+    document.getElementById('singleEvent-date').textContent = `von: ${eventStartDate} bis: ${eventEndDate}`;
+
+}
+...
+````
+
+### rotamaster.index.js
+
+After ````let db````
+
+````javascript
+...
+let username = null; // contextMenu V5.5.5
+...
+````
+
+After ````// Fetch the person from the API (from the SQLite table person) and fill the datalist with the person names````
+
+````javascript
+...
+if (personNames.length) {
+    fillDatalistOptions('datalistOptions', personNames);
+    fillDropdownOptions('nameDropdownPerson', personNames);
+    fillDropdownOptions('nameDropdownPersonModal', personNames);
+    fillDropdownOptions('nameDropdownPerson-contextMenu', personNames); // contextMenu V5.5.5
+} else {
+    console.error('No person found.');
+}
+...
+````
+
+After ````// Fetch the absence from the API (from the SQLite table absence) and fill the dropdown with the absence names````
+
+````javascript
+...
+if (absenceNames.length) {
+    fillDropdownOptions('nameDropdownAbsence', absenceNames);
+    fillDropdownOptions('nameDropdownAbsenceModal', absenceNames);
+    fillDropdownOptions('nameDropdownAbsence-contextMenu', absenceNames); // contextMenu V5.5.5
+} else {
+    console.error('No absence found.');
+}
+...
+````
+
+In ````select: function(info)````
+
+````javascript
+...
+// contextMenu V5.5.5
+document.getElementById('start-contextMenu').value = formattedStartDate;
+document.getElementById('end-contextMenu').value = formattedEndDate;
+...
+````
+
+After ````toggleFormButton.addEventListener````
+
+````javascript
+...
+//#region Modal contextMenu V5.5.5
+const contextMenu = document.getElementById("contextMenu");
+const exportNewEvent = document.getElementById('btnNewEvent');
+
+// Right-click on calendar to open the contextMenu
+const calendarElement = document.getElementById('calendar');
+calendarElement.addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+
+    const startDate = document.getElementById('start-contextMenu');
+    const endDate = document.getElementById('end-contextMenu');
+    
+    document.getElementById('nameDropdownPerson-contextMenu').value = username || '';        
+    document.getElementById('nameDropdownAbsence-contextMenu').value = '';
+    
+    if(!startDate.value){
+        document.getElementById('start-contextMenu').value = new Date().toISOString().split('T')[0];
+    }
+    if(!endDate.value){
+        document.getElementById('end-contextMenu').value = new Date().toISOString().split('T')[0];
+    }
+
+    handleDaypartByDateRange(startDate.value, endDate.value);
+
+    const contextMenuModal = new bootstrap.Modal(document.getElementById('contextMenu'));
+    contextMenuModal.show();
+});
+
+// Close the contextMenu when clicking outside of it
+window.addEventListener("click", function (event) {
+    if (event.target === contextMenu) {
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    }
+});
+
+// Add an event listener to the submit button of the contextMenu
+exportNewEvent.addEventListener('click', async function() {
+
+    const eventType = document.getElementById('nameDropdownAbsence-contextMenu').value.trim();
+    const personName = document.getElementById('nameDropdownPerson-contextMenu').value.trim();
+    const startDate = document.getElementById('start-contextMenu').value.trim();
+    const endDate = document.getElementById('end-contextMenu').value.trim();
+    const fullDay = document.getElementById('fullday-contextMenu').checked;
+    const afternoon = document.getElementById('afternoon-contextMenu').checked;
+    const morning = document.getElementById('morning-contextMenu').checked;
+
+    // alert(`DEBUG: ${eventType}, ${personName}, ${startDate}, ${endDate}, ${fullDay}, ${afternoon}, ${morning}`);
+
+    if (!eventType || !personName || !startDate || !endDate){
+        showAlert(`Bitte alle Felder auswählen!\nName: ${personName}\nType: ${eventType}\nStart: ${startDate}\nEnd: ${endDate}`);
+        return;
+    }
+
+    switch (true) {
+        case fullDay:
+            // Handle full day event
+            //showAlert(`${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}`, `${calendarConfig.appPrefix}RotaMaster - Full Day Event`);
+            dayPart = 'fullDay';
+            break;
+        case afternoon && (eventType !== 'Pikett' && eventType !== 'Pikett-Peer' && eventType !== 'Ferien'):
+            // Handle afternoon event
+            //showAlert(`${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}`, `${calendarConfig.appPrefix}RotaMaster - Afternoon Event`);
+            dayPart = 'afternoon';
+            break;
+        case morning && (eventType !== 'Pikett' && eventType !== 'Pikett-Peer' && eventType !== 'Ferien'):
+            // Handle morning event
+            //showAlert(`${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}`, `${calendarConfig.appPrefix}RotaMaster - Morning Event`);
+            dayPart = 'morning';
+            break;
+        default:
+            // unsupported event type
+            showAlert(`Unsupported event combination:\nPerson: ${personName}\nEvent: ${eventType}\nfrom: ${startDate}\nto: ${endDate}\nDaypart: ${morning ? 'Morning' : ''} ${afternoon ? 'Afternoon' : ''} ${fullDay ? 'Full Day' : ''}`);
+            return;
+    }
+
+    try {
+        const data = {
+            type: eventType,
+            name: personName,
+            daypart: dayPart,
+            start: startDate,
+            end: endDate
+        };
+
+        if(data.start <= data.end){
+            if(data.type === 'Pikett') {
+
+                const response = await fetch(`/api/person/read/${personName}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch user ${username}`);
+                }
+                const currentUser = await response.json();
+                if(currentUser){
+                    // Create Override in OpsGenie
+                    if(calendarConfig.opsGenie){
+                        const override = {                                    
+                            scheduleName: calendarConfig.scheduleName,
+                            rotationName: calendarConfig.rotationName,
+                            userName: currentUser.email,
+                            onCallStart: data.start,
+                            onCallEnd: data.end
+                        };
+                        const opsGenieResult = await createOpsGenieOverride(override);
+                        console.log('DEBUG', 'OpsGenie Override:', opsGenieResult);
+                        if(opsGenieResult){
+                            // Add the event to the SQLite table event
+                            data.alias = opsGenieResult.data.alias;
+                            // console.log('DEBUG', data);
+                            await createDBData('/api/event/create', data, currentUser);
+                        }else{
+                            showAlert(`Fehler beim Erstellen des Override in OpsGenie für ${currentUser.email}`);
+                            throw new Error(`Failed to create Override in OpsGenie for user ${currentUser.email}`);
+                        }
+                    }else{
+                        // Add the event to the SQLite table event
+                        data.alias = null;
+                        // console.log('DEBUG', data);
+                        await createDBData('/api/event/create', data, currentUser);
+                    }
+                }else{
+                    throw new Error(`Failed to create Override in OpsGenie for user ${username}`);
+                }
+            }else{
+                // Add the event to the SQLite table event
+                data.alias = null;
+                // console.log('DEBUG', data);
+                await createDBData('/api/event/create', data, currentUser);
+                refreshCalendarData(calendar);
+            }
+
+        }else{
+            showAlert(`Das Enddatum kann nicht vor dem Startdatum liegen!\n${data.name} - ${data.type}\nStart: ${data.start}, End: ${data.end}`);
+        }
+    } catch (error) {
+        console.error('Error occurred:', error);
+        showAlert('An error occurred while adding the event.');
+    }
+    finally {
+        // Close the context menu modal
+        const contextMenuModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('contextMenu'));
+        contextMenuModal.hide();
+    }
+});
+
+function handleDaypartByDateRange(startStr, endStr) {
+    const startDate = new Date(startStr);
+    const endDate = new Date(endStr);
+
+    // Differenz in Tagen (inclusive)
+    const dayDiff = (endDate - startDate) / (1000 * 60 * 60 * 24);
+
+    const radioFull = document.getElementById('fullday-contextMenu');
+    const radioMorning = document.getElementById('morning-contextMenu');
+    const radioAfternoon = document.getElementById('afternoon-contextMenu');
+
+    if (dayDiff >= 1) {
+        radioFull.checked = true;
+        radioMorning.disabled = true;
+        radioAfternoon.disabled = true;
+    } else {
+        radioFull.checked = true;
+        radioMorning.disabled = false;
+        radioAfternoon.disabled = false;
+    }
+}
+//#endregion Modal contextMenu
+...
+````
+
+### index.html
+
+After ````#region Begin NavBar````
+
+````html
+...
+<!-- #region Begin Modal contextMenu V5.5.5 -->
+<div class="modal" id="contextMenu" tabindex="-1" aria-labelledby="contextMenu" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+        <div class="modal-header">
+            <h1 class="modal-title fs-5" id="contextMenuTitle">RotaMaster - New Event</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+            <p>Event erstellen:</p>
+
+            <div class="row g-2">
+
+                <!-- inputfield for name -->
+                <div class="input-group" id="personNameContainer-contextMenu" style="margin-top: 10px;">
+                    <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Name</span>
+                    <select class="form-select" id="nameDropdownPerson-contextMenu" name="nameDropdownPerson-contextMenu">
+                        <option value="">Please select...</option>
+                        <!-- Option values will be filled dynamically by JavaScript -->
+                    </select>
+                </div>
+
+                <!-- inputfield for event type -->
+                <div class="input-group" id="eventTypeContainer-contextMenu" style="margin-top: 10px;">
+                    <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Absenz</span>
+                    <select class="form-select" id="nameDropdownAbsence-contextMenu" name="nameDropdownAbsence-contextMenu">
+                        <option value="">Please select...</option>
+                        <!-- Option values will be filled dynamically -->
+                    </select><br>
+                </div>
+
+                <!-- inputfield for date range -->
+                <div class="input-group" id="dateRangeContainer-contextMenu" style="margin-top: 10px;">
+                    <!-- label for="start" class="form-label">Startdatum und Enddatum wählen</label><br> -->
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Start</span>
+                        <input type="date" class="form-control" id="start-contextMenu" name="start"><br>
+                        <span class="input-group-text" id="basic-addon1" style="min-width: 80px;">Ende</span>
+                        <input type="date" class="form-control" id="end-contextMenu" name="end"><br>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" id="btnClose" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" id="btnNewEvent" class="btn btn-dark">Submit</button>
+        </div>
+
+        </div>
+    </div>
+</div>
+<!-- #endregion Modal contextMenu -->
+...
+````
+
+### RotaMaster.psm1
+
+In ````# Create new record into the table events````
+
+````PowerShell
+...
+# contextMenu V5.5.5
+switch($WebEvent.Data['daypart']){
+    'morning'   {
+        $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 08:00"
+        $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 12:00"
+    }
+    'afternoon' {
+        $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 13:00"
+        $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 17:00"
+    }
+    default     {
+        $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 01:00"
+        $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
+    }
+}
+...
+````
+
+## 2025-04-22
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.5.4.
+
+### rotamaster.index.js
+
+````javascript
+...
+// Load userCookie and display the username
+const userCookie = getCookie('CurrentUser');
+const eventView = userCookie.events || "all";
+const savedView = userCookie.savedView || "dayGridMonth";
+...
+let calendar = new FullCalendar.Calendar(calendarEl, {
+    // Concatenate the calendarConfig from the rotamaster.js file
+    ...calendarConfig,
+    // get initialView from cookie
+    initialView: userCookie.savedView,
+...
+// This function is called when the view is changed or the date changes
+datesSet: function(info) {
+    
+    userCookie.events = eventView;
+    userCookie.savedView = info.view.type;
+    setCookie('CurrentUser', JSON.stringify(userCookie), 1);
+    ...
+}
+...
+````
 
 ## 2025-04-09
 

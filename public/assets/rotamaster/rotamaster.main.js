@@ -428,7 +428,7 @@ async function getEventSummary(calendarData, selectedYear) {
  * @example
  * const vacationDays = calculateWorkdays(new Date('2024-01-01'), new Date('2024-01-07')); // Returns the number of vacation days excluding weekends.
  */
-function calculateWorkdays(startDate, endDate, holidays) {
+function calculateWorkdays(startDate, endDate, holidays, daypart = 'full') {
     let count = 0; // Counter for weekdays
     let currentDate = new Date(startDate); // Create a copy of the start date
 
@@ -444,7 +444,18 @@ function calculateWorkdays(startDate, endDate, holidays) {
         const isSwissHoliday = holidays.includes(formattedDate); // Check if the current date is a Swiss holiday
         if(!isSwissHoliday && !isWeekend){
             // console.log('DEBUG', 'WorkingDay', formattedDate, currentDate)
-            count++; // Count only weekdays
+            // count++; // Count only weekdays
+            if (startDate.toDateString() === endDate.toDateString()) {
+                // Nur 1 Tag → beachte daypart
+                if (daypart === 'morning' || daypart === 'afternoon') {
+                    count += 0.5;
+                } else {
+                    count += 1;
+                }
+            } else {
+                // Mehrere Tage → alle vollen Tage zählen
+                count += 1;
+            }
         }
         // Move to the next day
         currentDate.setDate(currentDate.getDate() + 1);
@@ -825,15 +836,27 @@ function setModalEventData(event) {
     //const eventEndDate = formatDateToShortISOFormat(new Date(event.end.setDate(event.end.getDate() - 1))); // remove one day from the end-date
     const eventEndDate = formatDateToShortISOFormat(event.end); // remove one day from the end-date
 
+    let daypart = 'fullday';
+    const startHour = event.start.getHours();
+    const endHour = event.end.getHours();
+
+    if (startHour === 13 || endHour === 17) {
+        daypart = 'afternoon';
+    }
+
+    if (startHour === 8 && endHour === 12) {
+        daypart = 'morning';
+    }
+
     var days = 0;
     for (const [key, value] of Object.entries(event.extendedProps)) {
         if(value === 'Pikett'){
             days = calculatePikettkdays(event.start,event.end)
         }else{
             if(value === 'Feiertag'){
-                days = calculateWorkdays(event.start, event.end, [])
+                days = calculateWorkdays(event.start, event.end, [], daypart)
             }else{
-                days = calculateWorkdays(event.start, event.end, swissHolidays)
+                days = calculateWorkdays(event.start, event.end, swissHolidays, daypart)
             }
         }
     };
@@ -863,17 +886,28 @@ function setModalEventData(event) {
  * Refreshes the calendar by fetching updated event data.
  */
 async function refreshCalendarData(calendar) {
-    try {
+    // try {
         const button = document.querySelector('.fc-filterEvents-button');
         const userCookie = getCookie('CurrentUser');
         const holidays = await loadApiData('/api/csv/read');
+        if (!holidays) throw new Error('Failed to fetch events of holidays');
 
         let events = [];
         if(userCookie.events === 'all'){
             events = await readDBData('/api/event/read/*');
+            if (!events) throw new Error('Failed to fetch user events of all users');
             button.textContent = 'My Events';
         }else if(userCookie.events === 'personal'){
             events = await readDBData(`/api/event/read/${userCookie.name}`);
+            if (!events) {
+                setCookie('CurrentUser', JSON.stringify({ ...userCookie, events: 'all' }), 1);
+                button.textContent = 'My Events';
+                showConfirm(`Ein Fehler ist beim Aktualisieren der Kalenderdaten von ${userCookie.name} aufgetreten. Möchten Sie das Fenster mit allen Daten neu laden?`).then((result) => { 
+                    if (result) {
+                        window.location.reload();
+                    }
+                });
+            }
             button.textContent = 'All Events';
         }
 
@@ -882,14 +916,15 @@ async function refreshCalendarData(calendar) {
             ...(holidays || []), // Feiertage (falls vorhanden)
             ...(Array.isArray(events) ? events : [events] || []) // User Events als Array
         ];
-        
+
+        if (!calendarEvents) throw new Error('Failed to fetch user events!');
         calendar.removeAllEvents();
         calendar.addEventSource(calendarEvents);
         
-    } catch (error) {
-        console.error('Error refreshing calendar data:', error);
-        showAlert('Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
-    }
+    // } catch (error) {
+    //     console.error('Error refreshing calendar data:', error);
+    //     showAlert('Ein Fehler ist beim Aktualisieren der Kalenderdaten aufgetreten.');
+    // }
 }
 
 /**
