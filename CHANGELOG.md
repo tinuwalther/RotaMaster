@@ -2,6 +2,7 @@
 
 ## Table of Contents
 
+- [2026-05-14](#2026-05-14)
 - [2025-07-25](#2025-07-25)
 - [2025-04-22](#2025-04-22)
 - [2025-04-09](#2025-04-09)
@@ -71,6 +72,33 @@ exportButton.addEventListener('click', function() {
 });
 // ...existing code...
 `````
+
+## 2026-05-14
+
+After implementing the following code, increase the appVersion in rotamaster.config.js to 5.6.0. This version implements a context menu for the calendar.
+
+### RotaMaster.psm1
+
+Add to function Initialize-WebEndpoints to create the route for the calculate.html page.
+
+````powershell
+    # Calculate
+    Add-PodeRoute -Method Get -Path '/calculate' -Authentication 'Login' -ScriptBlock {
+        Write-PodeViewResponse -Path 'calculate.html'
+    }
+````
+
+### calculate.html
+
+Add the new calculate.html file to the views folder. This file contains a form to calculate the working hours between two dates, including the option to select only the morning, afternoon or full day.
+
+## rotamaster.calculate.js
+
+Add the new rotamaster.calculate.js file to the public/rotamaster folder. This file contains the JavaScript code to calculate the working hours between two dates, including the option to select only the morning, afternoon or full day.
+
+## views
+
+Add ````<li Class="nav-item"  ><a Class="nav-link" href="/calculate"  >Calculate</a></li>```` to the navbar in all html files in the views folder.
 
 ## 2025-07-25
 

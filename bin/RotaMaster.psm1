@@ -919,6 +919,10 @@ function Initialize-WebEndpoints {
         Add-PodeRoute -Method Get -Path '/about' -Authentication 'Login' -ScriptBlock {
             Write-PodeViewResponse -Path 'about.html'
         }
+        # Calculate
+        Add-PodeRoute -Method Get -Path '/calculate' -Authentication 'Login' -ScriptBlock {
+            Write-PodeViewResponse -Path 'calculate.html'
+        }
     }
 
     end{
