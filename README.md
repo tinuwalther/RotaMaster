@@ -146,6 +146,12 @@ A list of some components and their version. Show is OpsGenie integration.
 
 ![RotaMasterAbout](./img/RotaMasterAbout.png)
 
+## Calculate
+
+In the calculate view, you can calculate the total working time and on-call time for a specified person and time range.
+
+![RotaMasterCalculate](./img/TimeCalculate.png)
+
 ## OpsGenie
 
 Add new OpsGenie Override for a specified person and on-call time.
