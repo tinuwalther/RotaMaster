@@ -71,12 +71,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hours = Math.floor(diffMinutes / 60);
         const minutes = diffMinutes % 60;
         
+        // Berechne die Gesamtzeit und zeige sie an
         document.getElementById(`totalTime${suffix}`).value = 
             `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 
         // Berechne Dezimalstunden
         const decimalHours = (diffMinutes / 60).toFixed(2);
         document.getElementById(`decimalTime${suffix}`).value = `${decimalHours} h`;
+
+        // Berechne die On-call Stunden bei AM = 00:00 plus StartTime, bei PM = 24:00 minus EndTime
+        let onCallMinutes;
+        if (suffix === 'AM') {
+            // AM: Von Mitternacht bis StartTime, Inklusive Pause, da diese Zeit nicht gearbeitet wird
+            onCallMinutes = startTotalMinutes + breakMinutes;
+        }
+        if (suffix === 'PM') {
+            // PM: Von EndTime bis Mitternacht, Inklusive Pause, da diese Zeit nicht gearbeitet wird
+            onCallMinutes = (24 * 60) - endTotalMinutes + breakMinutes;
+        }
+        const onCallHours = Math.floor(onCallMinutes / 60);
+        const onCallRemainingMinutes = onCallMinutes % 60;
+        document.getElementById(`onCallTime${suffix}`).value = 
+            `${String(onCallHours).padStart(2, '0')}:${String(onCallRemainingMinutes).padStart(2, '0')}`;
+        document.getElementById(`decimalOnCallTime${suffix}`).value = `${(onCallMinutes / 60).toFixed(2)} h`;
         
         return diffMinutes; // Rückgabe für Gesamtberechnung
     }
@@ -98,12 +115,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
         
+        // Berechne die Gesamtzeit und zeige sie an
         document.getElementById('totalTimeTotal').value = 
             `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
         
         // Berechne Dezimalstunden
         const decimalHours = (totalMinutes / 60).toFixed(2);
         document.getElementById('decimalTimeTotal').value = `${decimalHours} h`;
+
+        // Berechne die On-call Stunden basierend auf der Gesamtzeit und 24 Stunden
+        const onCallMinutes = ((24 * 60) - totalMinutes).toFixed(2);
+        const onCallHours = Math.floor(onCallMinutes / 60);
+        const onCallRemainingMinutes = onCallMinutes % 60;
+        document.getElementById('totalOnCallTime').value = 
+            `${String(onCallHours).padStart(2, '0')}:${String(onCallRemainingMinutes).padStart(2, '0')}`;
+        document.getElementById('decimalOnCallTime').value = `${(onCallMinutes / 60).toFixed(2)} h`;
     }
 
     // Event Listener für Vormittag (AM)
@@ -131,5 +157,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         console.error('Nachmittag-Zeitfelder nicht gefunden im DOM');
     }
-
+    // Bootstrap Tooltips initialisieren (am Ende des DOMContentLoaded Events)
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 });
