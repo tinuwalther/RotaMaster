@@ -10,6 +10,7 @@
         
         <link rel="stylesheet" href="/assets/BootStrap/bootstrap.min.css"/>
         <link rel="stylesheet" href="/assets/rotamaster/rotamaster.main.css"/>
+        <link rel="stylesheet" href="/assets/bootstrap/bootstrap-icons/font/bootstrap-icons.min.css"/>
     
         <title id="title" >RotaMaster: Calculate</title><link type="image/x-icon" href="/assets/img/favicon.png" rel="icon"  />
 
@@ -88,131 +89,202 @@
             </div>
             <!-- End Modal Confirm -->
             
-<div class="container mt-4">
-    <h2>Working Time Calculator</h2>
+            <div class="container mt-4">
+                <h2>Working Time Calculator</h2>
 
-    <div class="row">
-        <!-- Morning Card -->
-        <div class="col-lg-6 mb-3">
-            <div class="card h-100">
-                <div class="card-header">
-                    Calculation of working time in the morning
+                <div class="row">
+                    <!-- Morning Card -->
+                    <div class="col-lg-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <strong>Morning</strong>
+                            </div>
+
+                            <div class="card-body">
+                                
+                                <div class="row mb-3">
+                                    <!-- Start Time -->
+                                    <div class="col-md-6">
+                                        <label for="startTimeAM" class="form-label">Start Time</label>
+                                        <input type="time" class="form-control" id="startTimeAM" placeholder="08:00">
+                                    </div>
+                                
+                                    <!-- End Time -->
+                                    <div class="col-md-6">
+                                        <label for="endTimeAM" class="form-label">End Time</label>
+                                        <input type="time" class="form-control" id="endTimeAM" placeholder="12:12">
+                                    </div>
+                                </div>
+                                
+                                <!-- Break (optional) -->
+                                <div class="mb-3">
+                                    <label for="breakTimeAM" class="form-label">Break (Minutes)</label>
+                                    <input type="number" class="form-control" id="breakTimeAM" value="0" min="0">
+                                </div>
+                                
+                                <!-- Result -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="totalTimeAM" class="form-label">Working Time</label>
+                                        <input type="text" class="form-control" id="totalTimeAM" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="decimalTimeAM" class="form-label">Decimal Hours</label>
+                                        <input type="text" class="form-control" id="decimalTimeAM" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                </div>
+
+                                <!-- On-call Time in separate row -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="onCallTimeAM" class="form-label" 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top" 
+                                            data-bs-title="Time from midnight (00:00) to start of work"
+                                            style="cursor: help;">
+                                            On-call Time (Monday) <i class="bi bi-info-circle"></i>
+                                        </label>
+                                        <input type="text" class="form-control" id="onCallTimeAM" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="decimalOnCallTimeAM" class="form-label">Decimal Hours</label>
+                                        <input type="text" class="form-control" id="decimalOnCallTimeAM" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Afternoon Card -->
+                    <div class="col-lg-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <strong>Afternoon</strong>
+                            </div>
+
+                            <div class="card-body">
+                                
+                                <div class="row mb-3">
+                                    <!-- Start Time -->
+                                    <div class="col-md-6">
+                                        <label for="startTimePM" class="form-label">Start Time</label>
+                                        <input type="time" class="form-control" id="startTimePM" placeholder="13:00">
+                                    </div>
+                                
+                                    <!-- End Time -->
+                                    <div class="col-md-6">
+                                        <label for="endTimePM" class="form-label">End Time</label>
+                                        <input type="time" class="form-control" id="endTimePM" placeholder="17:12">
+                                    </div>
+                                </div>
+                                
+                                <!-- Break (optional) -->
+                                <div class="mb-3">
+                                    <label for="breakTimePM" class="form-label">Break (Minutes)</label>
+                                    <input type="number" class="form-control" id="breakTimePM" value="0" min="0">
+                                </div>
+                                
+                                <!-- Result -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="totalTimePM" class="form-label">Working Time</label>
+                                        <input type="text" class="form-control" id="totalTimePM" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="decimalTimePM" class="form-label">Decimal Hours</label>
+                                        <input type="text" class="form-control" id="decimalTimePM" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                </div>
+
+                                <!-- On-call Time in separate row -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="onCallTimePM" class="form-label" 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top" 
+                                            data-bs-title="Time from end of work to midnight (24:00)"
+                                            style="cursor: help;">
+                                            On-call Time (Monday) <i class="bi bi-info-circle"></i>
+                                        </label>
+                                        <input type="text" class="form-control" id="onCallTimePM" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="decimalOnCallTimePM" class="form-label">Decimal Hours</label>
+                                        <input type="text" class="form-control" id="decimalOnCallTimePM" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="card-body">
-                    
-                    <div class="row mb-3">
-                        <!-- Start Time -->
-                        <div class="col-md-6">
-                            <label for="startTimeAM" class="form-label">Start Time</label>
-                            <input type="time" class="form-control" id="startTimeAM" placeholder="08:00">
-                        </div>
-                    
-                        <!-- End Time -->
-                        <div class="col-md-6">
-                            <label for="endTimeAM" class="form-label">End Time</label>
-                            <input type="time" class="form-control" id="endTimeAM" placeholder="12:12">
-                        </div>
-                    </div>
-                    
-                    <!-- Break (optional) -->
-                    <div class="mb-3">
-                        <label for="breakTimeAM" class="form-label">Break (Minutes)</label>
-                        <input type="number" class="form-control" id="breakTimeAM" value="0" min="0">
-                    </div>
-                    
-                    <!-- Result -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="totalTimeAM" class="form-label">Working Time</label>
-                            <input type="text" class="form-control" id="totalTimeAM" readonly 
-                                style="background-color: #e9ecef; font-weight: bold;">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="decimalTimeAM" class="form-label">Decimal Hours</label>
-                            <input type="text" class="form-control" id="decimalTimeAM" readonly 
-                                style="background-color: #e9ecef; font-weight: bold;">
+                <!-- Total Calculation -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <strong>Total Working Time (Morning + Afternoon)</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="totalTimeTotal" class="form-label">Total Working Time</label>
+                                        <input type="text" class="form-control form-control-lg" id="totalTimeTotal" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="decimalTimeTotal" class="form-label">Total Decimal Hours</label>
+                                        <input type="text" class="form-control form-control-lg" id="decimalTimeTotal" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
                 </div>
+
+                <!-- On-call Calculation -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <strong>On-call time (24 h)</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="totalOnCallTime" class="form-label"
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top" 
+                                            data-bs-title="Total on-call time is calculated as total 24-hour period minus total working time."
+                                            style="cursor: help;">
+                                            Total On-call Time <i class="bi bi-info-circle"></i>
+                                        </label>
+                                        <input type="text" class="form-control form-control-lg" id="totalOnCallTime" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="decimalOnCallTime" class="form-label">Total Decimal Hours</label>
+                                        <input type="text" class="form-control form-control-lg" id="decimalOnCallTime" readonly 
+                                            style="background-color: #e9ecef; font-weight: bold;">
+                                    </div>
+                                </div>
+                            </div>
+                       </div>
+                    </div>
+                </div>
+
             </div>
-        </div>
-
-        <!-- Afternoon Card -->
-        <div class="col-lg-6 mb-3">
-            <div class="card h-100">
-                <div class="card-header">
-                    Calculation of working time in the afternoon
-                </div>
-
-                <div class="card-body">
-                    
-                    <div class="row mb-3">
-                        <!-- Start Time -->
-                        <div class="col-md-6">
-                            <label for="startTimePM" class="form-label">Start Time</label>
-                            <input type="time" class="form-control" id="startTimePM" placeholder="13:00">
-                        </div>
-                    
-                        <!-- End Time -->
-                        <div class="col-md-6">
-                            <label for="endTimePM" class="form-label">End Time</label>
-                            <input type="time" class="form-control" id="endTimePM" placeholder="17:12">
-                        </div>
-                    </div>
-                    
-                    <!-- Break (optional) -->
-                    <div class="mb-3">
-                        <label for="breakTimePM" class="form-label">Break (Minutes)</label>
-                        <input type="number" class="form-control" id="breakTimePM" value="0" min="0">
-                    </div>
-                    
-                    <!-- Result -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="totalTimePM" class="form-label">Working Time</label>
-                            <input type="text" class="form-control" id="totalTimePM" readonly 
-                                style="background-color: #e9ecef; font-weight: bold;">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="decimalTimePM" class="form-label">Decimal Hours</label>
-                            <input type="text" class="form-control" id="decimalTimePM" readonly 
-                                style="background-color: #e9ecef; font-weight: bold;">
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Total Calculation -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <strong>Total Working Time (Morning + Afternoon)</strong>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="totalTimeTotal" class="form-label">Total Working Time</label>
-                            <input type="text" class="form-control form-control-lg" id="totalTimeTotal" readonly 
-                                style="background-color: #e9ecef; font-weight: bold;">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="decimalTimeTotal" class="form-label">Total Decimal Hours</label>
-                            <input type="text" class="form-control form-control-lg" id="decimalTimeTotal" readonly 
-                                style="background-color: #e9ecef; font-weight: bold;">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
 
         </Section>
 
