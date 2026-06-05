@@ -945,7 +945,7 @@ function Initialize-ApiEndpoints {
         $ApiPath = $($BinPath).Replace('bin','api')
         $LogPath = $($BinPath).Replace('bin','logs')
         $Logfile = Join-Path -Path $LogPath -ChildPath "informational_$(Get-Date -f 'yyyy-MM-dd').log"
-        $dbPath = Join-Path -Path $($ApiPath) -ChildPath '/rotamaster.db'
+        $dbPath = Join-Path -Path $($ApiPath) -ChildPath 'rotamaster.db'
 
         # Calculate swiss holidays for next year
         Add-PodeRoute -Method Post -Path '/api/year/new' -ContentType 'application/text' -ArgumentList @($ApiPath) -Authentication 'Login' -ScriptBlock {
@@ -998,12 +998,18 @@ function Initialize-ApiEndpoints {
 
             if(-not([String]::IsNullOrEmpty($WebEvent.Data['name']))){
                 try{
-                    $name      = $WebEvent.Data['name']
+                    $name      = [string]$WebEvent.Data['name']
+                    $author    = [string]$WebEvent.Auth.User.Name
                     $created   = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
                     
-                    $sql = "INSERT INTO absence (name, created, author) VALUES ('$($name)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+                    $sql = "INSERT INTO absence (name, created, author) VALUES (@name, @created, @author);"
+                    $sqlParams = @{
+                        name    = $name
+                        created = $created
+                        author  = $author
+                    }
                     $connection = New-SQLiteConnection -DataSource $dbPath
-                    Invoke-SqliteQuery -Connection $connection -Query $sql
+                    Invoke-SqliteQuery -Connection $connection -Query $sql -SqlParameters $sqlParams
                     $Connection.Close()
                     Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
 
@@ -1018,7 +1024,7 @@ function Initialize-ApiEndpoints {
         }
 
         # Read data from SQLiteDB for absence
-        Add-PodeRoute -Method Get -Path 'api/absence/read/:id' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+        Add-PodeRoute -Method Get -Path '/api/absence/read/:id' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
             try{
                 $searchFor = $WebEvent.Parameters['id']
@@ -1026,12 +1032,12 @@ function Initialize-ApiEndpoints {
                 if ($searchFor -eq '*') {
                     $sql = 'SELECT id,name,created FROM absence ORDER BY name ASC'
                 } else {
-                    $sql = "SELECT id,name,created FROM absence WHERE id = $searchFor"
+                    $sql = "SELECT id,name,created FROM absence WHERE id = @searchFor"
                 }
 
                 # $sql = 'SELECT id,name,created FROM absence ORDER BY name ASC'
                 $connection = New-SQLiteConnection -DataSource $dbPath
-                $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+                $data = Invoke-SqliteQuery -Connection $connection -Query $sql -SqlParameters @{ searchFor = $searchFor }
 
                 $absences = foreach($item in $data){
                     [PSCustomObject]@{
@@ -1053,15 +1059,21 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method PUT -Path '/api/absence/update/:id'  -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
         param($dbPath,$Logfile)
 
-            $id        = $WebEvent.Parameters['id']
-            $name      = $WebEvent.Data['name']
-            $created   = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
-            $author    = $WebEvent.Auth.User.Name
+            $id        = [int]$WebEvent.Parameters['id']
+            $name      = [string]$WebEvent.Data['name']
+            $created   = (Get-Date -f 'yyyy-MM-dd HH:mm:ss')
+            $author    = [string]$WebEvent.Auth.User.Name
 
-            $sql = "UPDATE absence SET name = '$name', created = '$created', author = '$author' WHERE id = '$id'"
+            $sql = "UPDATE absence SET name = @name, created = @created, author = @author WHERE id = @id"
+            $sqlParams = @{
+                name    = $name
+                created = $created
+                author  = $author
+                id      = $id
+            }
 
             try {
-                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql -SqlParameters $sqlParams
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
             } catch {
                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
@@ -1074,11 +1086,14 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method DELETE -Path '/api/absence/delete/:id'  -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
 
-            $id = $WebEvent.Parameters['id']
-            $sql = "DELETE FROM absence WHERE id = $id"
-            
+            $id = [int]$WebEvent.Parameters['id']
+            $sql = "DELETE FROM absence WHERE id = @id"
+            $sqlParams = @{
+                id = $id
+            }
+
             try {
-                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql -SqlParameters $sqlParams
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully deleted" }
             } catch {
                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
@@ -1095,18 +1110,30 @@ function Initialize-ApiEndpoints {
 
             if((-not([String]::IsNullOrEmpty($WebEvent.Data['login'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['firstname'])))))){
                 try{
-                    $login     = $WebEvent.Data['login']
-                    $firstname = $WebEvent.Data['firstname']
-                    $lastname  = $WebEvent.Data['name']
-                    $email     = $WebEvent.Data['email']
-                    $topic     = $WebEvent.Data['topic']
-                    $active    = $WebEvent.Data['active']
-                    $workload  = $WebEvent.Data['workload']
-                    $created   = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+                    $login     = [string]$WebEvent.Data['login']
+                    $firstname = [string]$WebEvent.Data['firstname']
+                    $lastname  = [string]$WebEvent.Data['name']
+                    $email     = [string]$WebEvent.Data['email']
+                    $topic     = [string]$WebEvent.Data['topic']
+                    $active    = [string]$WebEvent.Data['active']
+                    $workload  = [string]$WebEvent.Data['workload']
+                    $created   = (Get-Date -f 'yyyy-MM-dd HH:mm:ss')
+                    $author    = [string]$WebEvent.Auth.User.Name
                     
-                    $sql = "INSERT INTO person (login, firstname, name, email,topic, active, workload, created, author) VALUES ('$($login)', '$($firstname)', '$($lastname)', '$($email)', '$($topic)', '$($active)', '$($workload)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+                    $sql = "INSERT INTO person (login, firstname, name, email,topic, active, workload, created, author) VALUES (@login, @firstname, @lastname, @email, @topic, @active, @workload, @created, @author)"
+                    $sqlParams = @{
+                        login     = $login
+                        firstname = $firstname
+                        lastname  = $lastname
+                        email     = $email
+                        topic     = $topic
+                        active    = $active
+                        workload  = $workload
+                        created   = $created
+                        author    = $author
+                    }
                     $connection = New-SQLiteConnection -DataSource $dbPath
-                    Invoke-SqliteQuery -Connection $connection -Query $sql
+                    Invoke-SqliteQuery -Connection $connection -Query $sql -SqlParameters $sqlParams
                     $Connection.Close()
                     Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
 
@@ -1121,7 +1148,7 @@ function Initialize-ApiEndpoints {
         }
 
         # Read data from SQLiteDB for person
-        Add-PodeRoute -Method Get -Path 'api/person/read/:person' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+        Add-PodeRoute -Method Get -Path '/api/person/read/:person' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
             try{
                 $searchFor = $WebEvent.Parameters['person']
@@ -1132,13 +1159,13 @@ function Initialize-ApiEndpoints {
                 if ($searchFor -eq '*') {
                     $sql = 'SELECT id,login,name,firstname, active, workload, email, topic,created FROM person ORDER BY firstname ASC'
                 } elseif ($isInteger) {
-                    $sql = "SELECT id,login,name,firstname, active, workload, email,topic,created FROM person WHERE id = $searchFor"
+                    $sql = "SELECT id,login,name,firstname, active, workload, email,topic,created FROM person WHERE id = @searchFor"
                 } else {
-                    $sql = "SELECT id,login,name,firstname, active, workload, email,topic,created FROM person WHERE (name || ' ' || firstname) = '$($searchFor)'"
+                    $sql = "SELECT id,login,name,firstname, active, workload, email,topic,created FROM person WHERE (name || ' ' || firstname) = @searchFor"
                 }
 
                 $connection = New-SQLiteConnection -DataSource $dbPath
-                $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+                $data = Invoke-SqliteQuery -Connection $connection -Query $sql -SqlParameters @{ searchFor = $searchFor }
 
                 $person = foreach($item in $data){
                     [PSCustomObject]@{
@@ -1167,34 +1194,32 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method PUT -Path '/api/person/update/:id'  -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
 
-            $id        = $WebEvent.Parameters['id']
-            $login     = $WebEvent.Data['login']
-            $name      = $WebEvent.Data['name']
-            $firstname = $WebEvent.Data['firstname']
-            $active    = $WebEvent.Data['active']
-            $workload  = $WebEvent.Data['workload']
-            $email     = $WebEvent.Data['email']
-            $topic     = $WebEvent.Data['topic']
-            $created   = $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
-            $author    = $WebEvent.Auth.User.Name
+            $id        = [int]$WebEvent.Parameters['id']
+            $login     = [string]$WebEvent.Data['login']
+            $name      = [string]$WebEvent.Data['name']
+            $firstname = [string]$WebEvent.Data['firstname']
+            $active    = [string]$WebEvent.Data['active']
+            $workload  = [string]$WebEvent.Data['workload']
+            $email     = [string]$WebEvent.Data['email']
+            $topic     = [string]$WebEvent.Data['topic']
+            $created   = (Get-Date -f 'yyyy-MM-dd HH:mm:ss')
+            $author    = [string]$WebEvent.Auth.User.Name
 
-            $sql = @"
-        UPDATE person
-        SET 
-            login     = '$login',
-            name      = '$name',
-            firstname = '$firstname',
-            active    = '$active',
-            workload  = '$workload',
-            email     = '$email',
-            topic     = '$topic',
-            created   = '$created',
-            author    = '$author'
-        WHERE id = '$id';
-"@
+            $sql = "UPDATE person SET login = @login, name = @name, firstname = @firstname, active = @active, workload = @workload, email = @email, topic = @topic, created = @created, author = @author WHERE id = @id;"
             
             try {
-                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql -SqlParameters @{
+                    login     = $login
+                    name      = $name
+                    firstname = $firstname
+                    active    = $active
+                    workload  = $workload
+                    email     = $email
+                    topic     = $topic
+                    created   = $created
+                    author    = $author
+                    id        = $id
+                }
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
             } catch {
                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
@@ -1207,11 +1232,11 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method DELETE -Path '/api/person/delete/:id'  -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
 
-            $id = $WebEvent.Parameters['id']
-            $sql = "DELETE FROM person WHERE id = $id"
+            $id = [int]$WebEvent.Parameters['id']
+            $sql = "DELETE FROM person WHERE id = @id"
             
             try {
-                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql -SqlParameters @{ id = $id }
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully deleted" }
             } catch {
                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
@@ -1228,8 +1253,12 @@ function Initialize-ApiEndpoints {
             # Read the data of the formular
             if((-not([String]::IsNullOrEmpty($WebEvent.Data['name'])) -and (-not([String]::IsNullOrEmpty($WebEvent.Data['type']))))){
                 try{
-                    $person  = $WebEvent.Data['name']
-                    $type    = $WebEvent.Data['type']
+                    $person  = [string]$WebEvent.Data['name']
+                    $type    = [string]$WebEvent.Data['type']
+                    $alias   = [string]$WebEvent.Data['alias']
+                    $author  = [string]$WebEvent.Auth.User.Name
+                    $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+
                     if($type -match '^Pikett$'){
                         $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 10:00"
                         $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 10:00"
@@ -1250,12 +1279,19 @@ function Initialize-ApiEndpoints {
                             }
                         }
                     }
-                    $alias   = $WebEvent.Data['alias']
-                    $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
-    
-                    $sql = "INSERT INTO events (person, type, start, end, alias, created, author) VALUES ('$($person)', '$($type)', '$($start)', '$($end)', '$($alias)', '$($created)', '$($WebEvent.Auth.User.Name)')"
+
+                    $sql = "INSERT INTO events (person, type, start, end, alias, created, author) VALUES (@person, @type, @start, @end, @alias, @created, @author);"
+                    $sqlParams = @{
+                        person  = $person
+                        type    = $type
+                        start   = $start
+                        end     = $end
+                        alias   = $alias
+                        created = $created
+                        author  = $author
+                    }
                     $connection = New-SQLiteConnection -DataSource $dbPath
-                    Invoke-SqliteQuery -Connection $connection -Query $sql
+                    Invoke-SqliteQuery -Connection $connection -Query $sql -SqlParameters $sqlParams
                     $Connection.Close()
                     Write-PodeJsonResponse -Value $($data | ConvertTo-Json)
                 }catch{
@@ -1269,18 +1305,18 @@ function Initialize-ApiEndpoints {
         }
 
         # Read data from table events
-        Add-PodeRoute -Method Get -Path 'api/event/read/:person' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
+        Add-PodeRoute -Method Get -Path '/api/event/read/:person' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
             try{
                 # Read from view instead from table
-                $person = $WebEvent.Parameters['person']
+                $person = [string]$WebEvent.Parameters['person']
                 if($person -eq '*'){
                     $sql = 'SELECT id,person,login,email,"type",start,end,alias FROM v_events'
                 }else{
-                    $sql = "SELECT id,person,login,email,""type"",start,end,alias FROM v_events WHERE person = '$($person)'"
+                    $sql = "SELECT id,person,login,email,""type"",start,end,alias FROM v_events WHERE person = @person"
                 }
                 $connection = New-SQLiteConnection -DataSource $dbPath
-                $data = Invoke-SqliteQuery -Connection $connection -Query $sql
+                $data = Invoke-SqliteQuery -Connection $connection -Query $sql -SqlParameters @{ person = $person }
 
                 $events = foreach($item in $data){
                     switch -Regex ($item.type){
@@ -1292,7 +1328,7 @@ function Initialize-ApiEndpoints {
                         title = $title
                         type  = $item.type
                         start = Get-Date $item.start -f 'yyyy-MM-dd HH:mm'
-                        end   = Get-Date $item.end -f 'yyyy-MM-dd HH:MM'
+                        end   = Get-Date $item.end -f 'yyyy-MM-dd HH:mm'
                         color = Get-EventColor -type $item.type
                         extendedProps = [PSCustomObject]@{
                             login = $item.login
@@ -1314,9 +1350,9 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method Put -Path '/api/event/update/:id' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
 
-            $id      = $WebEvent.Parameters['id']
-            $type    = $WebEvent.Data['type']
-            $alias   = $WebEvent.Data['alias']
+            $id      = [int]$WebEvent.Parameters['id']
+            $type    = [string]$WebEvent.Data['type']
+            $alias   = [string]$WebEvent.Data['alias']
 
             if($type -match '^Pikett$'){
                 $start   = "$(Get-Date ([datetime]($WebEvent.Data['start'])) -f 'yyyy-MM-dd') 10:00"
@@ -1326,33 +1362,37 @@ function Initialize-ApiEndpoints {
                 $end     = "$(Get-Date ([datetime]($WebEvent.Data['end'])) -f 'yyyy-MM-dd') 23:00"
             }
             $created = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
-            $author  = $WebEvent.Auth.User.Name
+            $author  =[string] $WebEvent.Auth.User.Name
 
             if($alias){
                 $sql = "
                 UPDATE events
                 SET 
-                    start = '$start',
-                    end = '$end',
-                    alias = '$alias',
-                    created = '$created',
-                    author = '$author'
-                WHERE id = '$id';
+                    start = @start,
+                    end = @end,
+                    alias = @alias,
+                    created = @created,
+                    author = @author
+                WHERE id = @id;
                 "
             }else{
                 $sql = "
                 UPDATE events
                 SET 
-                    start = '$start',
-                    end = '$end',
-                    created = '$created',
-                    author = '$author'
-                WHERE id = '$id';
+                    start = @start,
+                    end = @end,
+                    created = @created,
+                    author = @author
+                WHERE id = @id;
                 "
             }
 
             try {
-                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                if($alias){
+                    Invoke-SqliteQuery -DataSource $dbPath -Query $sql -SqlParameters @{ start = $start; end = $end; alias = $alias; created = $created; author = $author; id = $id }
+                }else{
+                    Invoke-SqliteQuery -DataSource $dbPath -Query $sql -SqlParameters @{ start = $start; end = $end; created = $created; author = $author; id = $id }
+                }
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully updated" }
             } catch {
                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
@@ -1365,22 +1405,15 @@ function Initialize-ApiEndpoints {
         Add-PodeRoute -Method Delete -Path '/api/event/delete/:id' -ArgumentList @($dbPath,$Logfile) -Authentication 'Login' -ScriptBlock {
             param($dbPath,$Logfile)
 
-            $id      = $WebEvent.Parameters['id']
+            $id      = [int]$WebEvent.Parameters['id']
             $deleted = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
-            $author  = $WebEvent.Auth.User.Name
+            $author  = [string]$WebEvent.Auth.User.Name
 
             # $sql = "DELETE FROM events WHERE id = $id"
-            $sql = @"
-        UPDATE events
-        SET 
-            active = 0,
-            deleted = '$deleted',
-            author = '$author'
-        WHERE id = $id
-"@
+            $sql = "UPDATE events SET active = 0, deleted = @deleted, author = @author WHERE id = @id"
 
             try {
-                Invoke-SqliteQuery -DataSource $dbPath -Query $sql
+                Invoke-SqliteQuery -DataSource $dbPath -Query $sql -SqlParameters @{ deleted = $deleted; author = $author; id = $id }
                 Write-PodeJsonResponse -Value @{ status = "success"; message = "Record successfully deleted" }
             } catch {
                 $_.Exception.Message | Out-File -Append -FilePath $Logfile.Replace('informational','error') -Encoding utf8
