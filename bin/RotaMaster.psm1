@@ -1035,7 +1035,6 @@ function Initialize-ApiEndpoints {
                     $sql = "SELECT id,name,created FROM absence WHERE id = @searchFor"
                 }
 
-                # $sql = 'SELECT id,name,created FROM absence ORDER BY name ASC'
                 $connection = New-SQLiteConnection -DataSource $dbPath
                 $data = Invoke-SqliteQuery -Connection $connection -Query $sql -SqlParameters @{ searchFor = $searchFor }
 
