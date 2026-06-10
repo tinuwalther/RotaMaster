@@ -42,7 +42,7 @@ const calendarConfig = {
     psModules: [
         {
             moduleName: "Pode",
-            moduleVersion: "2.12.1"
+            moduleVersion: "2.13.4"
         },
         {
             moduleName: "PSSQLite",
