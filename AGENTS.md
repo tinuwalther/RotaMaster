@@ -33,6 +33,7 @@ RotaMaster/
 ## Development Skills
 Available skills in `.devin/skills/`:
 - `start-server` - Start the Pode development server
+- `stop-server` - Stop the running Pode development server
 - `run-tests` - Execute Pester test suite
 - `database-init` - Initialize/reset SQLite database
 - `test-api` - Test REST API endpoints
@@ -47,6 +48,7 @@ Available skills in `.devin/skills/`:
 2. Run `database-init` if database needs to be reset
 3. Run `start-server` to start the development server
 4. Access application at https://localhost:8443/
+5. Run `stop-server` when done to stop the development server
 
 ### Testing Changes
 1. Run `run-tests` to execute Pester tests
